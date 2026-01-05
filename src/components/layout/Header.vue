@@ -73,6 +73,8 @@ import {
   Fold, Expand, Search, Bell, User, Setting, SwitchButton, ArrowDown 
 } from '@element-plus/icons-vue'
 import Breadcrumb from './Breadcrumb.vue'
+import { useUserStore } from '@/stores/user' 
+
 
 const props = defineProps({
   collapse: {
@@ -85,6 +87,7 @@ defineEmits(['toggle-collapse'])
 
 const router = useRouter()
 const searchKeyword = ref('')
+const userStore = useUserStore()
 
 const collapseIcon = computed(() => {
   return props.collapse ? Expand : Fold
@@ -116,6 +119,7 @@ const handleCommand = (command) => {
 
 const handleLogout = () => {
   console.log('退出登录')
+  userStore.logout()
   router.push('/login')
 }
 </script>

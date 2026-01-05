@@ -87,6 +87,14 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { login } from '../../utils/auth'
+import { ElMessage } from 'element-plus'
+import { useRoute, useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user' 
+
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+
 
 // 表单数据
 const form = reactive({
@@ -161,13 +169,26 @@ const handleLogin = async () => {
       username: form.username,
       rememberMe: form.rememberMe
     })
+     if (response.flag === 1) {
+   
+      userStore.login("token",response.result)
 
-    // 在实际项目中，这里会处理登录成功后的逻辑
-    // 例如：存储token、跳转页面等
+      ElMessage.success({
+        message: `欢迎回来，${response.result.realName}！`,
+        duration: 2000
+      })
+      
+      // 获取重定向地址，如果没有则跳转到首页
+      const redirect = route.query.redirect || '/dashboard'
+      
+      // 短暂延迟后跳转，让用户看到成功消息
+      setTimeout(() => {
+        router.push(redirect)
+      }, 500)
+    } else {
+      ElMessage.error(response.message || '登录失败')
+    }
 
-    alert(`欢迎回来，${form.username}！`)
-
-    window.location.href = '/';
 
   } catch (error) {
     alert('登录失败:' + error)
