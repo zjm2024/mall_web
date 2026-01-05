@@ -27,12 +27,12 @@ export const HTTP_STATUS = {
 export const API_PATHS = {
   // 认证相关
   AUTH: {
-    LOGIN: '/auth/login',
+    LOGIN: '/shopadminApi/User/validAccount',
     LOGOUT: '/auth/logout',
     REFRESH_TOKEN: '/auth/refresh-token',
     PROFILE: '/auth/profile'
   },
-  
+
   // 店铺管理
   SHOP: {
     BASE: '/shop',
@@ -42,7 +42,7 @@ export const API_PATHS = {
     LOGIN_RECORDS: '/shop/login-records',
     OPERATION_LOGS: '/shop/operation-logs'
   },
-  
+
   // 商品管理
   PRODUCT: {
     LIST: '/products',
@@ -50,14 +50,23 @@ export const API_PATHS = {
     CATEGORIES: '/products/categories',
     BRANDS: '/products/brands'
   },
-  
+
   // 订单管理
   ORDER: {
     LIST: '/orders',
     DETAIL: (id) => `/orders/${id}`,
     STATISTICS: '/orders/statistics'
   },
-  
+
+
+  // 分类管理 
+  CATEGORY: {
+    LIST: `/shopadminApi/Category/getCategoriesList`,
+    UPDATE: '/shopadminApi/Category/updateCategories',
+    DETAIL: (id) => `/shopadminApi/Category/${id}`
+
+  },
+
   // 文件上传
   UPLOAD: {
     IMAGE: '/upload/image',
@@ -67,8 +76,8 @@ export const API_PATHS = {
 
 // 响应代码
 export const RESPONSE_CODE = {
-  SUCCESS: 0,
-  ERROR: 1,
+  SUCCESS: 1,
+  ERROR: 0,
   TOKEN_EXPIRED: 1001,
   NO_PERMISSION: 1002,
   PARAM_ERROR: 1003,

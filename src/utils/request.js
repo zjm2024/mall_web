@@ -19,15 +19,15 @@ request.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
-    
+
     // 添加请求时间戳防止缓存
     if (config.method === 'get') {
       config.params = {
-        ...config.params,
-        _t: Date.now()
+        ...config.params
+        //_t: Date.now()
       }
     }
-    
+
     return config
   },
   (error) => {
@@ -39,19 +39,19 @@ request.interceptors.request.use(
 request.interceptors.response.use(
   (response) => {
     const { data, config } = response
-    
+
     // 处理二进制数据（如文件下载）
     if (response.config.responseType === 'blob') {
       return response
     }
-    
+
     // 根据业务代码处理响应
-    if (data.code === RESPONSE_CODE.SUCCESS) {
-      return data.data
+    if (data.flag === RESPONSE_CODE.SUCCESS) {
+      return data
     }
-    
+
     // token 过期
-    if (data.code === RESPONSE_CODE.TOKEN_EXPIRED) {
+    if (data.flag === RESPONSE_CODE.TOKEN_EXPIRED) {
       ElMessageBox.confirm('登录已过期，请重新登录', '提示', {
         confirmButtonText: '重新登录',
         cancelButtonText: '取消',
@@ -63,13 +63,19 @@ request.interceptors.response.use(
       })
       return Promise.reject(new Error(data.message || 'Token expired'))
     }
-    
+
     // 无权限
-    if (data.code === RESPONSE_CODE.NO_PERMISSION) {
+    if (data.flag === RESPONSE_CODE.NO_PERMISSION) {
       ElMessage.error('您没有权限执行此操作')
       return Promise.reject(new Error(data.message || 'No permission'))
     }
-    
+
+    // 请求错误
+    if (data.flag === RESPONSE_CODE.ERROR) {
+      ElMessage.error(data.message);
+      return Promise.reject(new Error(data.message))
+    }
+
     // 其他错误
     ElMessage.error(data.message || '请求失败')
     return Promise.reject(new Error(data.message || 'Request failed'))
@@ -78,7 +84,7 @@ request.interceptors.response.use(
     // 处理 HTTP 错误
     if (error.response) {
       const { status, data } = error.response
-      
+
       switch (status) {
         case HTTP_STATUS.UNAUTHORIZED:
           ElMessage.error('未授权，请重新登录')
@@ -117,7 +123,7 @@ request.interceptors.response.use(
     } else {
       ElMessage.error(error.message || '请求配置错误')
     }
-    
+
     return Promise.reject(error)
   }
 )
@@ -126,11 +132,11 @@ request.interceptors.response.use(
 export const get = (url, params = {}, config = {}) => {
   return request.get(url, { params, ...config })
 }
-
+/*
 export const post = (url, data = {}, config = {}) => {
   return request.post(url, data, config)
 }
-
+*/
 export const put = (url, data = {}, config = {}) => {
   return request.put(url, data, config)
 }
@@ -143,7 +149,7 @@ export const del = (url, params = {}, config = {}) => {
 export const upload = (url, file, config = {}) => {
   const formData = new FormData()
   formData.append('file', file)
-  
+
   return request.post(url, formData, {
     headers: {
       'Content-Type': 'multipart/form-data'

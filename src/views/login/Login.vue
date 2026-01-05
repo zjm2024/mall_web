@@ -14,15 +14,8 @@
           <label for="username">用户名/邮箱</label>
           <div class="input-with-icon">
             <i class="icon">👤</i>
-            <input
-              id="username"
-              v-model="form.username"
-              type="text"
-              placeholder="请输入用户名或邮箱"
-              class="form-input"
-              :class="{ 'input-error': errors.username }"
-              @input="clearError('username')"
-            />
+            <input id="username" v-model="form.username" type="text" placeholder="请输入用户名或邮箱" class="form-input"
+              :class="{ 'input-error': errors.username }" @input="clearError('username')" />
           </div>
           <div v-if="errors.username" class="error-message">
             {{ errors.username }}
@@ -39,20 +32,9 @@
           </div>
           <div class="input-with-icon">
             <i class="icon">🔒</i>
-            <input
-              id="password"
-              v-model="form.password"
-              :type="showPassword ? 'text' : 'password'"
-              placeholder="请输入密码"
-              class="form-input"
-              :class="{ 'input-error': errors.password }"
-              @input="clearError('password')"
-            />
-            <button
-              type="button"
-              class="password-toggle"
-              @click="togglePasswordVisibility"
-            >
+            <input id="password" v-model="form.password" :type="showPassword ? 'text' : 'password'" placeholder="请输入密码"
+              class="form-input" :class="{ 'input-error': errors.password }" @input="clearError('password')" />
+            <button type="button" class="password-toggle" @click="togglePasswordVisibility">
               <i class="toggle-icon">{{ showPassword ? '🙈' : '👁️' }}</i>
             </button>
           </div>
@@ -63,21 +45,12 @@
 
         <!-- 记住我选项 -->
         <div class="checkbox-item">
-          <input
-            type="checkbox"
-            id="rememberMe"
-            v-model="form.rememberMe"
-          />
+          <input type="checkbox" id="rememberMe" v-model="form.rememberMe" />
           <label for="rememberMe">记住我</label>
         </div>
 
         <!-- 登录按钮 -->
-        <button
-          type="submit"
-          class="login-btn"
-          :disabled="isSubmitting"
-          :class="{ 'btn-loading': isSubmitting }"
-        >
+        <button type="submit" class="login-btn" :disabled="isSubmitting" :class="{ 'btn-loading': isSubmitting }">
           <span v-if="!isSubmitting">登录</span>
           <span v-else class="loading-text">
             <span class="loading-dots">...</span> 登录中
@@ -113,6 +86,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { login } from '../../utils/auth'
 
 // 表单数据
 const form = reactive({
@@ -146,10 +120,10 @@ const togglePasswordVisibility = () => {
 // 表单验证
 const validateForm = () => {
   let isValid = true
-  
+
   // 清空之前的错误
   Object.keys(errors).forEach(key => errors[key] = '')
-  
+
   // 验证用户名
   if (!form.username.trim()) {
     errors.username = '请输入用户名或邮箱'
@@ -158,7 +132,7 @@ const validateForm = () => {
     errors.username = '用户名至少3个字符'
     isValid = false
   }
-  
+
   // 验证密码
   if (!form.password) {
     errors.password = '请输入密码'
@@ -167,7 +141,7 @@ const validateForm = () => {
     errors.password = '密码至少6个字符'
     isValid = false
   }
-  
+
   return isValid
 }
 
@@ -176,26 +150,27 @@ const handleLogin = async () => {
   if (!validateForm()) {
     return
   }
-  
+
   isSubmitting.value = true
-  
+
   try {
-    // 模拟API请求
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
+    // 调用登录API
+    const response = await login(form.username, form.password)
+
     console.log('登录成功:', {
       username: form.username,
       rememberMe: form.rememberMe
     })
-    
+
     // 在实际项目中，这里会处理登录成功后的逻辑
     // 例如：存储token、跳转页面等
-    
+
     alert(`欢迎回来，${form.username}！`)
-    
+
+    window.location.href = '/';
+
   } catch (error) {
-    console.error('登录失败:', error)
-    alert('登录失败，请稍后重试')
+    alert('登录失败:' + error)
   } finally {
     isSubmitting.value = false
   }
@@ -457,9 +432,19 @@ onMounted(() => {
 }
 
 @keyframes loadingDots {
-  0%, 20% { opacity: 0.2; }
-  50% { opacity: 1; }
-  100% { opacity: 0.2; }
+
+  0%,
+  20% {
+    opacity: 0.2;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.2;
+  }
 }
 
 /* 注册链接 */
@@ -618,16 +603,18 @@ onMounted(() => {
   .login-card {
     padding: 30px 20px;
   }
-  
+
   .login-header h2 {
     font-size: 24px;
   }
-  
+
   .social-login {
     flex-direction: column;
   }
-  
-  .circle-1, .circle-2, .circle-3 {
+
+  .circle-1,
+  .circle-2,
+  .circle-3 {
     display: none;
   }
 }
