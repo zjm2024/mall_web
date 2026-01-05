@@ -9,6 +9,7 @@ import router from './router'
 import './assets/styles/global.scss'
 
 const app = createApp(App)
+const pinia = createPinia()
 
 // 注册所有 Element Plus 图标
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
@@ -17,6 +18,7 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 
 // 使用路由
 app.use(router)
+app.use(pinia)
 
 // 使用 Pinia（状态管理）
 app.use(createPinia())

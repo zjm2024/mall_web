@@ -1,3 +1,4 @@
+<!-- src/components/layout/Sidebar.vue -->
 <template>
   <div class="sidebar-container" :class="{ 'collapsed': collapse }">
     <!-- Logo区域 -->
@@ -12,55 +13,76 @@
     </div>
     
     <!-- 菜单区域 -->
-    <el-menu
-      :default-active="activeMenu"
-      :collapse="collapse"
-      :collapse-transition="false"
-      :unique-opened="true"
-      background-color="#001529"
-      text-color="#b7bdc3"
-      active-text-color="#1890ff"
-      router
-      @select="handleMenuSelect"
-    >
-      <template v-for="item in menuList" :key="item.path || item.title">
-        <!-- 有子菜单 -->
-        <el-sub-menu v-if="item.children && item.children.length > 0" :index="item.title">
-          <template #title>
+    <div class="menu-wrapper">
+      <el-menu
+        :default-active="activeMenu"
+        :collapse="collapse"
+        :collapse-transition="false"
+        :unique-opened="true"
+        background-color="#001529"
+        text-color="#b7bdc3"
+        active-text-color="#1890ff"
+        router
+      >
+        <template v-for="item in menuList" :key="item.path || item.title">
+          <!-- 有子菜单 -->
+          <el-sub-menu v-if="item.children && item.children.length > 0" :index="item.title">
+            <template #title>
+              <el-icon v-if="item.icon">
+                <component :is="item.icon" />
+              </el-icon>
+              <span>{{ item.title }}</span>
+            </template>
+            
+            <el-menu-item
+              v-for="child in item.children"
+              :key="child.path"
+              :index="child.path"
+            >
+              <span>{{ child.title }}</span>
+            </el-menu-item>
+          </el-sub-menu>
+          
+          <!-- 无子菜单 -->
+          <el-menu-item v-else :index="item.path">
             <el-icon v-if="item.icon">
               <component :is="item.icon" />
             </el-icon>
-            <span>{{ item.title }}</span>
-          </template>
-          
-          <el-menu-item
-            v-for="child in item.children"
-            :key="child.path"
-            :index="child.path"
-          >
-            <span>{{ child.title }}</span>
+            <template #title>
+              <span>{{ item.title }}</span>
+            </template>
           </el-menu-item>
-        </el-sub-menu>
-        
-        <!-- 无子菜单 -->
-        <el-menu-item v-else :index="item.path">
-          <el-icon v-if="item.icon">
-            <component :is="item.icon" />
-          </el-icon>
-          <template #title>
-            <span>{{ item.title }}</span>
-          </template>
-        </el-menu-item>
-      </template>
-    </el-menu>
+        </template>
+      </el-menu>
+    </div>
+    
+    <!-- 用户信息（折叠时不显示） -->
+    <div class="user-info" v-if="!collapse && userInfo.AdminId">
+      <div class="user-avatar">
+        <el-avatar :size="36" :src="userInfo.Avatar">
+          {{ userInfo.RealName?.charAt(0) || userInfo.Username?.charAt(0) }}
+        </el-avatar>
+      </div>
+      <div class="user-details">
+        <div class="user-name">{{ userInfo.RealName || userInfo.Username }}</div>
+        <div class="user-role">
+          <el-tag :type="isSuperAdmin ? 'danger' : 'primary'" size="small">
+            {{ isSuperAdmin ? '超管' : '商户' }}
+          </el-tag>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
+
 
 <script setup>
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/stores/user'
 import { Shop } from '@element-plus/icons-vue'
-import { menuList } from '@/constants/menu'
+import { getMenuByUser } from '@/constants/menu'  // 导入新的函数
 
 const props = defineProps({
   collapse: {
@@ -70,12 +92,25 @@ const props = defineProps({
 })
 
 const route = useRoute()
+const userStore = useUserStore()
+
+// 使用 storeToRefs 保持响应式
+const { 
+  userInfo, 
+  isSuperAdmin,
+  sidebarCollapse 
+} = storeToRefs(userStore)
+
+// 根据用户权限动态获取菜单
+const menuList = computed(() => {
+  return getMenuByUser(isSuperAdmin.value)
+})
 
 // 当前激活的菜单
 const activeMenu = computed(() => {
   const { path } = route
   // 寻找匹配的菜单项
-  for (const item of menuList) {
+  for (const item of menuList.value) {
     if (item.path === path) return item.path
     if (item.children) {
       const child = item.children.find(child => child.path === path)
@@ -84,10 +119,6 @@ const activeMenu = computed(() => {
   }
   return ''
 })
-
-const handleMenuSelect = (index, indexPath) => {
-  console.log('菜单选中:', index, indexPath)
-}
 </script>
 
 <style lang="scss" scoped>
@@ -145,15 +176,24 @@ const handleMenuSelect = (index, indexPath) => {
     }
   }
   
-  .el-menu {
-    border-right: none;
+  .menu-wrapper {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
     
-    &:not(.el-menu--collapse) {
-      width: 220px;
+    &::-webkit-scrollbar {
+      width: 4px;
     }
+    
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+    }
+  }
+  
+  .el-menu {
+    border-right: none;
+    width: 100%;
     
     // 隐藏滚动条
     &::-webkit-scrollbar {
@@ -206,6 +246,43 @@ const handleMenuSelect = (index, indexPath) => {
           bottom: 0;
           width: 3px;
           background-color: #1890ff;
+        }
+      }
+    }
+  }
+  
+  .user-info {
+    padding: 16px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    
+    .user-avatar {
+      flex-shrink: 0;
+    }
+    
+    .user-details {
+      flex: 1;
+      overflow: hidden;
+      
+      .user-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: #fff;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      
+      .user-role {
+        :deep(.el-tag) {
+          height: 20px;
+          line-height: 18px;
+          font-size: 12px;
         }
       }
     }
