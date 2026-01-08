@@ -1,55 +1,75 @@
 <template>
-  <el-dialog v-model="isShowDialog" :title="dialogTitle" draggable width="520px" :close-on-click-modal="false"
-    :show-close="false" @update:model-value="$emit('update:modelValue', $event)" @closed="handleClosed">
+  <el-dialog v-model="isShowDialog" :title="dialogTitle" draggable width="600px" :close-on-click-modal="false"
+    :show-close="false" @closed="handleClosed">
     <el-form ref="formRef" :model="formData" :rules="rules" label-width="100px" label-position="right" size="large">
-      <!-- 父分类显示 -->
-      <el-form-item v-if="parentCategory.categoryId" label="父分类" class="form-item-large">
-        <div class="parent-category">
-          <el-tag type="primary" size="large">
-            {{ parentCategory.categoryName }}
-          </el-tag>
-          <span class="parent-level">(第{{ parentCategory.level }}级)</span>
-        </div>
+
+      <el-row>
+        <el-col :span="12">
+
+
+
+
+          <!-- 用户编号 -->
+          <el-form-item label="用户编号" prop="userNo" class="form-item-large">
+            <el-input v-model="formData.userNo" placeholder="请输入用户编号" maxlength="50" show-word-limit size="large"
+              :disabled="mode == 'edit'" clearable />
+          </el-form-item>
+
+          <!-- 用户昵称 -->
+          <el-form-item label="用户昵称" prop="userName" class="form-item-large">
+            <el-input v-model="formData.userName" placeholder="请输入用户昵称" maxlength="50" show-word-limit size="large"
+              :disabled="mode == 'edit'" clearable />
+          </el-form-item>
+
+          <!-- 用户姓名 -->
+          <el-form-item label="用户姓名" prop="realName" class="form-item-large">
+            <el-input v-model="formData.realName" placeholder="请输入用户姓名" maxlength="50" show-word-limit size="large"
+              :disabled="mode == 'edit'" clearable />
+          </el-form-item>
+
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="头像" class="form-item-large">
+            <el-upload :class="{ 'hidePlus': hideUpload }" v-model:file-list="filelist" :auto-upload="false"
+              list-type="picture-card" :multiple="false" :limit="1" :on-change="onChangeFile"
+              :on-preview="handlePictureCardPreview" accept=".jpg,.png" :on-remove="handleRemove">
+              <el-icon>
+                <Plus />
+              </el-icon>
+            </el-upload>
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <!-- 手机号码 -->
+      <el-form-item label="手机号码" prop="phone" class="form-item-large">
+        <el-input v-model="formData.phone" placeholder="请输入手机号码" show-word-limit size="large" clearable />
       </el-form-item>
 
-      <!-- 分类名称 -->
-      <el-form-item label="分类名称" prop="CategoryName" class="form-item-large">
-        <el-input v-model="formData.categoryName" placeholder="请输入分类名称" maxlength="100" show-word-limit size="large"
-          :disabled="mode == 'edit'" clearable />
+      <!-- 邮箱地址 -->
+      <el-form-item label="邮箱地址" prop="email" class="form-item-large">
+        <el-input v-model="formData.email" placeholder="请输入邮箱地址" show-word-limit size="large" clearable />
       </el-form-item>
 
-      <!-- 分类图标 -->
-      <el-form-item label="分类图标" prop="Icon" class="form-item-large">
-        <div class="icon-upload">
-          <el-input v-model="formData.icon" placeholder="请输入图标URL或选择上传" size="large" clearable
-            style="flex: 1; margin-right: 12px;" />
-          <el-upload action="/api/upload/image" :show-file-list="false" :on-success="handleUploadSuccess"
-            :before-upload="beforeUpload">
-            <el-button type="primary" size="large">上传</el-button>
-          </el-upload>
-        </div>
-        <div v-if="formData.icon" class="icon-preview">
-          <span class="preview-text">图标预览：</span>i
-          <img :src="formData.icon" alt="图标" class="icon-image" />
-        </div>
-      </el-form-item>
 
-      <!-- 排序 -->
-      <el-form-item label="排序" prop="sortOrder" class="form-item-large">
-        <div class="sort-container">
-          <el-input-number v-model="formData.sortOrder" :min="0" :max="9999" controls-position="right" size="large"
-            style="width: 160px;" />
-          <span class="form-tip">数字越大，排序越靠前</span>
-        </div>
-      </el-form-item>
+      <el-row>
+        <el-col :span="12">
+          <!-- 状态 -->
+          <el-form-item label="状态" prop="status" class="form-item-large">
+            <el-radio-group v-model="formData.status">
+              <el-radio :label="1" size="large">正常</el-radio>
+              <el-radio :label="0" size="large">禁用</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </el-col>
 
-      <!-- 状态 -->
-      <el-form-item label="状态" prop="status" class="form-item-large">
-        <el-radio-group v-model="formData.status">
-          <el-radio :label="1" size="large">显示</el-radio>
-          <el-radio :label="0" size="large">隐藏</el-radio>
-        </el-radio-group>
-      </el-form-item>
+        <el-col :span="12">
+          <!-- 超管 -->
+          <el-form-item label="" prop="isSuperAdmin" class="form-item-large">
+            <el-checkbox v-model="isSuperAdmin" label="超级管理员"></el-checkbox>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
     </el-form>
 
     <template #footer>
@@ -66,7 +86,7 @@
 <script setup>
 import { ref, reactive, computed, watch, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
-import { createCategory, updateCategory } from '@/api/modules/category'
+import { createUser, updateUser } from '@/api/modules/user'
 
 const props = defineProps({
 
@@ -75,10 +95,7 @@ const props = defineProps({
     default: 'add'
   },
 
-  parentCategory: {
-    type: Object,
-    default: () => ({})
-  }
+
 })
 
 const emits = defineEmits(['success'])
@@ -89,38 +106,49 @@ const submitting = ref(false)
 
 // 表单数据
 const formData = reactive({
-  categoryId: null,
-  categoryName: '',
-  icon: '',
-  sortOrder: 0,
+  adminId: null,
+  userNo: '',
+  userName: '',
+  realName: '',
+  avatar: '',
+  isSuperAdmin: 0,
   status: 1,
-  parentId: 0,
-  level: 1
+  phone: '',
+  email: '',
 })
+
+const filelist = ref([])
 
 const isShowDialog = ref(false)
 
 // 验证规则
 const rules = {
-  categoryName: [
-    { required: true, message: '请输入分类名称', trigger: 'blur' },
-    { min: 2, max: 100, message: '长度在 2 到 100 个字符', trigger: 'blur' }
+  userName: [
+    { required: true, message: '请输入用户昵称', trigger: 'blur' },
+    { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
   ],
-  sortOrder: [
-    { required: true, message: '请输入排序值', trigger: 'blur' },
-    { type: 'number', min: 0, max: 9999, message: '排序值必须在 0-9999 之间', trigger: 'blur' }
+  realName: [
+    { required: true, message: '请输入用户姓名', trigger: 'blur' },
+    { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
   ],
   status: [
     { required: true, message: '请选择状态', trigger: 'change' }
   ]
 }
 
+const isSuperAdmin = computed({
+  get: () => formData.isSuperAdmin === 1,
+  set: (value) => { formData.isSuperAdmin = value ? 1 : 0; }
+});
+
+
+
 // 计算属性
 const dialogTitle = computed(() => {
   if (props.mode === 'add') {
-    return props.parentCategory.categoryId ? `添加子分类 (${props.parentCategory.categoryName})` : '添加分类'
+    return '添加用户'
   }
-  return `编辑分类 - ${formData.categoryName}`
+  return `编辑用户 - ${formData.userName}`
 })
 
 
@@ -146,24 +174,26 @@ const handleSubmit = async () => {
     submitting.value = true
 
     const submitData = {
-      categoryId: formData.categoryId,
-      categoryName: formData.categoryName,
+      adminId: formData.adminId,
+      userNo: formData.userNo,
+      userName: formData.userName,
+      realName: formData.realName,
+      avatar: formData.avatar,
+      isSuperAdmin: formData.isSuperAdmin,
       status: formData.status,
-      icon: formData.icon,
-      level: formData.level,
-      sortOrder: formData.sortOrder,
-      parentId: formData.parentId,
-      appType: 1,
+      phone: formData.phone,
+      email: formData.email,
+      appType: 1
     }
     var res
     if (props.mode === 'add') {
-      res = await createCategory(submitData)
+      res = await createUser(submitData)
       ElMessage.success('添加成功')
     } else {
-      res = await updateCategory(submitData)
+      res = await updateUser(submitData)
       ElMessage.success('更新成功')
     }
-    //传回category
+    //传回user
     closeDialog(res.result)
   } catch (error) {
     if (error.errors) {

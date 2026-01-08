@@ -36,24 +36,24 @@ export const baseMenuList = [
     icon: 'Shop',
     roles: ['super_admin', 'merchant_admin'],
     children: [
-      { 
-        title: '基础信息', 
+      {
+        title: '基础信息',
         path: '/shop/base',
         roles: ['super_admin', 'merchant_admin']
       },
-      { 
-        title: '主页管理', 
+      {
+        title: '主页管理',
         path: '/shop/home',
         roles: ['super_admin', 'merchant_admin']
       },
-      { 
-        title: '类型管理', 
+      {
+        title: '类型管理',
         path: '/shop/category',
         roles: ['super_admin', 'merchant_admin']
       },
-      { 
-        title: '成员管理', 
-        path: '/shop/member',
+      {
+        title: '用户管理',
+        path: '/shop/user',
         roles: ['super_admin', 'merchant_admin']
       }
     ]
@@ -63,13 +63,13 @@ export const baseMenuList = [
     icon: 'Goods',
     roles: ['super_admin', 'merchant_admin'],
     children: [
-      { 
-        title: '商品列表', 
+      {
+        title: '商品列表',
         path: '/product/list',
         roles: ['super_admin', 'merchant_admin']
       },
-      { 
-        title: '添加商品', 
+      {
+        title: '添加商品',
         path: '/product/add',
         roles: ['super_admin', 'merchant_admin'],
         hidden: false // 在菜单中显示
@@ -81,8 +81,8 @@ export const baseMenuList = [
     icon: 'Box',
     roles: ['super_admin', 'merchant_admin'],
     children: [
-      { 
-        title: '订单列表', 
+      {
+        title: '订单列表',
         path: '/order/list',
         roles: ['super_admin', 'merchant_admin']
       }
@@ -93,8 +93,8 @@ export const baseMenuList = [
     icon: 'Service',
     roles: ['super_admin', 'merchant_admin'],
     children: [
-      { 
-        title: '售后列表', 
+      {
+        title: '售后列表',
         path: '/after-sale/list',
         roles: ['super_admin', 'merchant_admin']
       }
@@ -105,8 +105,8 @@ export const baseMenuList = [
     icon: 'Money',
     roles: ['super_admin', 'merchant_admin'],
     children: [
-      { 
-        title: '结算列表', 
+      {
+        title: '结算列表',
         path: '/settlement/list',
         roles: ['super_admin', 'merchant_admin']
       }
@@ -123,13 +123,13 @@ export const adminMenuList = [
     icon: 'Setting',
     roles: ['super_admin'], // 只有超管
     children: [
-      { 
-        title: '用户管理', 
+      {
+        title: '用户管理',
         path: '/system/users',
         roles: ['super_admin']
       },
-      { 
-        title: '系统设置', 
+      {
+        title: '系统设置',
         path: '/system/settings',
         roles: ['super_admin']
       }
@@ -144,16 +144,16 @@ export const adminMenuList = [
  */
 export function getMenuByUser(isSuperAdmin) {
   const userRole = isSuperAdmin ? 'super_admin' : 'merchant_admin'
-  
+
   // 基础菜单
   let filteredMenu = filterMenuByRole(baseMenuList, userRole)
-  
+
   // 如果是超管，添加超管专属菜单
   if (isSuperAdmin) {
     const adminMenu = filterMenuByRole(adminMenuList, userRole)
     filteredMenu = [...filteredMenu, ...adminMenu]
   }
-  
+
   return filteredMenu
 }
 
@@ -168,17 +168,17 @@ function filterMenuByRole(menuList, userRole) {
     .filter(menu => {
       // 如果没有设置 roles，默认所有用户都能看到
       if (!menu.roles) return true
-      
+
       // 检查用户是否有权限
       const hasPermission = menu.roles.includes(userRole)
-      
+
       // 如果有子菜单，需要检查子菜单是否有权限
       if (menu.children && menu.children.length > 0) {
         menu.children = filterMenuByRole(menu.children, userRole)
         // 如果过滤后子菜单为空，则隐藏父菜单
         return menu.children.length > 0
       }
-      
+
       return hasPermission
     })
     .map(menu => ({
@@ -197,7 +197,7 @@ function filterMenuByRole(menuList, userRole) {
  */
 export function getMenuPaths(menuList) {
   const paths = []
-  
+
   function traverse(menus) {
     for (const menu of menus) {
       if (menu.path && !menu.hidden) {
@@ -208,7 +208,7 @@ export function getMenuPaths(menuList) {
       }
     }
   }
-  
+
   traverse(menuList)
   return paths
 }
@@ -221,16 +221,16 @@ export function getMenuPaths(menuList) {
  */
 export function checkRoutePermission(path, isSuperAdmin) {
   const userRole = isSuperAdmin ? 'super_admin' : 'merchant_admin'
-  
+
   // 检查基础菜单
   const hasBasePermission = checkPathInMenu(baseMenuList, path, userRole)
-  
+
   // 如果是超管，检查超管菜单
   if (isSuperAdmin) {
     const hasAdminPermission = checkPathInMenu(adminMenuList, path, userRole)
     return hasBasePermission || hasAdminPermission
   }
-  
+
   return hasBasePermission
 }
 
@@ -243,14 +243,14 @@ function checkPathInMenu(menuList, targetPath, userRole) {
     if (menu.path === targetPath) {
       return !menu.roles || menu.roles.includes(userRole)
     }
-    
+
     // 检查子菜单
     if (menu.children && menu.children.length > 0) {
       const found = checkPathInMenu(menu.children, targetPath, userRole)
       if (found) return true
     }
   }
-  
+
   return false
 }
 
@@ -265,13 +265,13 @@ export function getMenuByPath(path, menuList) {
     if (menu.path === path) {
       return menu
     }
-    
+
     if (menu.children && menu.children.length > 0) {
       const found = getMenuByPath(path, menu.children)
       if (found) return found
     }
   }
-  
+
   return null
 }
 
@@ -283,16 +283,16 @@ export function getMenuByPath(path, menuList) {
  */
 export function getBreadcrumb(currentPath, menuList) {
   const breadcrumb = []
-  
+
   function findPath(menus, path, parents = []) {
     for (const menu of menus) {
       const currentParents = [...parents, menu]
-      
+
       if (menu.path === path) {
         breadcrumb.push(...currentParents)
         return true
       }
-      
+
       if (menu.children && menu.children.length > 0) {
         if (findPath(menu.children, path, currentParents)) {
           return true
@@ -301,7 +301,7 @@ export function getBreadcrumb(currentPath, menuList) {
     }
     return false
   }
-  
+
   findPath(menuList, currentPath)
   return breadcrumb.map(item => ({
     title: item.title,

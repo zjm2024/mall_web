@@ -10,13 +10,8 @@
     <div class="quick-actions">
       <h3 class="section-title">快捷操作</h3>
       <div class="action-grid">
-        <el-card 
-          v-for="action in quickActions" 
-          :key="action.id" 
-          class="action-card"
-          shadow="hover"
-          @click="handleQuickAction(action)"
-        >
+        <el-card v-for="action in quickActions" :key="action.id" class="action-card" shadow="hover"
+          @click="handleQuickAction(action)">
           <div class="action-content">
             <el-icon :size="32" :color="action.color">
               <component :is="action.icon" />
@@ -37,7 +32,9 @@
         <el-card class="stat-card" shadow="never">
           <div class="stat-content">
             <div class="stat-icon" style="background: #e6f7ff;">
-              <el-icon color="#1890ff"><ShoppingCart /></el-icon>
+              <el-icon color="#1890ff">
+                <ShoppingCart />
+              </el-icon>
             </div>
             <div class="stat-info">
               <div class="stat-value">¥ 12,560</div>
@@ -49,7 +46,9 @@
         <el-card class="stat-card" shadow="never">
           <div class="stat-content">
             <div class="stat-icon" style="background: #f6ffed;">
-              <el-icon color="#52c41a"><Goods /></el-icon>
+              <el-icon color="#52c41a">
+                <Goods />
+              </el-icon>
             </div>
             <div class="stat-info">
               <div class="stat-value">156</div>
@@ -61,7 +60,9 @@
         <el-card class="stat-card" shadow="never">
           <div class="stat-content">
             <div class="stat-icon" style="background: #fff7e6;">
-              <el-icon color="#fa8c16"><User /></el-icon>
+              <el-icon color="#fa8c16">
+                <User />
+              </el-icon>
             </div>
             <div class="stat-info">
               <div class="stat-value">3</div>
@@ -73,7 +74,9 @@
         <el-card class="stat-card" shadow="never">
           <div class="stat-content">
             <div class="stat-icon" style="background: #fff0f6;">
-              <el-icon color="#eb2f96"><Bell /></el-icon>
+              <el-icon color="#eb2f96">
+                <Bell />
+              </el-icon>
             </div>
             <div class="stat-info">
               <div class="stat-value">8</div>
@@ -107,9 +110,9 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { 
-  User, ShoppingCart, Goods, Setting, 
-  Bell, Message, Document, Shop 
+import {
+  User, ShoppingCart, Goods, Setting,
+  Bell, Message, Document, Shop
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
@@ -118,7 +121,7 @@ const router = useRouter()
 const quickActions = ref([
   { id: 1, title: '添加商品', desc: '快速上架新商品', icon: 'Goods', color: '#1890ff', path: '/product' },
   { id: 2, title: '订单处理', desc: '查看待处理订单', icon: 'ShoppingCart', color: '#52c41a', path: '/order' },
-  { id: 3, title: '成员管理', desc: '管理店铺成员', icon: 'User', color: '#fa8c16', path: '/shop/member' },
+  { id: 3, title: '用户管理', desc: '管理店铺用户', icon: 'User', color: '#fa8c16', path: '/shop/user' },
   { id: 4, title: '营销活动', desc: '创建营销活动', icon: 'Message', color: '#eb2f96', path: '/marketing' },
   { id: 5, title: '店铺设置', desc: '配置店铺信息', icon: 'Setting', color: '#722ed1', path: '/shop/base' },
   { id: 6, title: '数据报表', desc: '查看经营数据', icon: 'Document', color: '#13c2c2', path: '/dashboard' }
@@ -142,69 +145,69 @@ const handleQuickAction = (action) => {
 <style lang="scss" scoped>
 .dashboard-container {
   padding: 20px;
-  
+
   .welcome-section {
     margin-bottom: 30px;
-    
+
     .welcome-title {
       font-size: 28px;
       font-weight: 500;
       color: #303133;
       margin-bottom: 8px;
     }
-    
+
     .welcome-subtitle {
       font-size: 16px;
       color: #909399;
     }
   }
-  
+
   .section-title {
     font-size: 18px;
     font-weight: 500;
     color: #303133;
     margin: 0 0 20px 0;
   }
-  
+
   .quick-actions {
     margin-bottom: 30px;
-    
+
     .action-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 20px;
-      
+
       @media (max-width: 1200px) {
         grid-template-columns: repeat(2, 1fr);
       }
-      
+
       @media (max-width: 768px) {
         grid-template-columns: 1fr;
       }
-      
+
       .action-card {
         cursor: pointer;
         transition: all 0.3s;
-        
+
         &:hover {
           transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
-        
+
         .action-content {
           display: flex;
           align-items: center;
           gap: 16px;
-          
+
           .action-info {
             flex: 1;
-            
+
             h4 {
               margin: 0 0 8px 0;
               font-size: 16px;
               color: #303133;
             }
-            
+
             p {
               margin: 0;
               font-size: 14px;
@@ -215,31 +218,31 @@ const handleQuickAction = (action) => {
       }
     }
   }
-  
+
   .statistics-section {
     margin-bottom: 30px;
-    
+
     .statistics-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 20px;
-      
+
       @media (max-width: 1200px) {
         grid-template-columns: repeat(2, 1fr);
       }
-      
+
       @media (max-width: 768px) {
         grid-template-columns: 1fr;
       }
-      
+
       .stat-card {
         border: 1px solid #e4e7ed;
-        
+
         .stat-content {
           display: flex;
           align-items: center;
           gap: 16px;
-          
+
           .stat-icon {
             width: 48px;
             height: 48px;
@@ -248,7 +251,7 @@ const handleQuickAction = (action) => {
             align-items: center;
             justify-content: center;
           }
-          
+
           .stat-info {
             .stat-value {
               font-size: 24px;
@@ -256,7 +259,7 @@ const handleQuickAction = (action) => {
               color: #303133;
               margin-bottom: 4px;
             }
-            
+
             .stat-label {
               font-size: 14px;
               color: #909399;
@@ -266,7 +269,7 @@ const handleQuickAction = (action) => {
       }
     }
   }
-  
+
   .recent-operations {
     background: #fff;
     border-radius: 8px;

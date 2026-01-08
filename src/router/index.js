@@ -5,7 +5,7 @@ import { ElMessage } from 'element-plus'
 const routes = [
     {
         path: '/',
-        redirect: '/dashboard',
+        // redirect: '/dashboard',
         component: () => import('@/views/layout/MainLayout.vue'),
         children: [
             // 仪表盘
@@ -52,10 +52,10 @@ const routes = [
 
                     },
                     {
-                        path: 'member',
-                        name: 'MemberManagement',
-                        component: () => import('@/views/shop/MemberManagement.vue'),
-                        meta: { title: '成员管理' }
+                        path: 'user',
+                        name: 'userManagement',
+                        component: () => import('@/views/shop/user/UserList.vue'),
+                        meta: { title: '用户管理' }
                     }
                 ]
             },
@@ -174,46 +174,46 @@ const router = createRouter({
 
 // 需要超管权限的页面
 const SUPER_ADMIN_ROUTES = [
-  // 如果需要某些页面只有超管能访问，在这里配置
-  // '/system/settings',
-  // '/system/users'
+    // 如果需要某些页面只有超管能访问，在这里配置
+    // '/system/settings',
+    // '/system/users'
 ]
 
 // 路由守卫
 router.beforeEach(async (to, from, next) => {
-  // 动态导入 userStore，避免循环依赖
-  const { useUserStore } = await import('@/stores/user')
-  const userStore = useUserStore()
-  
-  const isAuthenticated = userStore.isAuthenticated
-  const isSuperAdmin = userStore.isSuperAdmin
-  
-  // 登录页特殊处理
-  if (to.meta.guestOnly) {
-    if (isAuthenticated) {
-      next('/dashboard')
-    } else {
-      next()
+    // 动态导入 userStore，避免循环依赖
+    const { useUserStore } = await import('@/stores/user')
+    const userStore = useUserStore()
+
+    const isAuthenticated = userStore.isAuthenticated
+    const isSuperAdmin = userStore.isSuperAdmin
+
+    // 登录页特殊处理
+    if (to.meta.guestOnly) {
+        if (isAuthenticated) {
+            next('/dashboard')
+        } else {
+            next()
+        }
+        return
     }
-    return
-  }
-  
-  // 需要登录的页面
-  if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (!isAuthenticated) {
-      next('/login')
-      return
+
+    // 需要登录的页面
+    if (to.matched.some(record => record.meta.requiresAuth)) {
+        if (!isAuthenticated) {
+            next('/login')
+            return
+        }
+
+        // 检查是否需要超管权限
+        if (SUPER_ADMIN_ROUTES.includes(to.path) && !isSuperAdmin) {
+            ElMessage.error('需要超级管理员权限才能访问')
+            next('/dashboard')
+            return
+        }
     }
-    
-    // 检查是否需要超管权限
-    if (SUPER_ADMIN_ROUTES.includes(to.path) && !isSuperAdmin) {
-      ElMessage.error('需要超级管理员权限才能访问')
-      next('/dashboard')
-      return
-    }
-  }
-  
-  next()
+
+    next()
 })
 
 export default router

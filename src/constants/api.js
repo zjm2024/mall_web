@@ -42,10 +42,18 @@ export const API_PATHS = {
     LOGIN_RECORDS: '/shop/login-records',
     OPERATION_LOGS: '/shop/operation-logs'
   },
+  // 用户管理
+  USER: {
+    LIST: `/shopadminApi/User/getAdminaccountsPageList`,
+    UPDATE: '/shopadminApi/User/updateUsers',
+    DETAIL: (id) => `/shopadminApi/User/deleteUsers?id=${id}`
+  },
+
+
 
   // 商品管理
   PRODUCT: {
-    LIST: '/products',
+    LIST: `/shopadminApi/Product/getProductsPageList`,
     DETAIL: (id) => `/products/${id}`,
     CATEGORIES: '/products/categories',
     BRANDS: '/products/brands'
@@ -63,7 +71,7 @@ export const API_PATHS = {
   CATEGORY: {
     LIST: `/shopadminApi/Category/getCategoriesList`,
     UPDATE: '/shopadminApi/Category/updateCategories',
-    DETAIL: (id) => `/shopadminApi/Category/${id}`
+    DETAIL: (id) => `/shopadminApi/Category/deleteCategories?id=${id}`
 
   },
 

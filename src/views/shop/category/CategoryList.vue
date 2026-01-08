@@ -43,9 +43,12 @@
         </div>
       </div>
 
+
+
+
       <!-- 分类表格区域 -->
       <div class="table-section">
-        <el-table :data="categoryList" v-loading="loading" row-key="categoryId"
+        <el-table :data="categoryList" v-loading="loading" highlight-current-row row-key="categoryId"
           :tree-props="{ children: 'children', hasChildren: 'hasChildren' }" :header-cell-style="{
             background: '#f5f7fa',
             color: '#303133',
@@ -56,17 +59,17 @@
           <el-table-column prop="categoryName" label="分类名称" min-width="300">
             <template #default="{ row }">
               <div class="category-name">
-                <el-icon v-if="row.Level === 1" color="#409eff" size="18">
+                <el-icon v-if="row.level === 1" color="#409eff" size="18">
                   <Folder />
                 </el-icon>
-                <el-icon v-if="row.Level === 2" color="#67c23a" size="18">
+                <el-icon v-if="row.level === 2" color="#67c23a" size="18">
                   <FolderOpened />
                 </el-icon>
-                <el-icon v-if="row.Level >= 3" color="#e6a23c" size="18">
+                <el-icon v-if="row.level >= 3" color="#e6a23c" size="18">
                   <Collection />
                 </el-icon>
                 <span style="margin-left: 12px; font-size: 14px;">{{ row.categoryName }}</span>
-                <el-tag v-if="row.ParentId === 0" size="small" type="info" style="margin-left: 12px;">
+                <el-tag v-if="row.parentId === 0" size="small" type="info" style="margin-left: 12px;">
                   顶级分类
                 </el-tag>
               </div>
@@ -76,18 +79,18 @@
           <!-- 分类层级 -->
           <el-table-column prop="level" label="层级" width="120" align="center">
             <template #default="{ row }">
-              <el-tag :type="row.Level === 1 ? 'primary' : row.Level === 2 ? 'success' : 'warning'" size="medium"
-                effect="light">
+              <el-tag :type="row.Level === 1 ? 'primary' : row.Level === 2 ? 'success' : 'warning'" effect="light">
                 第{{ row.level }}级
               </el-tag>
             </template>
           </el-table-column>
 
+
           <!-- 排序 -->
-          <el-table-column prop="sortOrder" label="排序" width="150" align="center">
+          <el-table-column label="排序" width="150" align="center">
             <template #default="{ row }">
-              <el-input-number v-model="row.sortOrder" :min="0" :max="9999" size="large" controls-position="right"
-                style="width: 120px" @change="handleSortChange(row)" />
+              <el-input-number v-model="row.sortOrder" :min="0" :max="9999" style="width: 120px"
+                @change="handleSortChange(row)" />
             </template>
           </el-table-column>
 
@@ -110,7 +113,7 @@
           <el-table-column label="操作" width="250" align="center">
             <template #default="{ row }">
               <div class="action-buttons">
-                <el-button v-if="row.Level < 3" type="primary" link size="large" @click="handleAddSubCategory(row)">
+                <el-button v-if="row.level < 3" type="primary" link size="large" @click="handleAddSubCategory(row)">
                   <el-icon>
                     <Plus />
                   </el-icon>添加子类
@@ -145,17 +148,13 @@
     </div>
 
     <!-- 添加/编辑分类对话框 -->
-    <category-dialog v-model="dialogVisible" @update:model-value="dialogVisible = $event" :mode="dialogMode"
-      :form-data="currentCategory" :parent-category="parentCategory" @success="handleDialogSuccess" />
+    <category-dialog ref="categorydialogRef" :mode="dialogMode" :parent-category="parentCategory"
+      @success="handleDialogSuccess" />
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
-import {
-  Plus, Refresh, Search, Edit, Delete,
-  Folder, FolderOpened, Collection
-} from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import CategoryDialog from './CategoryDialog.vue'
 import { formatDate } from '@/utils/common'
@@ -169,9 +168,11 @@ import {
 // 数据
 const loading = ref(false)
 const categoryList = ref([])
-const dialogVisible = ref(false)
+const categorydialogRef = ref(null)
+
+const ddd = ref(0)
+
 const dialogMode = ref('add')
-const currentCategory = ref({})
 const parentCategory = ref({})
 
 // 筛选表单
@@ -181,9 +182,6 @@ const filterForm = reactive({
 })
 
 
-onMounted(async () => {
-  fetchCategoryList();
-})
 /*
 // 计算属性
 const filteredCategoryList = computed(() => {
@@ -208,9 +206,11 @@ const fetchCategoryList = async () => {
   try {
     loading.value = true
 
-    let params = { appType: 1, status: filterForm.status }
+    let params = { appType: 1, categoryName: filterForm.categoryName, status: filterForm.status }
     const res = await getCategoryList(params)
-    categoryList.value = buildCategoryTree(res.result || [])
+    // categoryList.value = buildCategoryTree(res.result || [])
+    //服务端返回的数据为Tree格式
+    categoryList.value = res.result
   } catch (error) {
     console.error('获取分类列表失败:', error)
     ElMessage.error('获取分类列表失败')
@@ -218,7 +218,7 @@ const fetchCategoryList = async () => {
     loading.value = false
   }
 }
-
+/*
 // 构建分类树
 const buildCategoryTree = (list) => {
   const categoryMap = {}
@@ -241,6 +241,7 @@ const buildCategoryTree = (list) => {
 
   return tree
 }
+  */
 
 // 搜索
 const handleSearch = () => {
@@ -258,44 +259,52 @@ const handleReset = () => {
 // 添加分类
 const handleAddCategory = () => {
   dialogMode.value = 'add'
-  currentCategory.value = {
-    CategoryName: '',
-    ParentId: 0,
-    Level: 1,
-    SortOrder: 0,
-    Status: 1,
-    Icon: ''
+  let category = {
+    categoryId: 0,
+    categoryName: '',
+    parentId: 0,
+    level: 1,
+    sortOrder: 0,
+    status: 1,
+    icon: '',
+    appType: 1
   }
   parentCategory.value = {}
-  dialogVisible.value = true
+  categorydialogRef.value.openDialog(category)
+
 }
 
 // 添加子分类
 const handleAddSubCategory = (parent) => {
-  if (parent.Level >= 3) {
+  if (parent.level >= 3) {
     ElMessage.warning('最多只能添加三级分类')
     return
   }
 
   dialogMode.value = 'add'
-  currentCategory.value = {
-    CategoryName: '',
-    ParentId: parent.CategoryId,
-    Level: parent.Level + 1,
-    SortOrder: 0,
-    Status: 1,
-    Icon: ''
+  let category = {
+    categoryId: 0,
+    categoryName: '',
+    parentId: parent.categoryId,
+    level: parent.level + 1,
+    sortOrder: 0,
+    status: 1,
+    icon: '',
+    appType: 1
   }
   parentCategory.value = parent
-  dialogVisible.value = true
+  categorydialogRef.value.openDialog(category)
 }
 
 // 编辑分类
 const handleEditCategory = (category) => {
   dialogMode.value = 'edit'
-  currentCategory.value = { ...category }
-  parentCategory.value = {}
-  dialogVisible.value = true
+  if (category.parentId === 0)
+    parentCategory.value = {}
+  else
+    parentCategory.value = categoryList.value.find(it => it.categoryId == category.parentId)
+
+  categorydialogRef.value.openDialog(category)
 }
 
 // 删除分类
@@ -307,7 +316,7 @@ const handleDeleteCategory = async (category) => {
     }
 
     await ElMessageBox.confirm(
-      `确定要删除分类"${category.CategoryName}"吗？`,
+      `确定要删除分类"${category.categoryName}"吗？`,
       '删除确认',
       {
         confirmButtonText: '确定',
@@ -316,9 +325,23 @@ const handleDeleteCategory = async (category) => {
       }
     )
 
-    await deleteCategory(category.CategoryId)
+    await deleteCategory(category.categoryId)
+
+    //查询父节点下的子节点
+    if (parentCategory.value.categoryId) {
+      let index = parentCategory.value.children.findIndex(it => it.categoryId === category.categoryId)
+      parentCategory.value.children.splice(index, 1)
+    }
+    else {
+      let index = categoryList.value.findIndex(it => it.categoryId == category.categoryId)
+      categoryList.value.splice(index, 1)
+    }
+
+
+
     ElMessage.success('删除成功')
-    fetchCategoryList()
+
+
   } catch (error) {
     if (error !== 'cancel') {
       console.error('删除分类失败:', error)
@@ -330,34 +353,57 @@ const handleDeleteCategory = async (category) => {
 // 修改排序
 const handleSortChange = async (category) => {
   try {
-    await updateCategory(category.CategoryId, {
-      SortOrder: category.SortOrder
-    })
+    let data = { categoryId: category.categoryId, sortOrder: category.sortOrder }
+    await updateCategory(data)
     ElMessage.success('排序更新成功')
   } catch (error) {
-    console.error('更新排序失败:', error)
     ElMessage.error('更新失败')
   }
 }
+
+
 
 // 修改状态
 const handleStatusChange = async (category) => {
   try {
-    await updateCategory(category.CategoryId, {
-      Status: category.Status
-    })
+    let data = { categoryId: category.categoryId, status: category.status }
+    await updateCategory(data)
     ElMessage.success('状态更新成功')
   } catch (error) {
-    console.error('更新状态失败:', error)
     ElMessage.error('更新失败')
-    category.Status = category.Status === 1 ? 0 : 1
+    category.status = category.status === 1 ? 0 : 1
   }
 }
 
 // 对话框成功回调
-const handleDialogSuccess = () => {
-  dialogVisible.value = false
-  fetchCategoryList()
+const handleDialogSuccess = (res) => {
+  //查询父节点下的子节点
+  if (parentCategory.value.categoryId) {
+    let row = parentCategory.value.children.find(it => it.categoryId === res.categoryId)
+    if (row) {
+      row.categoryName = res.categoryName;
+      row.icon = res.icon;
+      row.sortOrder = res.sortOrder;
+      row.level = res.level;
+      row.status = res.status;
+    }
+    else {
+      parentCategory.value.children.splice(0, 0, res);
+    }
+  }
+  else {
+    let row = categoryList.value.find(it => it.categoryId === res.categoryId)
+    if (row) {
+      row.categoryName = res.categoryName;
+      row.icon = res.icon;
+      row.sortOrder = res.sortOrder;
+      row.level = res.level;
+      row.status = res.status;
+    }
+    else {
+      categoryList.value.splice(0, 0, res);
+    }
+  }
 }
 
 // 刷新列表

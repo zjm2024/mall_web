@@ -17,17 +17,17 @@ const categoryApi = {
 
   // 创建分类
   createCategory(data) {
-    return request.post('/api/categories', data)
+    return request.post(API_PATHS.CATEGORY.UPDATE, { data: data })
   },
 
   // 更新分类
-  updateCategory(id, data) {
-    return request.put(`/api/categories/${id}`, data)
+  updateCategory(data) {
+    return request.post(API_PATHS.CATEGORY.UPDATE, { data: data });
   },
 
   // 删除分类
   deleteCategory(id) {
-    return request.delete(`/api/categories/${id}`)
+    return request.get(API_PATHS.CATEGORY.DETAIL(id));
   },
 
   // 批量更新排序

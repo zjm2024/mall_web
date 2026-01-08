@@ -6,63 +6,46 @@
       <div class="header-section">
         <div class="left-operations">
           <el-button type="primary" @click="handleAddProduct" size="default">
-            <el-icon><Plus /></el-icon>添加商品
+            <el-icon>
+              <Plus />
+            </el-icon>添加商品
           </el-button>
           <el-button @click="refreshList" size="default">
-            <el-icon><Refresh /></el-icon>刷新
+            <el-icon>
+              <Refresh />
+            </el-icon>刷新
           </el-button>
-          <el-button 
-            type="danger" 
-            @click="handleBatchDelete" 
-            :disabled="selectedRows.length === 0"
-            size="default"
-          >
-            <el-icon><Delete /></el-icon>批量删除({{ selectedRows.length }})
+          <el-button type="danger" @click="handleBatchDelete" :disabled="selectedRows.length === 0" size="default">
+            <el-icon>
+              <Delete />
+            </el-icon>批量删除({{ selectedRows.length }})
           </el-button>
         </div>
-        
+
         <div class="right-search">
-          <el-input
-            v-model="filterForm.productName"
-            placeholder="商品名称"
-            clearable
-            size="default"
-            style="width: 180px; margin-right: 10px;"
-            @keyup.enter="handleSearch"
-          >
+          <el-input v-model="filterForm.productName" placeholder="商品名称" clearable size="default"
+            style="width: 180px; margin-right: 10px;" @keyup.enter="handleSearch">
             <template #prefix>
-              <el-icon><Search /></el-icon>
+              <el-icon>
+                <Search />
+              </el-icon>
             </template>
           </el-input>
-          
-          <el-select 
-            v-model="filterForm.categoryId" 
-            placeholder="商品分类" 
-            clearable
-            size="default"
-            style="width: 150px; margin-right: 10px;"
-          >
+
+          <el-select v-model="filterForm.categoryId" placeholder="商品分类" clearable size="default"
+            style="width: 150px; margin-right: 10px;">
             <el-option label="全部分类" value="" />
-            <el-option 
-              v-for="category in categoryOptions" 
-              :key="category.CategoryId" 
-              :label="category.CategoryName" 
-              :value="category.CategoryId" 
-            />
+            <el-option v-for="category in categoryOptions" :key="category.CategoryId" :label="category.CategoryName"
+              :value="category.CategoryId" />
           </el-select>
-          
-          <el-select 
-            v-model="filterForm.productStatus" 
-            placeholder="商品状态" 
-            clearable
-            size="default"
-            style="width: 130px; margin-right: 10px;"
-          >
+
+          <el-select v-model="filterForm.productStatus" placeholder="商品状态" clearable size="default"
+            style="width: 130px; margin-right: 10px;">
             <el-option label="全部状态" value="" />
             <el-option label="已上架" :value="1" />
             <el-option label="已下架" :value="0" />
           </el-select>
-          
+
           <el-button type="primary" @click="handleSearch" size="default">
             查询
           </el-button>
@@ -71,116 +54,105 @@
           </el-button>
         </div>
       </div>
-      
+
       <!-- 商品表格区域 -->
       <div class="table-section">
-        <el-table
-          :data="productList"
-          v-loading="loading"
-          style="width: 100%;"
-          @selection-change="handleSelectionChange"
-          :header-cell-style="{ 
-            background: '#f5f7fa', 
-            color: '#303133', 
+        <el-table :data="productList" v-loading="loading" style="width: 100%;" @selection-change="handleSelectionChange"
+          :header-cell-style="{
+            background: '#f5f7fa',
+            color: '#303133',
             fontWeight: 'bold',
             height: '48px'
-          }"
-          stripe
-        >
+          }" stripe>
           <el-table-column type="selection" width="48" align="center" fixed />
-          
+
           <!-- 商品图片 -->
           <el-table-column label="商品图片" width="100" align="center">
             <template #default="{ row }">
               <div class="product-image-container">
-                <el-image
-                  :src="row.ProductImage || '/default-product.png'"
-                  :preview-src-list="[row.ProductImage]"
-                  fit="cover"
-                  class="product-image"
-                  :hide-on-click-modal="true"
-                >
+                <el-image :src="row.productImage || '/default-product.png'" :preview-src-list="[row.productImage]"
+                  fit="cover" class="product-image" :hide-on-click-modal="true">
                   <template #error>
                     <div class="image-error">
-                      <el-icon><Picture /></el-icon>
+                      <el-icon>
+                        <Picture />
+                      </el-icon>
                       <span class="error-text">加载失败</span>
                     </div>
                   </template>
                   <template #placeholder>
                     <div class="image-loading">
-                      <el-icon><Loading /></el-icon>
+                      <el-icon>
+                        <Loading />
+                      </el-icon>
                     </div>
                   </template>
                 </el-image>
               </div>
             </template>
           </el-table-column>
-          
+
           <!-- 商品名称 -->
-          <el-table-column prop="ProductName" label="商品名称" min-width="200">
+          <el-table-column prop="productName" label="商品名称" min-width="200">
             <template #default="{ row }">
               <div class="product-info">
-                <div class="product-name">{{ row.ProductName }}</div>
+                <div class="product-name">{{ row.productName }}</div>
                 <div class="product-category">
                   <el-tag size="small" type="info" effect="light">
-                    {{ getCategoryName(row.CategoryId) }}
+                    {{ getCategoryName(row.categoryId) }}
                   </el-tag>
-                  <el-tag v-if="row.CommissionEnabled" size="small" type="success" effect="light" style="margin-left: 4px;">
+                  <el-tag v-if="row.CommissionEnabled" size="small" type="success" effect="light"
+                    style="margin-left: 4px;">
                     返佣{{ row.FirstLevelRate }}%
                   </el-tag>
                 </div>
               </div>
             </template>
           </el-table-column>
-          
+
           <!-- 价格 -->
           <el-table-column label="价格" width="150" align="center">
             <template #default="{ row }">
               <div class="product-price">
                 <div class="current-price">
-                  ¥{{ row.CurrentPrice }}
+                  ¥{{ row.currentPrice }}
                 </div>
-                <div class="original-price" v-if="row.OriginalPrice > row.CurrentPrice">
-                  <del>¥{{ row.OriginalPrice }}</del>
+                <div class="original-price" v-if="row.originalPrice > row.currentPrice">
+                  <del>¥{{ row.originalPrice }}</del>
                 </div>
               </div>
             </template>
           </el-table-column>
-          
+
           <!-- 库存和销量 -->
           <el-table-column label="库存/销量" width="130" align="center">
             <template #default="{ row }">
               <div class="stock-sales">
                 <div class="stock">
-                  <el-icon size="14"><Box /></el-icon>
+                  <el-icon size="14">
+                    <Box />
+                  </el-icon>
                   <span>{{ row.TotalStock === 0 ? '不限' : row.TotalStock }}</span>
                 </div>
                 <div class="sales">
-                  <el-icon size="14"><ShoppingCart /></el-icon>
+                  <el-icon size="14">
+                    <ShoppingCart />
+                  </el-icon>
                   <span>{{ row.Sales || 0 }}</span>
                 </div>
               </div>
             </template>
           </el-table-column>
-          
+
           <!-- 状态 -->
           <el-table-column prop="ProductStatus" label="状态" width="100" align="center">
             <template #default="{ row }">
-              <el-switch
-                v-model="row.ProductStatus"
-                :active-value="1"
-                :inactive-value="0"
-                inline-prompt
-                active-text="上架"
-                inactive-text="下架"
-                active-color="#13ce66"
-                inactive-color="#dcdfe6"
-                @change="handleStatusChange(row)"
-                size="small"
-              />
+              <el-switch v-model="row.ProductStatus" :active-value="1" :inactive-value="0" inline-prompt
+                active-text="上架" inactive-text="下架" active-color="#13ce66" inactive-color="#dcdfe6"
+                @change="handleStatusChange(row)" size="small" />
             </template>
           </el-table-column>
-          
+
           <!-- 创建时间 -->
           <el-table-column prop="CreateTime" label="创建时间" width="160">
             <template #default="{ row }">
@@ -189,85 +161,42 @@
               </div>
             </template>
           </el-table-column>
-          
+
           <!-- 操作列 -->
           <el-table-column label="操作" width="220" fixed="right" align="center">
             <template #default="{ row }">
               <div class="action-buttons">
-                <el-button
-                  type="primary"
-                  size="small"
-                  @click="handleEditProduct(row)"
-                  :icon="Edit"
-                  circle
-                  class="action-btn"
-                  title="编辑"
-                />
-                
-                <el-button
-                  type="success"
-                  size="small"
-                  @click="handleViewDetail(row)"
-                  :icon="View"
-                  circle
-                  class="action-btn"
-                  title="详情"
-                />
-                
-                <el-button
-                  type="warning"
-                  size="small"
-                  @click="handleManageSpec(row)"
-                  :icon="SetUp"
-                  circle
-                  class="action-btn"
-                  title="规格"
-                />
-                
-                <el-button
-                  type="danger"
-                  size="small"
-                  @click="handleDeleteProduct(row)"
-                  :icon="Delete"
-                  circle
-                  class="action-btn"
-                  title="删除"
-                />
+                <el-button type="primary" size="small" @click="handleEditProduct(row)" :icon="Edit" circle
+                  class="action-btn" title="编辑" />
+
+                <el-button type="success" size="small" @click="handleViewDetail(row)" :icon="View" circle
+                  class="action-btn" title="详情" />
+
+                <el-button type="warning" size="small" @click="handleManageSpec(row)" :icon="SetUp" circle
+                  class="action-btn" title="规格" />
+
+                <el-button type="danger" size="small" @click="handleDeleteProduct(row)" :icon="Delete" circle
+                  class="action-btn" title="删除" />
               </div>
             </template>
           </el-table-column>
         </el-table>
-        
+
         <!-- 分页 -->
         <div class="pagination-section" v-if="pagination.total > 0">
-          <el-pagination
-            v-model:current-page="pagination.currentPage"
-            v-model:page-size="pagination.pageSize"
-            :page-sizes="[10, 20, 50, 100]"
-            :total="pagination.total"
-            layout="total, sizes, prev, pager, next, jumper"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-            background
-          />
+          <el-pagination v-model:current-page="pagination.currentPage" v-model:page-size="pagination.pageSize"
+            :page-sizes="[10, 20, 50, 100]" :total="pagination.total" layout="total, sizes, prev, pager, next, jumper"
+            @size-change="handleSizeChange" @current-change="handleCurrentChange" background />
         </div>
-        
+
         <!-- 空状态 -->
-        <el-empty
-          v-if="!loading && productList.length === 0"
-          description="暂无商品数据"
-          :image-size="120"
-        />
+        <el-empty v-if="!loading && productList.length === 0" description="暂无商品数据" :image-size="120" />
       </div>
     </div>
 
     <!-- 商品详情对话框 -->
-    <el-dialog
-      v-model="detailDialogVisible"
-      :title="`商品详情 - ${selectedProduct?.ProductName || ''}`"
-      width="800px"
-      :close-on-click-modal="false"
-    >
+    <el-dialog v-model="detailDialogVisible" :title="`商品详情 - ${selectedProduct?.ProductName || ''}`" width="800px"
+      :close-on-click-modal="false">
       <div v-if="selectedProduct" class="product-detail-content">
         <!-- 基本信息 -->
         <div class="detail-section">
@@ -304,12 +233,8 @@
         <div class="detail-section" v-if="selectedProduct.ProductImage">
           <h3 class="section-title">商品主图</h3>
           <div class="image-section">
-            <el-image
-              :src="selectedProduct.ProductImage"
-              :preview-src-list="[selectedProduct.ProductImage]"
-              fit="contain"
-              style="width: 200px; height: 200px; border-radius: 8px;"
-            />
+            <el-image :src="selectedProduct.ProductImage" :preview-src-list="[selectedProduct.ProductImage]"
+              fit="contain" style="width: 200px; height: 200px; border-radius: 8px;" />
           </div>
         </div>
 
@@ -331,15 +256,15 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { 
-  Plus, Refresh, Search, Edit, Delete, 
-  View, SetUp, Picture, Loading, Box, ShoppingCart  
+import {
+  Plus, Refresh, Search, Edit, Delete,
+  View, SetUp, Picture, Loading, Box, ShoppingCart
 } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { formatDate } from '@/utils/common'
 
-import { 
-  getProductList, 
+import {
+  getProductPageList,
   getCategoryOptions,
   deleteProduct
 } from '@/api/modules/product'
@@ -394,6 +319,7 @@ const handleAddProduct = () => {
 
 // 编辑商品 - 跳转到编辑页面
 const handleEditProduct = (row) => {
+
   router.push(`/product/edit?id=${row.ProductId}`)
 }
 
@@ -432,7 +358,7 @@ const handleDeleteProduct = async (row) => {
         center: true
       }
     )
-    
+
     await deleteProduct(row.ProductId)
     ElMessage.success('删除成功')
     fetchProductList()
@@ -447,7 +373,7 @@ const handleDeleteProduct = async (row) => {
 // 批量删除
 const handleBatchDelete = async () => {
   if (selectedRows.value.length === 0) return
-  
+
   try {
     await ElMessageBox.confirm(
       `确定要删除选中的 ${selectedRows.value.length} 个商品吗？此操作不可恢复！`,
@@ -460,7 +386,7 @@ const handleBatchDelete = async () => {
         center: true
       }
     )
-    
+
     const productIds = selectedRows.value.map(item => item.ProductId)
     // 这里调用批量删除接口
     await Promise.all(productIds.map(id => deleteProduct(id)))
@@ -514,16 +440,17 @@ const refreshList = () => {
 const fetchProductList = async () => {
   try {
     loading.value = true
-    
+
     const params = {
-      page: pagination.currentPage,
-      limit: pagination.pageSize,
+      pageIndex: pagination.currentPage,
+      pageSize: pagination.pageSize,
+      appType: 1,
       ...filterForm
     }
-    
-    const res = await getProductList(params)
-    productList.value = res.data?.list || res.data || []
-    pagination.total = res.data?.total || productList.value.length || 0
+
+    const res = await getProductPageList(params)
+    productList.value = res.result || []
+    pagination.total = res.count
   } catch (error) {
     console.error('获取商品列表失败:', error)
     ElMessage.error('获取商品列表失败')
@@ -552,14 +479,14 @@ onMounted(() => {
 <style lang="scss" scoped>
 .product-management {
   padding: 16px;
-  
+
   .product-container {
     background: #ffffff;
     border-radius: 8px;
     box-shadow: 0 1px 8px 0 rgba(0, 0, 0, 0.06);
     overflow: hidden;
   }
-  
+
   .header-section {
     display: flex;
     justify-content: space-between;
@@ -567,13 +494,13 @@ onMounted(() => {
     padding: 16px 20px;
     border-bottom: 1px solid #e4e7ed;
     background: #f8fafc;
-    
+
     .left-operations {
       display: flex;
       gap: 12px;
       align-items: center;
     }
-    
+
     .right-search {
       display: flex;
       align-items: center;
@@ -581,28 +508,28 @@ onMounted(() => {
       gap: 10px;
     }
   }
-  
+
   .table-section {
     padding: 0;
-    
+
     .product-image-container {
       display: flex;
       justify-content: center;
       align-items: center;
-      
+
       .product-image {
         width: 60px;
         height: 60px;
         border-radius: 6px;
         border: 1px solid #f0f2f5;
         transition: all 0.2s ease;
-        
+
         &:hover {
           border-color: #409eff;
           transform: scale(1.05);
         }
       }
-      
+
       .image-error {
         width: 100%;
         height: 100%;
@@ -613,17 +540,17 @@ onMounted(() => {
         background: #f8f9fa;
         color: #909399;
         border-radius: 4px;
-        
+
         .el-icon {
           font-size: 16px;
           margin-bottom: 4px;
         }
-        
+
         .error-text {
           font-size: 11px;
         }
       }
-      
+
       .image-loading {
         width: 100%;
         height: 100%;
@@ -634,7 +561,7 @@ onMounted(() => {
         color: #c0c4cc;
       }
     }
-    
+
     .product-info {
       .product-name {
         font-size: 14px;
@@ -643,14 +570,14 @@ onMounted(() => {
         margin-bottom: 6px;
         line-height: 1.4;
       }
-      
+
       .product-category {
         display: flex;
         gap: 4px;
         flex-wrap: wrap;
       }
     }
-    
+
     .product-price {
       .current-price {
         font-size: 16px;
@@ -658,55 +585,57 @@ onMounted(() => {
         color: #f56c6c;
         margin-bottom: 4px;
       }
-      
+
       .original-price {
         font-size: 12px;
         color: #909399;
       }
     }
-    
+
     .stock-sales {
-      .stock, .sales {
+
+      .stock,
+      .sales {
         display: flex;
         align-items: center;
         gap: 4px;
         margin-bottom: 4px;
         font-size: 12px;
         color: #606266;
-        
+
         .el-icon {
           color: #409eff;
           font-size: 13px;
         }
-        
+
         &:last-child {
           margin-bottom: 0;
         }
       }
     }
-    
+
     .create-time {
       font-size: 12px;
       color: #606266;
     }
-    
+
     .action-buttons {
       display: flex;
       gap: 8px;
       justify-content: center;
       align-items: center;
-      
+
       .action-btn {
         width: 32px;
         height: 32px;
         padding: 0;
-        
+
         .el-icon {
           font-size: 14px;
         }
       }
     }
-    
+
     .pagination-section {
       padding: 16px 20px;
       display: flex;
@@ -714,19 +643,19 @@ onMounted(() => {
       border-top: 1px solid #e4e7ed;
       background: #fafafa;
     }
-    
+
     :deep(.el-table) {
       .el-table__header-wrapper {
         border-bottom: 1px solid #e4e7ed;
       }
-      
+
       .el-table__body-wrapper {
         tr {
           td {
             border-bottom: 1px solid #f0f2f5;
             padding: 12px 0;
           }
-          
+
           &:hover {
             td {
               background-color: #f5f9ff;
@@ -735,15 +664,15 @@ onMounted(() => {
         }
       }
     }
-    
+
     :deep(.el-empty) {
       padding: 60px 0;
-      
+
       .el-empty__image {
         width: 120px;
         height: 120px;
       }
-      
+
       .el-empty__description {
         margin-top: 16px;
         font-size: 14px;
@@ -751,19 +680,19 @@ onMounted(() => {
       }
     }
   }
-  
+
   .product-detail-content {
     max-height: 70vh;
     overflow-y: auto;
     padding-right: 10px;
-    
+
     .detail-section {
       margin-bottom: 24px;
-      
+
       &:last-child {
         margin-bottom: 0;
       }
-      
+
       .section-title {
         font-size: 16px;
         font-weight: 600;
@@ -772,22 +701,22 @@ onMounted(() => {
         padding-bottom: 8px;
         border-bottom: 1px solid #e4e7ed;
       }
-      
+
       .info-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
-        
+
         .info-item {
           display: flex;
           align-items: center;
-          
+
           .info-label {
             font-size: 14px;
             color: #606266;
             min-width: 80px;
           }
-          
+
           .info-value {
             font-size: 14px;
             color: #303133;
@@ -795,13 +724,13 @@ onMounted(() => {
           }
         }
       }
-      
+
       .image-section {
         display: flex;
         justify-content: center;
         padding: 16px 0;
       }
-      
+
       .rich-content-wrapper {
         border: 1px solid #e4e7ed;
         border-radius: 6px;
@@ -810,22 +739,22 @@ onMounted(() => {
         min-height: 100px;
         max-height: 400px;
         overflow-y: auto;
-        
+
         .rich-content {
           font-size: 14px;
           line-height: 1.6;
-          
+
           :deep(img) {
             max-width: 100%;
             height: auto;
             border-radius: 4px;
             margin: 8px 0;
           }
-          
+
           :deep(p) {
             margin: 8px 0;
           }
-          
+
           :deep(h1),
           :deep(h2),
           :deep(h3),
@@ -836,29 +765,29 @@ onMounted(() => {
       }
     }
   }
-  
+
   :deep(.el-dialog) {
     border-radius: 8px;
-    
+
     .el-dialog__header {
       padding: 16px 20px;
       border-bottom: 1px solid #e4e7ed;
       background: #f8fafc;
       border-radius: 8px 8px 0 0;
-      
+
       .el-dialog__title {
         font-size: 16px;
         font-weight: 600;
         color: #303133;
       }
     }
-    
+
     .el-dialog__body {
       padding: 20px;
       max-height: 70vh;
       overflow-y: auto;
     }
-    
+
     .el-dialog__footer {
       padding: 16px 20px;
       border-top: 1px solid #e4e7ed;
