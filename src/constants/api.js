@@ -46,7 +46,9 @@ export const API_PATHS = {
   USER: {
     LIST: `/shopadminApi/User/getAdminaccountsPageList`,
     UPDATE: '/shopadminApi/User/updateUsers',
-    DETAIL: (id) => `/shopadminApi/User/deleteUsers?id=${id}`
+    DETAIL: (id) => `/shopadminApi/User/deleteUsers?id=${id}`,
+    RESETUSERPASSWORD: '/shopadminApi/User/resetUserPassword',
+    CHANGEUSERPASSWORD: '/shopadminApi/User/changeUserPassword'
   },
 
 

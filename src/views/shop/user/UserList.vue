@@ -154,7 +154,7 @@
           </el-table-column>
 
           <!-- 操作列 -->
-          <el-table-column label="操作" width="280" fixed="right" align="center">
+          <el-table-column label="操作" width="300" fixed="right" align="center">
             <template #default="{ row }">
               <div class="action-buttons">
                 <el-button type="primary" link size="large" @click="handleEdituser(row)">
@@ -168,13 +168,13 @@
                     <View />
                   </el-icon>详情
                 </el-button>
-                <!-- 
-                <el-button type="primary" link size="large" @click="handleManageSpec(row)">
+
+                <el-button type="primary" link size="large" @click="handleResetPassword(row)">
                   <el-icon>
                     <SetUp />
-                  </el-icon>规格
+                  </el-icon>重置密码
                 </el-button>
-                -->
+
                 <el-popconfirm title="确定要删除这个用户吗？" confirm-button-text="确定" cancel-button-text="取消"
                   @confirm="handleDeleteuser(row)">
                   <template #reference>
@@ -211,6 +211,9 @@
     <!-- 添加/编辑用户对话框 -->
     <user-dialog ref="userdialogRef" :mode="dialogMode" @success="handleDialogSuccess" />
 
+    <!-- 重置密码对话框 -->
+    <userModPassword-dialog ref="usermodpassworddialogRef" :mode="resetdialogMode" />
+
   </div>
 
 
@@ -223,6 +226,7 @@ import { useRouter } from 'vue-router'
 
 import { ElMessage, ElMessageBox } from 'element-plus'
 import UserDialog from './UserDialog.vue'
+import UserModPasswordDialog from './UserModPasswordDialog.vue'
 import { formatDate } from '@/utils/common'
 import userApi from '@/api/modules/user'
 
@@ -233,7 +237,9 @@ const loading = ref(false)
 const userList = ref([])
 const selectedRows = ref([])
 const userdialogRef = ref(null)
+const usermodpassworddialogRef = ref(null)
 const dialogMode = ref('add')
+const resetdialogMode = ref('add')
 // 分页
 const pagination = reactive({
   currentPage: 1,
@@ -351,9 +357,10 @@ const handleViewDetail = (row) => {
   router.push(`/user/detail/${row.userId}`)
 }
 
-// 管理规格
-const handleManageSpec = (row) => {
-  router.push(`/user/spec/${row.userId}`)
+// 重置密码
+const handleResetPassword = (row) => {
+  resetdialogMode.value = 'reset'
+  usermodpassworddialogRef.value.openDialog(row)
 }
 
 // 删除用户

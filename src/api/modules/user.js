@@ -21,7 +21,15 @@ const userApi = {
     deleteUser(id) {
         return request.get(API_PATHS.USER.DETAIL(id));
     },
+    // 重置用户密码
+    resetUserPassword(data) {
+        return request.post(API_PATHS.USER.RESETUSERPASSWORD, { data: data });
+    },
 
+    // 修改用户密码
+    changeUserPassword(data) {
+        return request.post(API_PATHS.USER.CHANGEUSERPASSWORD, { data: data });
+    },
 }
 
 
@@ -29,7 +37,9 @@ export const {
     getUserPageList,
     createUser,
     updateUser,
-    deleteUser
+    deleteUser,
+    resetUserPassword,
+    changeUserPassword
 
 } = userApi
 

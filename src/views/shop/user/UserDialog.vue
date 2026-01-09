@@ -195,12 +195,8 @@ const handleSubmit = async () => {
     //传回user
     closeDialog(res.result)
   } catch (error) {
-    if (error.errors) {
-      ElMessage.warning('请正确填写表单')
-      return
-    }
-    console.error('提交失败:', error)
-    ElMessage.error(props.mode === 'add' ? '添加失败' : '更新失败')
+
+
   } finally {
     submitting.value = false
   }
