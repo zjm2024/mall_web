@@ -10,24 +10,24 @@ export const PERMISSION_TYPES = {
 export const ROUTE_PERMISSIONS = {
   // 仪表盘
   '/dashboard': ['super_admin', 'merchant_admin'],
-  
+
   // 店铺管理
   '/shop/base': ['super_admin', 'merchant_admin'],
   '/shop/home': ['super_admin', 'merchant_admin'],
   '/shop/category': ['super_admin', 'merchant_admin'],
   '/shop/member': ['super_admin', 'merchant_admin'],
-  
+
   // 商品管理
   '/product/list': ['super_admin', 'merchant_admin'],
   '/product/edit': ['super_admin', 'merchant_admin'],
   '/product/add': ['super_admin', 'merchant_admin'],
-  
+
   // 订单管理
   '/order/list': ['super_admin', 'merchant_admin'],
-  
+
   // 售后管理
   '/after-sale/list': ['super_admin', 'merchant_admin'],
-  
+
   // 资金结算
   '/settlement/list': ['super_admin', 'merchant_admin']
 }
@@ -38,13 +38,13 @@ export const ACTION_PERMISSIONS = {
   PRODUCT_CREATE: ['super_admin', 'merchant_admin'],
   PRODUCT_UPDATE: ['super_admin', 'merchant_admin'],
   PRODUCT_DELETE: ['super_admin', 'merchant_admin'],
-  
+
   // 订单相关操作
   ORDER_PROCESS: ['super_admin', 'merchant_admin'],
-  
+
   // 店铺相关操作
   SHOP_CONFIG: ['super_admin', 'merchant_admin'],
-  
+
   // 只有超管能操作
   SYSTEM_CONFIG: ['super_admin'],
   USER_MANAGE: ['super_admin']
@@ -64,7 +64,7 @@ export function checkActionPermission(action, userRole) {
   return allowedRoles.includes(userRole)
 }
 
-// 获取用户角色（根据 IsSuperAdmin 字段）
+// 获取用户角色（根据 isSuperAdmin 字段）
 export function getUserRole(isSuperAdmin) {
   return isSuperAdmin ? PERMISSION_TYPES.SUPER_ADMIN : PERMISSION_TYPES.MERCHANT_ADMIN
 }

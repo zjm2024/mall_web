@@ -67,6 +67,7 @@
 import { ref, reactive, computed, watch, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { createCategory, updateCategory } from '@/api/modules/category'
+import { useUserStore } from '@/stores/user'
 
 const props = defineProps({
 
@@ -86,6 +87,8 @@ const emits = defineEmits(['success'])
 // 表单引用
 const formRef = ref()
 const submitting = ref(false)
+
+const userStore = useUserStore()
 
 // 表单数据
 const formData = reactive({
@@ -153,7 +156,8 @@ const handleSubmit = async () => {
       level: formData.level,
       sortOrder: formData.sortOrder,
       parentId: formData.parentId,
-      appType: 1,
+      appType: userStore.userInfo.appType,
+      businessId: userStore.userInfo.businessId,
     }
     var res
     if (props.mode === 'add') {

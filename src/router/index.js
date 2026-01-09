@@ -54,8 +54,8 @@ const routes = [
                     {
                         path: 'user',
                         name: 'userManagement',
-                        component: () => import('@/views/shop/user/UserList.vue'),
-                        meta: { title: '用户管理' }
+                        //  component: () => import('@/views/shop/user/UserList.vue'),
+                        meta: { title: '店员管理' }
                     }
                 ]
             },
@@ -146,7 +146,37 @@ const routes = [
                         meta: { title: '结算列表' }
                     }
                 ]
+            },
+
+
+            // 超管部分
+            {
+                path: 'system',
+                name: 'system',
+                redirect: '/system/base',
+                meta: {
+                    title: '系统管理',
+                    icon: 'Setting',
+                    requiresAuth: true
+                },
+                children: [
+                    {
+                        path: 'user',
+                        name: 'user',
+                        component: () => import('@/views/system/user/UserList.vue'),
+                        meta: { title: '用户管理' }
+                    },
+                    {
+                        path: 'settings',
+                        name: 'settings',
+                        // component: () => import('@/views/system/users/UsersList.vue'),
+                        meta: { title: '系统设置' }
+                    },
+                ]
             }
+
+
+
         ]
     },
 

@@ -52,7 +52,7 @@ export const baseMenuList = [
         roles: ['super_admin', 'merchant_admin']
       },
       {
-        title: '用户管理',
+        title: '店员管理',
         path: '/shop/user',
         roles: ['super_admin', 'merchant_admin']
       }
@@ -125,7 +125,7 @@ export const adminMenuList = [
     children: [
       {
         title: '用户管理',
-        path: '/system/users',
+        path: '/system/user',
         roles: ['super_admin']
       },
       {

@@ -10,7 +10,7 @@ export const useUserStore = defineStore('user', () => {
 
   // 计算属性
   const isAuthenticated = computed(() => !!token.value)
-  const isSuperAdmin = computed(() => userInfo.value.IsSuperAdmin === 1)
+  const isSuperAdmin = computed(() => userInfo.value.isSuperAdmin === 1)
   const userRole = computed(() => isSuperAdmin.value ? 'super_admin' : 'merchant_admin')
 
   // 方法
@@ -61,12 +61,12 @@ export const useUserStore = defineStore('user', () => {
     token,
     userInfo,
     sidebarCollapse,
-    
+
     // 计算属性
     isAuthenticated,
     isSuperAdmin,
     userRole,
-    
+
     // 方法
     setUser,
     clearUser,

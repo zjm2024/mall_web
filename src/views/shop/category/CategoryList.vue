@@ -158,6 +158,7 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import CategoryDialog from './CategoryDialog.vue'
 import { formatDate } from '@/utils/common'
+import { useUserStore } from '@/stores/user'
 
 import {
   getCategoryList,
@@ -170,7 +171,7 @@ const loading = ref(false)
 const categoryList = ref([])
 const categorydialogRef = ref(null)
 
-const ddd = ref(0)
+const userStore = useUserStore()
 
 const dialogMode = ref('add')
 const parentCategory = ref({})
@@ -205,8 +206,9 @@ const filteredCategoryList = computed(() => {
 const fetchCategoryList = async () => {
   try {
     loading.value = true
-
-    let params = { appType: 1, categoryName: filterForm.categoryName, status: filterForm.status }
+    const appType = userStore.userInfo.appType
+    const businessId = userStore.userInfo.businessId
+    let params = { appType: appType, businessId: businessId, categoryName: filterForm.categoryName, status: filterForm.status }
     const res = await getCategoryList(params)
     // categoryList.value = buildCategoryTree(res.result || [])
     //服务端返回的数据为Tree格式
@@ -266,8 +268,7 @@ const handleAddCategory = () => {
     level: 1,
     sortOrder: 0,
     status: 1,
-    icon: '',
-    appType: 1
+    icon: ''
   }
   parentCategory.value = {}
   categorydialogRef.value.openDialog(category)

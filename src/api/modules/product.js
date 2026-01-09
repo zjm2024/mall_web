@@ -8,6 +8,11 @@ const productApi = {
 
   },
 
+  // 获取分类列表（用于下拉选择）
+  getCategoryOptions(params) {
+    return request.get(API_PATHS.PRODUCT.CATEGORIESOPTIONS, { params: params })
+  },
+
   // 获取商品详情
   getProductDetail(id) {
     return request.get(`/api/products/${id}`)
@@ -38,10 +43,7 @@ const productApi = {
     return request.put('/api/products/batch-status', data)
   },
 
-  // 获取分类列表（用于下拉选择）
-  getCategoryOptions() {
-    return request.get('/api/categories/options')
-  },
+
 
   // 获取规格列表
   getSpecList(productId) {

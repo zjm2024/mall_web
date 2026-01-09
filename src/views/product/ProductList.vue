@@ -32,12 +32,10 @@
             </template>
           </el-input>
 
-          <el-select v-model="filterForm.categoryId" placeholder="商品分类" clearable size="default"
-            style="width: 150px; margin-right: 10px;">
-            <el-option label="全部分类" value="" />
-            <el-option v-for="category in categoryOptions" :key="category.CategoryId" :label="category.CategoryName"
-              :value="category.CategoryId" />
-          </el-select>
+
+          <el-cascader v-model="filterForm.categoryId" :options="categoryOptions" :props="props" placeholder="商品分类"
+            clearable size="default" style="width: 300px; margin-right: 10px;" />
+
 
           <el-select v-model="filterForm.productStatus" placeholder="商品状态" clearable size="default"
             style="width: 130px; margin-right: 10px;">
@@ -262,6 +260,7 @@ import {
 } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { formatDate } from '@/utils/common'
+import { useUserStore } from '@/stores/user'
 
 import {
   getProductPageList,
@@ -276,6 +275,17 @@ const categoryOptions = ref([])
 const selectedRows = ref([])
 const detailDialogVisible = ref(false)
 const selectedProduct = ref(null)
+const userStore = useUserStore()
+
+const props = {
+  multiple: true,
+  checkStrictly: true,
+  label: 'categoryName',
+  value: 'categoryId',
+  children: 'children'
+}
+
+
 
 // 分页
 const pagination = reactive({
@@ -403,6 +413,7 @@ const handleBatchDelete = async () => {
 
 // 修改状态
 const handleStatusChange = async (row) => {
+  /*
   try {
     // 这里调用API更新状态
     await updateProductStatus(row.ProductId, row.ProductStatus)
@@ -413,6 +424,7 @@ const handleStatusChange = async (row) => {
     // 回滚状态
     row.ProductStatus = row.ProductStatus === 1 ? 0 : 1
   }
+    */
 }
 
 // 表格选择
@@ -441,12 +453,25 @@ const fetchProductList = async () => {
   try {
     loading.value = true
 
-    const params = {
+    const appType = userStore.userInfo.appType
+    const businessId = userStore.userInfo.businessId
+
+    let params = {
       pageIndex: pagination.currentPage,
       pageSize: pagination.pageSize,
-      appType: 1,
-      ...filterForm
+      appType: appType,
+      businessId: businessId
     }
+
+    if (filterForm.productName !== '')
+      params.productName = filterForm.productName;
+    if (filterForm.productStatus !== '')
+      params.productStatus = filterForm.productStatus;
+    if (filterForm.categoryId !== '')
+      params.categoryIds = filterForm.categoryId.join(',');
+
+
+
 
     const res = await getProductPageList(params)
     productList.value = res.result || []
@@ -461,11 +486,13 @@ const fetchProductList = async () => {
 
 const fetchCategoryOptions = async () => {
   try {
-    const res = await getCategoryOptions()
-    categoryOptions.value = res.data || []
+    const appType = userStore.userInfo.appType
+    const businessId = userStore.userInfo.businessId
+    let params = { appType: appType, businessId: businessId }
+    const res = await getCategoryOptions(params)
+    categoryOptions.value = res.result || []
   } catch (error) {
-    console.error('获取分类选项失败:', error)
-    ElMessage.error('获取分类失败')
+
   }
 }
 
