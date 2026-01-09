@@ -9,16 +9,16 @@
 
       <!-- 登录表单 -->
       <form @submit.prevent="handleLogin" class="login-form">
-        <!-- 用户名/邮箱输入 -->
+        <!-- 账号 -->
         <div class="form-item">
-          <label for="username">用户名/邮箱</label>
+          <label for="userNo">账号</label>
           <div class="input-with-icon">
             <i class="icon">👤</i>
-            <input id="username" v-model="form.username" type="text" placeholder="请输入用户名或邮箱" class="form-input"
-              :class="{ 'input-error': errors.username }" @input="clearError('username')" />
+            <input id="userNo" v-model="form.userNo" type="text" placeholder="账号" class="form-input"
+              :class="{ 'input-error': errors.userNo }" @input="clearError('userNo')" />
           </div>
-          <div v-if="errors.username" class="error-message">
-            {{ errors.username }}
+          <div v-if="errors.userNo" class="error-message">
+            {{ errors.userNo }}
           </div>
         </div>
 
@@ -89,7 +89,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { login } from '../../utils/auth'
 import { ElMessage } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
-import { useUserStore } from '@/stores/user' 
+import { useUserStore } from '@/stores/user'
 
 const route = useRoute()
 const router = useRouter()
@@ -98,14 +98,14 @@ const userStore = useUserStore()
 
 // 表单数据
 const form = reactive({
-  username: '',
+  userNo: '',
   password: '',
   rememberMe: false
 })
 
 // 表单错误信息
 const errors = reactive({
-  username: '',
+  userNo: '',
   password: ''
 })
 
@@ -132,12 +132,12 @@ const validateForm = () => {
   // 清空之前的错误
   Object.keys(errors).forEach(key => errors[key] = '')
 
-  // 验证用户名
-  if (!form.username.trim()) {
-    errors.username = '请输入用户名或邮箱'
+  // 验证账号
+  if (!form.userNo.trim()) {
+    errors.userNo = '请输入账号'
     isValid = false
-  } else if (form.username.length < 3) {
-    errors.username = '用户名至少3个字符'
+  } else if (form.userNo.length < 3) {
+    errors.userNo = '账号至少3个字符'
     isValid = false
   }
 
@@ -163,24 +163,21 @@ const handleLogin = async () => {
 
   try {
     // 调用登录API
-    const response = await login(form.username, form.password)
+    const response = await login(form.userNo, form.password)
 
-    console.log('登录成功:', {
-      username: form.username,
-      rememberMe: form.rememberMe
-    })
-     if (response.flag === 1) {
-   
-      userStore.login("token",response.result)
+
+    if (response.flag === 1) {
+
+      userStore.login("token", response.result)
 
       ElMessage.success({
         message: `欢迎回来，${response.result.realName}！`,
         duration: 2000
       })
-      
+
       // 获取重定向地址，如果没有则跳转到首页
       const redirect = route.query.redirect || '/dashboard'
-      
+
       // 短暂延迟后跳转，让用户看到成功消息
       setTimeout(() => {
         router.push(redirect)
@@ -228,9 +225,9 @@ const handleTerms = () => {
 
 // 组件挂载后，尝试从本地存储恢复记住的用户名
 onMounted(() => {
-  const savedUsername = localStorage.getItem('rememberedUsername')
-  if (savedUsername) {
-    form.username = savedUsername
+  const savedUserNo = localStorage.getItem('rememberedUserNo')
+  if (savedUserNo) {
+    form.userNo = savedUserNo
     form.rememberMe = true
   }
 })

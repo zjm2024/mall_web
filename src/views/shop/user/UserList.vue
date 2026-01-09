@@ -92,8 +92,8 @@
           </el-table-column>
 
 
-          <!-- 用户编号 -->
-          <el-table-column prop="userNo" label="用户编号" min-width="120">
+          <!-- 账号 -->
+          <el-table-column prop="userNo" label="账号" min-width="120">
             <template #default="{ row }">
               <div class="user-info">
                 <div class="user-name">{{ row.userNo }}</div>

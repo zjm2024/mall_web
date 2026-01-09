@@ -9,21 +9,21 @@
 
 
 
-          <!-- 用户编号 -->
-          <el-form-item label="用户编号" prop="userNo" class="form-item-large">
-            <el-input v-model="formData.userNo" placeholder="请输入用户编号" maxlength="50" show-word-limit size="large"
+          <!-- 账号 -->
+          <el-form-item label="账号" prop="userNo" class="form-item-large">
+            <el-input v-model="formData.userNo" placeholder="请输入账号(手机号码)" maxlength="50" size="large"
               :disabled="mode == 'edit'" clearable />
           </el-form-item>
 
           <!-- 用户昵称 -->
           <el-form-item label="用户昵称" prop="userName" class="form-item-large">
-            <el-input v-model="formData.userName" placeholder="请输入用户昵称" maxlength="50" show-word-limit size="large"
+            <el-input v-model="formData.userName" placeholder="请输入用户昵称" maxlength="50" size="large"
               :disabled="mode == 'edit'" clearable />
           </el-form-item>
 
           <!-- 用户姓名 -->
           <el-form-item label="用户姓名" prop="realName" class="form-item-large">
-            <el-input v-model="formData.realName" placeholder="请输入用户姓名" maxlength="50" show-word-limit size="large"
+            <el-input v-model="formData.realName" placeholder="请输入用户姓名" maxlength="50" size="large"
               :disabled="mode == 'edit'" clearable />
           </el-form-item>
 
@@ -65,7 +65,7 @@
         <el-col :span="12">
           <!-- 超管 -->
           <el-form-item label="" prop="isSuperAdmin" class="form-item-large">
-            <el-checkbox v-model="isSuperAdmin" label="超级管理员"></el-checkbox>
+            <el-checkbox v-model="formData.isSuperAdmin" label="超级管理员" :true-label="1" :false-label="0"></el-checkbox>
           </el-form-item>
         </el-col>
       </el-row>
@@ -123,6 +123,10 @@ const isShowDialog = ref(false)
 
 // 验证规则
 const rules = {
+  userNo: [
+    { required: true, message: '请输入账号(手机号码)', trigger: 'blur' },
+    { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
+  ],
   userName: [
     { required: true, message: '请输入用户昵称', trigger: 'blur' },
     { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
@@ -135,11 +139,6 @@ const rules = {
     { required: true, message: '请选择状态', trigger: 'change' }
   ]
 }
-
-const isSuperAdmin = computed({
-  get: () => formData.isSuperAdmin === 1,
-  set: (value) => { formData.isSuperAdmin = value ? 1 : 0; }
-});
 
 
 
