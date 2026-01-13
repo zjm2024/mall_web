@@ -63,9 +63,15 @@ export const API_PATHS = {
 
   // 订单管理
   ORDER: {
-    LIST: '/orders',
-    DETAIL: (id) => `/orders/${id}`,
-    STATISTICS: '/orders/statistics'
+    LIST: '/shopadminApi/Order/getOrdersPageList',
+    DETAIL: (id) => `/shopadminApi/Order/getOrderDetail?id=${id}`,
+    UPDATE: '/shopadminApi/Order/updateOrder',
+    DELETE: '/shopadminApi/Order/deleteOrder',
+    SHIP: '/shopadminApi/Order/shipOrder',
+    BATCH_DELETE: '/shopadminApi/Order/batchDeleteOrders',
+    BATCH_UPDATE_STATUS: '/shopadminApi/Order/batchUpdateOrderStatus',
+    STATISTICS: '/shopadminApi/Order/getOrderStatistics',
+    CATEGORIESOPTIONS: '/shopadminApi/Order/getCategoriesOptions'
   },
 
 
