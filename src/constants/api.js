@@ -56,9 +56,10 @@ export const API_PATHS = {
   // 商品管理
   PRODUCT: {
     LIST: `/shopadminApi/Product/getProductsPageList`,
-    DETAIL: (id) => `/products/${id}`,
+    DETAIL: (id) => `/shopadminApi/Product/deleteProducts?id=${id}`,
+    UPDATE: '/shopadminApi/Product/updateProducts',
     CATEGORIESOPTIONS: `/shopadminApi/Product/getCategoriesOptions`,
-    BRANDS: '/products/brands'
+    INFO: (id) => `/shopadminApi/Product/getProductsById?id=${id}`,
   },
 
   // 订单管理

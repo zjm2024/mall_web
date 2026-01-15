@@ -330,7 +330,7 @@ const handleAddProduct = () => {
 // 编辑商品 - 跳转到编辑页面
 const handleEditProduct = (row) => {
 
-  router.push(`/product/edit?id=${row.ProductId}`)
+  router.push(`/product/edit?id=${row.productId}`)
 }
 
 // 查看详情
@@ -467,8 +467,35 @@ const fetchProductList = async () => {
       params.productName = filterForm.productName;
     if (filterForm.productStatus !== '')
       params.productStatus = filterForm.productStatus;
-    if (filterForm.categoryId !== '')
-      params.categoryIds = filterForm.categoryId.join(',');
+    if (filterForm.categoryId !== '') {
+      let categorys = filterForm.categoryId
+
+      let categorylist = categorys.map(item => ({
+        treepath: item.join('.'),
+        exist: 0
+      }));
+
+      //再循环留下最末端节点 
+      let templist = categorylist.map(it => ({ treepath: it.treepath }))
+      for (let it of categorylist) {
+        let treepath = it.treepath + '.'
+
+        for (let it1 of templist) {
+          if (it1.treepath.includes(treepath)) {
+            it.exist = 1
+            break
+          }
+        }
+      }
+
+      categorylist = categorylist.filter(it => it.exist == 0)
+
+      categorylist = categorylist.map(item => item.treepath).join(',')
+
+      params.categoryIds = categorylist
+
+    }
+
 
 
 

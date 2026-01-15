@@ -13,20 +13,23 @@ const productApi = {
     return request.get(API_PATHS.PRODUCT.CATEGORIESOPTIONS, { params: params })
   },
 
-  // 获取商品详情
-  getProductDetail(id) {
-    return request.get(`/api/products/${id}`)
-  },
-
   // 创建商品
   createProduct(data) {
-    return request.post('/api/products', data)
+    return request.post(API_PATHS.PRODUCT.UPDATE, { data: data })
   },
 
   // 更新商品
-  updateProduct(id, data) {
-    return request.put(`/api/products/${id}`, data)
+  updateProduct(data) {
+    return request.post(API_PATHS.PRODUCT.UPDATE, { data: data })
   },
+
+  // 获取商品详情
+  getProductDetail(id) {
+    return request.get(API_PATHS.PRODUCT.INFO(id))
+  },
+
+
+
 
   // 删除商品
   deleteProduct(id) {

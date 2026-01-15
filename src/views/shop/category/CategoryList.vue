@@ -18,6 +18,7 @@
         </div>
 
         <div class="right-search">
+          <!-- 
           <el-input v-model="filterForm.categoryName" placeholder="请输入分类名称" clearable size="large"
             style="width: 300px; margin-right: 12px;" @keyup.enter="handleSearch">
             <template #prefix>
@@ -25,8 +26,8 @@
                 <Search />
               </el-icon>
             </template>
-          </el-input>
-
+</el-input>
+-->
           <el-select v-model="filterForm.status" placeholder="状态" clearable size="large"
             style="width: 120px; margin-right: 12px;">
             <el-option label="全部" value="" />
@@ -48,8 +49,9 @@
 
       <!-- 分类表格区域 -->
       <div class="table-section">
-        <el-table :data="categoryList" v-loading="loading" highlight-current-row row-key="categoryId"
-          :tree-props="{ children: 'children', hasChildren: 'hasChildren' }" :header-cell-style="{
+        <el-table ref="tabletreeRef" :data="categoryList" v-loading="loading" highlight-current-row row-key="categoryId"
+          @row-click="handleRowClick" :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
+          :header-cell-style="{
             background: '#f5f7fa',
             color: '#303133',
             fontWeight: 'bold',
@@ -170,6 +172,7 @@ import {
 const loading = ref(false)
 const categoryList = ref([])
 const categorydialogRef = ref(null)
+const tabletreeRef = ref(null)
 
 const userStore = useUserStore()
 
@@ -275,6 +278,45 @@ const handleAddCategory = () => {
 
 }
 
+const handleRowClick = (row) => {
+
+
+}
+
+
+const getparentCategory = (category) => {
+  if (category.parentId === 0)
+    parentCategory.value = {}
+  else {
+    //找上一级节点下的子节点
+    let parentId = category.parentId
+    let categoryIds = category.treePath.split('.')
+    let rootId = categoryIds[0]
+    let rootRow = categoryList.value.find(it => it.categoryId == rootId)
+    let parentRow = getParentNode([rootRow], parentId)
+
+
+    parentCategory.value = parentRow
+  }
+}
+
+const getParentNode = (tree, parentId) => {
+  for (let i = 0; i < tree.length; i++) {
+    const node = tree[i];
+    if (node.categoryId === parentId) {
+      return node;
+    }
+    if (node.children && node.children.length > 0) {
+      const result = getParentNode(node.children, parentId);
+      if (result) {
+        return result;
+      }
+    }
+  }
+  return null;
+}
+
+
 // 添加子分类
 const handleAddSubCategory = (parent) => {
   if (parent.level >= 3) {
@@ -300,11 +342,7 @@ const handleAddSubCategory = (parent) => {
 // 编辑分类
 const handleEditCategory = (category) => {
   dialogMode.value = 'edit'
-  if (category.parentId === 0)
-    parentCategory.value = {}
-  else
-    parentCategory.value = categoryList.value.find(it => it.categoryId == category.parentId)
-
+  getparentCategory(category)
   categorydialogRef.value.openDialog(category)
 }
 
@@ -326,7 +364,10 @@ const handleDeleteCategory = async (category) => {
       }
     )
 
+
     await deleteCategory(category.categoryId)
+
+    getparentCategory(category)
 
     //查询父节点下的子节点
     if (parentCategory.value.categoryId) {
