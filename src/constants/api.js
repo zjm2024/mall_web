@@ -57,6 +57,7 @@ export const API_PATHS = {
   PRODUCT: {
     LIST: `/shopadminApi/Product/getProductsPageList`,
     DETAIL: (id) => `/shopadminApi/Product/deleteProducts?id=${id}`,
+    DETAILBATCH: (ids) => `/shopadminApi/Product/deleteBatchProducts?ids=${ids}`,
     UPDATE: '/shopadminApi/Product/updateProducts',
     CATEGORIESOPTIONS: `/shopadminApi/Product/getCategoriesOptions`,
     INFO: (id) => `/shopadminApi/Product/getProductsById?id=${id}`,

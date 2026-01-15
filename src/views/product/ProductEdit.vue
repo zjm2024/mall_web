@@ -47,15 +47,9 @@
                 </el-form-item>
 
                 <el-form-item label="商品分类" prop="categoryId">
-
-
                   <el-cascader v-model="formData.categoryId" :options="categoryOptions" :props="props"
-                    placeholder="请选择商品分类" clearable size="default" style="width: 300px; margin-right: 10px;" />
-
-
-
-
-
+                    @change="handlecascaderChange" placeholder="请选择商品分类" clearable size="default"
+                    style="width: 300px; margin-right: 10px;" />
                 </el-form-item>
               </div>
 
@@ -110,7 +104,7 @@
               <div class="price-item">
                 <label class="price-label">原价</label>
                 <div class="price-input">
-                  <el-input-number v-model="formData.OriginalPrice" :min="0" :precision="2" placeholder="原价"
+                  <el-input-number v-model="formData.originalPrice" :min="0" :precision="2" placeholder="原价"
                     controls-position="right" size="default" class="price-input-number">
                     <template #prefix>¥</template>
                   </el-input-number>
@@ -120,7 +114,7 @@
               <div class="price-item">
                 <label class="price-label">当前售价</label>
                 <div class="price-input">
-                  <el-input-number v-model="formData.CurrentPrice" :min="0" :precision="2" placeholder="当前售价"
+                  <el-input-number v-model="formData.currentPrice" :min="0" :precision="2" placeholder="当前售价"
                     controls-position="right" size="default" class="price-input-number">
                     <template #prefix>¥</template>
                   </el-input-number>
@@ -130,7 +124,7 @@
               <div class="stock-item">
                 <label class="stock-label">总库存</label>
                 <div class="stock-input">
-                  <el-input-number v-model="formData.TotalStock" :min="0" placeholder="总库存" controls-position="right"
+                  <el-input-number v-model="formData.totalStock" :min="0" placeholder="总库存" controls-position="right"
                     size="default" />
                   <div class="field-tip">0表示不限制</div>
                 </div>
@@ -139,7 +133,7 @@
               <div class="stock-item">
                 <label class="stock-label">每人限购</label>
                 <div class="stock-input">
-                  <el-input-number v-model="formData.PerPersonLimit" :min="0" placeholder="每人限购"
+                  <el-input-number v-model="formData.perPersonLimit" :min="0" placeholder="每人限购"
                     controls-position="right" size="default" />
                   <div class="field-tip">0表示不限制</div>
                 </div>
@@ -485,31 +479,31 @@
             <div class="settings-list">
               <div class="setting-item">
                 <span class="setting-label">商品状态</span>
-                <el-switch v-model="formData.ProductStatus" :active-value="1" :inactive-value="0" active-text="上架"
+                <el-switch v-model="formData.productStatus" :active-value="1" :inactive-value="0" active-text="上架"
                   inactive-text="下架" />
               </div>
 
               <div class="setting-item">
                 <span class="setting-label">显示价格</span>
-                <el-switch v-model="formData.ShowPrice" :active-value="1" :inactive-value="0" active-text="显示"
+                <el-switch v-model="formData.showPrice" :active-value="1" :inactive-value="0" active-text="显示"
                   inactive-text="隐藏" />
               </div>
 
               <div class="setting-item">
                 <span class="setting-label">防刷单</span>
-                <el-switch v-model="formData.AntiRefresh" :active-value="1" :inactive-value="0" active-text="开启"
+                <el-switch v-model="formData.antiRefresh" :active-value="1" :inactive-value="0" active-text="开启"
                   inactive-text="关闭" />
               </div>
 
               <div class="setting-item" v-if="formData.AntiRefresh">
                 <span class="setting-label">每日最大订单</span>
-                <el-input-number v-model="formData.MaxDailyOrders" :min="0" controls-position="right" size="small"
+                <el-input-number v-model="formData.maxDailyOrders" :min="0" controls-position="right" size="small"
                   style="width: 120px;" />
               </div>
 
               <div class="setting-item">
                 <span class="setting-label">排序</span>
-                <el-input-number v-model="formData.SortOrder" :min="0" :max="9999" controls-position="right"
+                <el-input-number v-model="formData.sortOrder" :min="0" :max="9999" controls-position="right"
                   size="small" style="width: 120px;" />
               </div>
             </div>
@@ -529,7 +523,7 @@
             <div class="settings-list">
               <div class="setting-item">
                 <span class="setting-label">开启返佣</span>
-                <el-switch v-model="formData.CommissionEnabled" :active-value="1" :inactive-value="0" active-text="开启"
+                <el-switch v-model="formData.commissionEnabled" :active-value="1" :inactive-value="0" active-text="开启"
                   inactive-text="关闭" @change="handleCommissionChange" />
               </div>
 
@@ -537,7 +531,7 @@
                 <div class="setting-item">
                   <span class="setting-label">一级分佣</span>
                   <div class="rate-input">
-                    <el-input-number v-model="formData.FirstLevelRate" :min="0" :max="100" :precision="2"
+                    <el-input-number v-model="formData.firstLevelRate" :min="0" :max="100" :precision="2"
                       controls-position="right" size="small" style="width: 100px;" />
                     <span class="rate-suffix">%</span>
                   </div>
@@ -546,7 +540,7 @@
                 <div class="setting-item">
                   <span class="setting-label">二级分佣</span>
                   <div class="rate-input">
-                    <el-input-number v-model="formData.SecondLevelRate" :min="0" :max="100" :precision="2"
+                    <el-input-number v-model="formData.secondLevelRate" :min="0" :max="100" :precision="2"
                       controls-position="right" size="small" style="width: 100px;" />
                     <span class="rate-suffix">%</span>
                   </div>
@@ -633,6 +627,7 @@ const formData = reactive({
   productId: null,
   productName: '',
   categoryId: '',
+  treePath: '',
   productImage: '',
   originalPrice: 0,
   currentPrice: 0,
@@ -697,7 +692,14 @@ const removeSpecValue = (specIndex, valueIndex) => {
   }
 }
 
-
+const handlecascaderChange = (value) => {
+  //生成TreePath
+  console.log(value)
+  if (value == null)
+    formData.treePath = ''
+  else
+    formData.treePath = value.join('.')
+}
 
 // 生成SKU列表
 const generateSkuList = () => {
@@ -955,6 +957,7 @@ const handleSave = async () => {
       productId: formData.productId,
       productName: formData.productName,
       categoryId: Array.isArray(formData.categoryId) ? formData.categoryId[formData.categoryId.length - 1] : formData.categoryId,
+      treePath: formData.treePath,
       productImage: formData.productImage,
       originalPrice: formData.originalPrice,
       currentPrice: formData.currentPrice,

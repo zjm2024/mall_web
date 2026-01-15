@@ -29,23 +29,15 @@ const productApi = {
   },
 
 
-
-
   // 删除商品
   deleteProduct(id) {
-    return request.delete(`/api/products/${id}`)
+    return request.get(API_PATHS.PRODUCT.DETAIL(id))
   },
 
   // 批量删除商品
-  batchDeleteProducts(data) {
-    return request.post('/api/products/batch-delete', data)
+  deleteBatchProducts(ids) {
+    return request.get(API_PATHS.PRODUCT.DETAILBATCH(ids))
   },
-
-  // 批量更新商品状态
-  batchUpdateStatus(data) {
-    return request.put('/api/products/batch-status', data)
-  },
-
 
 
   // 获取规格列表
@@ -85,8 +77,9 @@ export const {
   createProduct,
   updateProduct,
   deleteProduct,
-  batchDeleteProducts,
-  batchUpdateStatus,
+  deleteBatchProducts,
+
+
   getCategoryOptions,
   getSpecList,
   saveSpecs,

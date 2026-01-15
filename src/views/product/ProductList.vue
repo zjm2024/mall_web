@@ -15,7 +15,7 @@
               <Refresh />
             </el-icon>刷新
           </el-button>
-          <el-button type="danger" @click="handleBatchDelete" :disabled="selectedRows.length === 0" size="default">
+          <el-button type="danger" @click="handleDeleteBatch" :disabled="selectedRows.length === 0" size="default">
             <el-icon>
               <Delete />
             </el-icon>批量删除({{ selectedRows.length }})
@@ -101,7 +101,7 @@
                   </el-tag>
                   <el-tag v-if="row.CommissionEnabled" size="small" type="success" effect="light"
                     style="margin-left: 4px;">
-                    返佣{{ row.FirstLevelRate }}%
+                    返佣{{ row.firstLevelRate }}%
                   </el-tag>
                 </div>
               </div>
@@ -130,32 +130,32 @@
                   <el-icon size="14">
                     <Box />
                   </el-icon>
-                  <span>{{ row.TotalStock === 0 ? '不限' : row.TotalStock }}</span>
+                  <span>{{ row.totalStock === 0 ? '不限' : row.totalStock }}</span>
                 </div>
                 <div class="sales">
                   <el-icon size="14">
                     <ShoppingCart />
                   </el-icon>
-                  <span>{{ row.Sales || 0 }}</span>
+                  <span>{{ row.sales || 0 }}</span>t
                 </div>
               </div>
             </template>
           </el-table-column>
 
           <!-- 状态 -->
-          <el-table-column prop="ProductStatus" label="状态" width="100" align="center">
+          <el-table-column prop="productStatus" label="状态" width="100" align="center">
             <template #default="{ row }">
-              <el-switch v-model="row.ProductStatus" :active-value="1" :inactive-value="0" inline-prompt
+              <el-switch v-model="row.productStatus" :active-value="1" :inactive-value="0" inline-prompt
                 active-text="上架" inactive-text="下架" active-color="#13ce66" inactive-color="#dcdfe6"
                 @change="handleStatusChange(row)" size="small" />
             </template>
           </el-table-column>
 
-          <!-- 创建时间 -->
-          <el-table-column prop="CreateTime" label="创建时间" width="160">
+          <!-- 创建时间 -->c
+          <el-table-column prop="createTime" label="创建时间" width="160">
             <template #default="{ row }">
               <div class="create-time">
-                {{ formatDate(row.CreateTime) }}
+                {{ formatDate(row.createTime) }}
               </div>
             </template>
           </el-table-column>
@@ -265,7 +265,8 @@ import { useUserStore } from '@/stores/user'
 import {
   getProductPageList,
   getCategoryOptions,
-  deleteProduct
+  deleteProduct,
+  deleteBatchProducts
 } from '@/api/modules/product'
 
 const router = useRouter()
@@ -358,7 +359,7 @@ const handleManageSpec = (row) => {
 const handleDeleteProduct = async (row) => {
   try {
     await ElMessageBox.confirm(
-      `确定要删除商品"${row.ProductName}"吗？此操作不可恢复！`,
+      `确定要删除商品"${row.productName}"吗？此操作不可恢复！`,
       '删除确认',
       {
         confirmButtonText: '确认删除',
@@ -369,19 +370,17 @@ const handleDeleteProduct = async (row) => {
       }
     )
 
-    await deleteProduct(row.ProductId)
+    await deleteProduct(row.productId)
+    const index = productList.value.findIndex(it => it.productId === row.productId)
+    productList.value.splice(index, 1)
     ElMessage.success('删除成功')
-    fetchProductList()
   } catch (error) {
-    if (error !== 'cancel') {
-      console.error('删除商品失败:', error)
-      ElMessage.error('删除失败')
-    }
+
   }
 }
 
 // 批量删除
-const handleBatchDelete = async () => {
+const handleDeleteBatch = async () => {
   if (selectedRows.value.length === 0) return
 
   try {
@@ -397,17 +396,21 @@ const handleBatchDelete = async () => {
       }
     )
 
-    const productIds = selectedRows.value.map(item => item.ProductId)
+    const productIds = selectedRows.value.map(item => item.productId)
     // 这里调用批量删除接口
-    await Promise.all(productIds.map(id => deleteProduct(id)))
+    let ids = productIds.join(',')
+    await deleteBatchProducts(ids)
+
+    selectedRows.value.forEach(item => {
+      const index = productList.value.findIndex(it => it.productId === item.productId)
+      productList.value.splice(index, 1)
+
+    })
     selectedRows.value = []
     ElMessage.success(`成功删除 ${productIds.length} 个商品`)
-    fetchProductList()
+
   } catch (error) {
-    if (error !== 'cancel') {
-      console.error('批量删除失败:', error)
-      ElMessage.error('批量删除失败')
-    }
+
   }
 }
 
