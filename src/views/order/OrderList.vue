@@ -34,12 +34,11 @@
 
           <el-select v-model="filterForm.status" placeholder="订单状态" clearable size="large"
             style="width: 120px; margin-right: 12px;">
-            <el-option label="全部" value="" />
-            <el-option label="待付款" value="" />
-            <el-option label="待发货" value="" />
-            <el-option label="已发货" value="" />
-            <el-option label="已完成" value="" />
-            <el-option label="已取消" value="" />
+            <el-option label="全部" value="All" />
+            <el-option label="待处理" :value="OrderStatus.PENDING" />
+            <el-option label="已发货" :value="OrderStatus.SHIPPED" />
+            <el-option label="已完成" :value="OrderStatus.COMPLETED" />
+            <el-option label="已关闭" :value="OrderStatus.CLOSED" />
           </el-select>
 
           <el-button type="primary" @click="handleSearch" size="large">
@@ -64,97 +63,118 @@
 
           <!-- 订单编号 -->
           <el-table-column prop="orderNo" label="订单编号" min-width="150" align="center">
-            <template #default="{}">
+            <template #default="{order}">
               <div class="order-info">
-                <div class="order-no">{{}}</div>
+                <div class="order-no">{{order.OrderNo}}</div>
               </div>
             </template>
           </el-table-column>
 
           <!-- 客户信息 -->
           <el-table-column prop="customerName" label="客户姓名" min-width="120" align="center">
-            <template #default="{}">
+            <template #default="{order}">
               <div class="customer-info">
-                <div class="customer-name">{{}}</div>
-                <div class="customer-phone">{{}}</div>
+                <div class="customer-id">{{order.PersonalID}}</div>
+                <div class="customer-name">{{order.ReceiverName}}</div>
+                <div class="customer-phone">{{order.ReceiverPhone}}</div>
               </div>
             </template>
           </el-table-column>
 
           <!-- 订单金额 -->
           <el-table-column prop="totalAmount" label="订单金额" min-width="100" align="center">
-            <template #default="{}">
+            <template #default="{order}">
               <div class="order-price">
-                <div class="total-price">¥{{}}</div>
+                <div class="total-price">¥{{order.TotalAmount}}</div>
+                <div class="amount-price">¥{{order.TotalPayAmount}}</div>
               </div>
             </template>
           </el-table-column>
 
           <!-- 订单状态 -->
           <el-table-column prop="status" label="订单状态" width="120" align="center">
-            <template #default="{}">
-              <el-tag :type="getStatusType()" size="large">
-                {{ getStatusText() }}
+            <template #default="{order}">
+              <el-tag :type="orderApi.getOrderStatusType(order.OrderStatus)" size="large">
+                {{ orderApi.getOrderStatusText(order.OrderStatus) }}
               </el-tag>
             </template>
           </el-table-column>
 
           <!-- 支付状态 -->
           <el-table-column prop="paymentStatus" label="支付状态" width="120" align="center">
-            <template #default="{}">
-              <el-tag :type="getPaymentType()" size="large">
-                {{ getPaymentText() }}
+            <template #default="{order}">
+              <el-tag :type="orderApi.getPayStatusType(order.PayStatus)" size="large">
+                {{ orderApi.getPayStatusText(order.PayStatus) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+
+          <!-- 风险状态 -->
+          <el-table-column prop="riskStatus" label="风险状态" width="120" align="center">
+            <template #default="{order}">
+              <el-tag :type="orderApi.getRiskLevelType(order.RiskLevel)" size="large">
+                {{ orderApi.getRiskLevelText(order.RiskLevel) }}
               </el-tag>
             </template>
           </el-table-column>
 
           <!-- 发货状态 -->
           <el-table-column prop="shippingStatus" label="发货状态" width="120" align="center">
-            <template #default="{}">
-              <el-tag :type="getShippingType()" size="large">
-                {{ getShippingText() }}
+            <template #default="{order}">
+              <el-tag v-if="order.ShippingNo" type="primary" size="large">
+                已发货
               </el-tag>
+              <el-tag v-else type="warning" size="large">
+                待发货
+              </el-tag>
+            </template>
+          </el-table-column>
+
+          <!-- 备注信息 -->
+          <el-table-column prop="orderRemark" label="备注信息" min-width="100" align="center">
+            <template #default="{order}">
+              <div class="order-price">{{order.Remark}}</div>
             </template>
           </el-table-column>
 
           <!-- 创建时间 -->
           <el-table-column prop="createTime" label="创建时间" width="180" align="center">
-            <template #default="{}">
-              {{ formatDate() }}
+            <template #default="{order}">
+              {{ formatDate(order.CreateTime) }}
             </template>
           </el-table-column>
 
           <!-- 更新时间 -->
           <el-table-column prop="updateTime" label="更新时间" width="180" align="center">
-            <template #default="{}">
-              {{ formatDate() }}
+            <template #default="{order}">
+              {{ formatDate(order.UpdateTime) }}
             </template>
           </el-table-column>
 
           <!-- 操作列 -->
           <el-table-column label="操作" width="280" fixed="right" align="center">
-            <template #default="{}">
+            <template #default="{order}">
               <div class="action-buttons">
-                <el-button type="primary" link size="large" @click="handleViewDetail()">
+                <el-button type="primary" link size="large" @click="handleViewDetail(order)">
                   <el-icon>
                     <View />
                   </el-icon>详情
                 </el-button>
 
-                <el-button type="primary" link size="large" @click="handleEditOrder()">
+                <el-button type="primary" link size="large" @click="handleEditOrder(order)">
                   <el-icon>
                     <Edit />
                   </el-icon>编辑
                 </el-button>
 
-                <el-button type="success" link size="large" @click="handleProcessOrder()">
+                <el-button type="success" link size="large" @click="handleProcessOrder(order)">
                   <el-icon>
                     <Operation />
                   </el-icon>处理
                 </el-button>
 
                 <el-popconfirm title="确定要删除这个订单吗？" confirm-button-text="确定" cancel-button-text="取消"
-                  @confirm="handleDeleteOrder()">
+                  @confirm="handleDeleteOrder(order)">
                   <template #reference>
                     <el-button type="danger" link size="large">
                       <el-icon>
@@ -188,6 +208,12 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { formatDate } from '@/utils/common'
 import { Plus, Refresh, Delete, Search, Edit, View, Operation } from '@element-plus/icons-vue'
+import orderApi from '@/api/modules/order'
+import {
+  OrderStatus,
+  PayStatus,
+  RiskLevel
+} from '@/api/modules/order'
 
 const router = useRouter()
 
@@ -209,59 +235,6 @@ const filterForm = reactive({
   status: '',
 })
 
-// 订单状态映射
-const statusMap = {
-  pending: { text: '待付款', type: 'warning' },
-  processing: { text: '待发货', type: 'primary' },
-  shipped: { text: '已发货', type: 'info' },
-  completed: { text: '已完成', type: 'success' },
-  cancelled: { text: '已取消', type: 'danger' }
-}
-
-// 支付状态映射
-const paymentStatusMap = {
-  unpaid: { text: '未支付', type: 'warning' },
-  paid: { text: '已支付', type: 'success' },
-  refunded: { text: '已退款', type: 'info' }
-}
-
-// 发货状态映射
-const shippingStatusMap = {
-  pending: { text: '待发货', type: 'warning' },
-  shipped: { text: '已发货', type: 'primary' },
-  delivered: { text: '已送达', type: 'success' }
-}
-
-// 获取状态类型
-const getStatusType = (status) => {
-  return statusMap[status]?.type || 'info'
-}
-
-// 获取状态文本
-const getStatusText = (status) => {
-  return statusMap[status]?.text || status
-}
-
-// 获取支付类型
-const getPaymentType = (status) => {
-  return paymentStatusMap[status]?.type || 'info'
-}
-
-// 获取支付文本
-const getPaymentText = (status) => {
-  return paymentStatusMap[status]?.text || status
-}
-
-// 获取发货类型
-const getShippingType = (status) => {
-  return shippingStatusMap[status]?.type || 'info'
-}
-
-// 获取发货文本
-const getShippingText = (status) => {
-  return shippingStatusMap[status]?.text || status
-}
-
 // 获取订单列表
 const fetchOrderList = async () => {
   try {
@@ -274,11 +247,13 @@ const fetchOrderList = async () => {
 
     if (filterForm.searchKey)
       params.searchKey = filterForm.searchKey
-    if (filterForm.status)
-      params.status = filterForm.status
+    if (filterForm.status && filterForm.status !== 'All')
+      params.orderStatus = filterForm.status
 
-    // 这里应该是真实的API调用，模拟数据
-    const res = await orderApi.getOrderList(params)
+    console.log('[OrderList] fetchOrderList params:', params)
+    const res = await orderApi.getOrderPageList(params)
+    console.log('[OrderList] fetchOrderList response:', res)
+
     orderList.value = res.result || []
     pagination.total = res.count || 0
   } catch (error) {
@@ -512,3 +487,6 @@ onMounted(() => {
   }
 }
 </style>
+
+
+
