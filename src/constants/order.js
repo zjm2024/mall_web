@@ -65,15 +65,6 @@ export const GroupBuyStatus = {
   FAILED: 3       // 失败
 }
 
-/**
- * 应用类型枚举
- * @description 对应后端字段: AppType
- */
-export const AppType = {
-  WECHAT: 1,      // 微信小程序
-  APP: 2,         // APP
-  H5: 3           // H5
-}
 
 /**
  * 订单状态映射（显示文本）

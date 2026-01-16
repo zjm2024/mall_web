@@ -54,31 +54,6 @@ export const ActivityType = {
   GROUP: 2        // 团购
 }
 
-// 调试：检查导入
-console.log('[order.js] API_PATHS loaded:', API_PATHS)
-console.log('[order.js] API_PATHS.Order:', API_PATHS?.Order)
-
-// 保护性检查：如果 ORDER 不存在，添加它
-if (!API_PATHS.Order) {
-  console.error('[order.js] API_PATHS.Order is undefined! Adding fallback...')
-  API_PATHS.ORDER = {
-    LIST: '/shopadminApi/Order/getOrdersPageList',
-    DETAIL: (id) => `/shopadminApi/Order/getOrderDetail?id=${id}`,
-    UPDATE: '/shopadminApi/Order/updateOrder',
-    DELETE: '/shopadminApi/Order/deleteOrder',
-    SHIP: '/shopadminApi/Order/shipOrder',
-    BATCH_DELETE: '/shopadminApi/Order/batchDeleteOrders',
-    BATCH_UPDATE_STATUS: '/shopadminApi/Order/batchUpdateOrderStatus',
-    STATISTICS: '/shopadminApi/Order/getOrderStatistics',
-    CATEGORIESOPTIONS: '/shopadminApi/Order/getCategoriesOptions'
-  }
-}
-
-// 确保 Order（大写）存在
-if (!API_PATHS.Order && API_PATHS.ORDER) {
-  API_PATHS.Order = API_PATHS.ORDER
-}
-
 // 订单管理 API
 const orderApi = {
   /**
@@ -90,18 +65,13 @@ const orderApi = {
    * @param {number} params.orderStatus - 订单状态
    * @param {number} params.payStatus - 支付状态
    * @param {number} params.riskLevel - 风险等级
-   * @param {number} params.appType - 应用类型
    * @param {string} params.startTime - 开始时间
    * @param {string} params.endTime - 结束时间
    * @returns {Promise}
    */
   getOrderPageList(params) {
-    console.log('[orderApi] getOrderPageList called with params:', params)
-    if (!API_PATHS.Order) {
-      console.error('[orderApi] API_PATHS.Order is undefined!')
-      return Promise.reject(new Error('API_PATHS.Order is undefined'))
-    }
-    return request.post(API_PATHS.Order.LIST, params)
+    // 使用硬编码路径，仿照createOrder的做法
+    return request.post('/shopadminApi/Order/getOrdersPageList', { params: params })
   },
 
   /**
@@ -110,10 +80,7 @@ const orderApi = {
    * @returns {Promise}
    */
   getOrderDetail(orderId) {
-    if (!API_PATHS.Order) {
-      return Promise.reject(new Error('API_PATHS.Order is undefined'))
-    }
-    return request.get(API_PATHS.Order.DETAIL(orderId))
+    return request.get(`/shopadminApi/Order/getOrderDetail?id=${orderId}`)
   },
 
   /**
@@ -131,10 +98,10 @@ const orderApi = {
    * @returns {Promise}
    */
   updateOrder(data) {
-    if (!API_PATHS.Order) {
-      return Promise.reject(new Error('API_PATHS.Order is undefined'))
+    if (!API_PATHS.ORDER) {
+      return Promise.reject(new Error('API_PATHS.ORDER is undefined'))
     }
-    return request.post(API_PATHS.Order.UPDATE, data)
+    return request.post(API_PATHS.ORDER.UPDATE, data)
   },
 
   /**
@@ -143,10 +110,10 @@ const orderApi = {
    * @returns {Promise}
    */
   deleteOrder(orderId) {
-    if (!API_PATHS.Order) {
-      return Promise.reject(new Error('API_PATHS.Order is undefined'))
+    if (!API_PATHS.ORDER) {
+      return Promise.reject(new Error('API_PATHS.ORDER is undefined'))
     }
-    return request.get(API_PATHS.Order.DELETE, { params: { orderId } })
+    return request.get(API_PATHS.ORDER.DELETE, { params: { orderId } })
   },
 
   /**
@@ -157,10 +124,10 @@ const orderApi = {
    * @returns {Promise}
    */
   shipOrder(data) {
-    if (!API_PATHS.Order) {
-      return Promise.reject(new Error('API_PATHS.Order is undefined'))
+    if (!API_PATHS.ORDER) {
+      return Promise.reject(new Error('API_PATHS.ORDER is undefined'))
     }
-    return request.post(API_PATHS.Order.SHIP, data)
+    return request.post(API_PATHS.ORDER.SHIP, data)
   },
 
   /**
@@ -170,10 +137,10 @@ const orderApi = {
    * @returns {Promise}
    */
   batchDeleteOrders(data) {
-    if (!API_PATHS.Order) {
-      return Promise.reject(new Error('API_PATHS.Order is undefined'))
+    if (!API_PATHS.ORDER) {
+      return Promise.reject(new Error('API_PATHS.ORDER is undefined'))
     }
-    return request.post(API_PATHS.Order.BATCH_DELETE, data)
+    return request.post(API_PATHS.ORDER.BATCH_DELETE, data)
   },
 
   /**
@@ -184,10 +151,10 @@ const orderApi = {
    * @returns {Promise}
    */
   batchUpdateOrderStatus(data) {
-    if (!API_PATHS.Order) {
-      return Promise.reject(new Error('API_PATHS.Order is undefined'))
+    if (!API_PATHS.ORDER) {
+      return Promise.reject(new Error('API_PATHS.ORDER is undefined'))
     }
-    return request.post(API_PATHS.Order.BATCH_UPDATE_STATUS, data)
+    return request.post(API_PATHS.ORDER.BATCH_UPDATE_STATUS, data)
   },
 
   /**
@@ -196,10 +163,10 @@ const orderApi = {
    * @returns {Promise}
    */
   getOrderStatistics(params) {
-    if (!API_PATHS.Order) {
-      return Promise.reject(new Error('API_PATHS.Order is undefined'))
+    if (!API_PATHS.ORDER) {
+      return Promise.reject(new Error('API_PATHS.ORDER is undefined'))
     }
-    return request.get(API_PATHS.Order.STATISTICS, { params })
+    return request.get(API_PATHS.ORDER.STATISTICS, { params })
   },
 
   /**
@@ -208,10 +175,10 @@ const orderApi = {
    * @returns {Promise}
    */
   getCategoryOptions(params) {
-    if (!API_PATHS.Order) {
-      return Promise.reject(new Error('API_PATHS.Order is undefined'))
+    if (!API_PATHS.ORDER) {
+      return Promise.reject(new Error('API_PATHS.ORDER is undefined'))
     }
-    return request.get(API_PATHS.Order.CATEGORIESOPTIONS, { params })
+    return request.get(API_PATHS.ORDER.CATEGORIESOPTIONS, { params })
   },
 
   /**
