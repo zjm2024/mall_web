@@ -164,12 +164,13 @@
 
             <div class="specifications">
               <!-- 规格设置 -->
-              <div v-if="specifications.length > 0" class="spec-list">
-                <div v-for="(spec, index) in specifications" :key="index" class="spec-item">
+              <div class="spec-list">
+                <div v-for="(spec, index) in specifications.filter(it => it.isShow === true)" :key="index"
+                  class="spec-item">
                   <div class="spec-header">
                     <div class="spec-title">
-                      <el-input v-model="spec.specName" placeholder="规格名称（如：颜色、尺寸）" size="small" style="width: 150px;"
-                        @blur="generateSkuList" />
+                      <el-input v-model="spec.specName" placeholder="规格名称（如：颜色、尺寸）" size="small"
+                        style="width: 150px;" />
                       <div class="spec-actions">
                         <el-button type="danger" @click="removeSpecification(index)" size="small" text circle>
                           <el-icon>
@@ -193,7 +194,7 @@
                     <div class="values-list">
                       <div v-for="(value, valueIndex) in spec.specValues" :key="valueIndex" class="value-item">
                         <el-input v-model="spec.specValues[valueIndex].specValue" placeholder="输入规格值" size="small"
-                          style="flex: 1;" @blur="generateSkuList" />
+                          style="flex: 1;" />
                         <el-button @click="removeSpecValue(index, valueIndex)" size="small" text circle
                           v-if="spec.specValues.length > 1">
                           <el-icon>
@@ -207,26 +208,282 @@
               </div>
 
               <!-- SKU列表 -->
-              <div v-if="skuList.length > 0" class="sku-section">
-                <h4 class="sku-title">SKU列表管理</h4>
+              <div v-if="skuList.length >= 0" class="sku-section">
+                <div class="card-header">
+                  <h4 class="sku-title">SKU列表管理</h4>
+                  <!-- 
+
+                  <el-button type="primary" @click="generateSkuList" size="small">
+                    <el-icon>
+                      <Plus />
+                    </el-icon>生成SKU列表
+                  </el-button>
+                  -->
+                </div>
+
+
                 <div class="sku-table-container">
                   <table class="sku-table">
                     <thead>
                       <tr>
-                        <th v-for="spec in specifications" :key="spec.specName" class="sku-header">
+                        <th v-for="spec in specifications.filter(it => it.isShow === true)" :key="spec.specName"
+                          class="sku-header">
                           {{ spec.specName }}
                         </th>
+                        <th class="sku-header">序号</th>
                         <th class="sku-header">价格</th>
                         <th class="sku-header">库存</th>
                         <th class="sku-header">默认</th>
                         <th class="sku-header">图片</th>
+                        <th class="sku-header">Id</th>
                       </tr>
                     </thead>
                     <tbody>
+
+
+
+
+                      <template v-if="specifications.filter(it => it.isShow === true).length === 1"
+                        v-for="(item1, index1) in specifications[0].specValues">
+                        <tr class="sku-row">
+
+                          <td class="sku-cell">
+                            {{ item1.specValue }}
+
+                          </td>
+                          <td class="sku-cell">
+                            {{ index1 + 1 }}
+
+                          </td>
+                          <td class="sku-cell">
+                            <el-input-number v-if="skuList[index1]" v-model="skuList[index1].price" :min="0"
+                              :precision="2" size="small" controls-position="right" style="width: 120px;" />
+                          </td>
+
+                          <td class="sku-cell">
+                            <el-input-number v-if="skuList[index1]" v-model="skuList[index1].stock" :min="0"
+                              size="small" controls-position="right" style="width: 100px;" />
+                          </td>
+
+
+                          <td class="sku-cell" v-if="skuList[index1]" @click="handleCellClick(index1)">
+                            <el-radio v-model="defaultIndex" :label="index1" size="small">
+                              默认
+                            </el-radio>
+                          </td>
+
+                          <td class="sku-cell">
+                            <el-upload class="sku-image-upload" v-if="skuList[index1]" action="/api/upload/sku-image"
+                              :show-file-list="false" :on-success="(res) => handleSkuImageUpload(res, skuList[index1])"
+                              :before-upload="beforeImageUpload">
+                              <div v-if="skuList[index1].image" class="sku-image-preview">
+                                <el-image :src="skuList[index1].image" fit="cover" />
+                              </div>
+                              <el-button v-else size="small" type="text">
+                                <el-icon>
+                                  <Picture />
+                                </el-icon>上传
+                              </el-button>
+                            </el-upload>
+                          </td>
+                          <td class="sku-cell">
+                            {{ skuList[index1].specId }}
+                          </td>
+
+                        </tr>
+                      </template>
+
+
+
+
+                      <template v-if="specifications.filter(it => it.isShow === true).length === 2"
+                        v-for="(item2, index2) in specifications[1].specValues">
+
+
+                        <template v-for="(item1, index1) in specifications[0].specValues">
+
+                          <tr class="sku-row">
+
+                            <td class="sku-cell">
+                              {{ item1.specValue }}
+
+                            </td>
+
+                            <td class="sku-cell">
+                              {{ item2.specValue }}
+
+                            </td>
+                            <td class="sku-cell">
+
+
+                              {{ (index2 * specifications[0].specValues.length) + index1 + 1 }}
+
+                            </td>
+
+
+
+
+                            <td class="sku-cell">
+                              <el-input-number v-if="skuList[(index2 * specifications[0].specValues.length) + index1]"
+                                v-model="skuList[(index2 * specifications[0].specValues.length) + index1].price"
+                                :min="0" :precision="2" size="small" controls-position="right" style="width: 120px;" />
+                            </td>
+
+
+                            <td class="sku-cell">
+                              <el-input-number v-if="skuList[(index2 * specifications[0].specValues.length) + index1]"
+                                v-model="skuList[(index2 * specifications[0].specValues.length) + index1].stock"
+                                :min="0" size="small" controls-position="right" style="width: 100px;" />
+                            </td>
+
+
+                            <td class="sku-cell" v-if="skuList[(index2 * specifications[0].specValues.length) + index1]"
+                              @click="handleCellClick((index2 * specifications[0].specValues.length) + index1)">
+                              <el-radio v-model="defaultIndex"
+                                :label="(index2 * specifications[0].specValues.length) + index1" size="small">
+                                默认
+                              </el-radio>
+                            </td>
+
+                            <td class="sku-cell">
+                              <el-upload class="sku-image-upload"
+                                v-if="skuList[(index2 * specifications[0].specValues.length) + index1]"
+                                action="/api/upload/sku-image" :show-file-list="false"
+                                :on-success="(res) => handleSkuImageUpload(res, skuList[(index2 * specifications[0].specValues.length) + index1])"
+                                :before-upload="beforeImageUpload">
+                                <div v-if="skuList[(index2 * specifications[0].specValues.length) + index1].image"
+                                  class="sku-image-preview">
+                                  <el-image
+                                    :src="skuList[(index2 * specifications[0].specValues.length) + index1].image"
+                                    fit="cover" />
+                                </div>
+                                <el-button v-else size="small" type="text">
+                                  <el-icon>
+                                    <Picture />
+                                  </el-icon>上传
+                                </el-button>
+                              </el-upload>
+                            </td>
+                            <td class="sku-cell">
+                              {{ skuList[(index2 * specifications[0].specValues.length) + index1].specId }}
+                            </td>
+
+
+                          </tr>
+
+                        </template>
+
+
+                      </template>
+
+
+
+
+
+                      <template v-if="specifications.filter(it => it.isShow === true).length === 3"
+                        v-for="(item3, index3) in specifications[2].specValues">
+
+
+                        <template v-for="(item2, index2) in specifications[1].specValues">
+
+
+                          <template v-for="(item1, index1) in specifications[0].specValues">
+
+                            <tr class="sku-row">
+
+                              <td class="sku-cell">
+                                {{ item1.specValue }}
+
+                              </td>
+                              <td class="sku-cell">
+                                {{ item2.specValue }}
+
+                              </td>
+                              <td class="sku-cell">
+                                {{ item3.specValue }}
+
+                              </td>
+
+                              <td class="sku-cell">
+
+                                {{ (index3 * specifications[1].specValues.length * specifications[0].specValues.length)
+                                  + (index2 * specifications[0].specValues.length) + index1 + 1 }}
+
+                              </td>
+
+
+                              <td class="sku-cell">
+                                <el-input-number v-if="skuList[(index3 * specifications[1].specValues.length * specifications[0].specValues.length)
+                                  + (index2 * specifications[0].specValues.length) + index1]" v-model="skuList[(index3 * specifications[1].specValues.length * specifications[0].specValues.length)
+                                    + (index2 * specifications[0].specValues.length) + index1].price" :min="0"
+                                  :precision="2" size="small" controls-position="right" style="width: 120px;" />
+                              </td>
+
+
+                              <td class="sku-cell">
+                                <el-input-number v-if="skuList[(index3 * specifications[1].specValues.length * specifications[0].specValues.length)
+                                  + (index2 * specifications[0].specValues.length) + index1]" v-model="skuList[(index3 * specifications[1].specValues.length * specifications[0].specValues.length)
+                                    + (index2 * specifications[0].specValues.length) + index1].stock" :min="0"
+                                  size="small" controls-position="right" style="width: 100px;" />
+                              </td>
+
+
+                              <td class="sku-cell" v-if="skuList[(index3 * specifications[1].specValues.length * specifications[0].specValues.length)
+                                + (index2 * specifications[0].specValues.length) + index1]" @click="handleCellClick((index3 * specifications[1].specValues.length * specifications[0].specValues.length)
+                                  + (index2 * specifications[0].specValues.length) + index1)">
+                                <el-radio v-model="defaultIndex" :label="(index3 * specifications[1].specValues.length * specifications[0].specValues.length)
+                                  + (index2 * specifications[0].specValues.length) + index1" size="small">
+                                  默认
+                                </el-radio>
+                              </td>
+
+                              <td class="sku-cell">
+                                <el-upload class="sku-image-upload" v-if="skuList[(index3 * specifications[1].specValues.length * specifications[0].specValues.length)
+                                  + (index2 * specifications[0].specValues.length) + index1]"
+                                  action="/api/upload/sku-image" :show-file-list="false" :on-success="(res) => handleSkuImageUpload(res, skuList[(index3 * specifications[1].specValues.length * specifications[0].specValues.length)
+                                    + (index2 * specifications[0].specValues.length) + index1])"
+                                  :before-upload="beforeImageUpload">
+                                  <div v-if="skuList[(index3 * specifications[1].specValues.length * specifications[0].specValues.length)
+                                    + (index2 * specifications[0].specValues.length) + index1].image"
+                                    class="sku-image-preview">
+                                    <el-image :src="skuList[(index3 * specifications[1].specValues.length * specifications[0].specValues.length)
+                                      + (index2 * specifications[0].specValues.length) + index1].image" fit="cover" />
+                                  </div>
+                                  <el-button v-else size="small" type="text">
+                                    <el-icon>
+                                      <Picture />
+                                    </el-icon>上传
+                                  </el-button>
+                                </el-upload>
+                              </td>
+                              <td class="sku-cell">
+                                {{ skuList[(index3 * specifications[1].specValues.length *
+                                  specifications[0].specValues.length)
+                                  + (index2 * specifications[0].specValues.length) + index1].specId }}
+                              </td>
+
+
+                            </tr>
+
+                          </template>
+
+
+                        </template>
+
+                      </template>
+
+
+                      <!--
+
                       <tr v-for="(sku, skuIndex) in skuList" :key="skuIndex" class="sku-row">
                         <td v-for="spec in specifications" :key="spec.specName" class="sku-cell">
                           {{ sku['spec' + spec.index + 'Value'] }}
                         </td>
+                        <td class="sku-cell">
+                          {{ skuIndex + 1 }}
+
+                        </td>
+
                         <td class="sku-cell">
                           <el-input-number v-model="sku.price" :min="0" :precision="2" size="small"
                             controls-position="right" style="width: 120px;" />
@@ -235,8 +492,8 @@
                           <el-input-number v-model="sku.stock" :min="0" size="small" controls-position="right"
                             style="width: 100px;" />
                         </td>
-                        <td class="sku-cell" @click="handleCellClick(sku, skuIndex)">
-                          <el-radio v-model="defaultSkuId" :label="sku.specId" size="small">
+                        <td class="sku-cell" @click="handleCellClick(skuIndex)">
+                          <el-radio v-model="defaultIndex" :label="skuIndex" size="small">
                             默认
                           </el-radio>
                         </td>
@@ -253,7 +510,21 @@
                             </el-button>
                           </el-upload>
                         </td>
+                        <td class="sku-cell">
+                          <el-button @click="handleDeleteskuClick(sku)" size="small" type="text">
+                            <el-icon>
+                              <Delete />
+                            </el-icon>删除
+                          </el-button>
+                        </td>
+
                       </tr>
+
+ -->
+
+
+
+
                     </tbody>
                   </table>
                 </div>
@@ -270,6 +541,7 @@
           </el-card>
 
           <!-- 营销活动卡片 -->
+          <!-- 
           <el-card class="form-card" shadow="never">
             <template #header>
               <div class="card-header">
@@ -284,7 +556,7 @@
 
             <div class="marketing-tabs">
               <el-tabs v-model="activeMarketingTab" class="marketing-tabs-content">
-                <!-- 秒杀活动 -->
+           
                 <el-tab-pane label="秒杀活动" name="seckill">
                   <div class="activity-form">
                     <el-switch v-model="hasSeckill" :active-value="true" :inactive-value="false" active-text="开启秒杀"
@@ -335,7 +607,7 @@
                         </div>
                       </div>
 
-                      <!-- 秒杀规格库存 -->
+                     
                       <div v-if="hasSpecifications && skuList.length > 0" class="spec-stocks-section">
                         <h4 class="section-title">规格秒杀库存</h4>
                         <div class="spec-stocks-list">
@@ -354,7 +626,7 @@
                   </div>
                 </el-tab-pane>
 
-                <!-- 团购活动 -->
+           
                 <el-tab-pane label="团购活动" name="groupbuy">
                   <div class="activity-form">
                     <el-switch v-model="hasGroupBuy" :active-value="true" :inactive-value="false" active-text="开启团购"
@@ -414,7 +686,7 @@
               </el-tabs>
             </div>
           </el-card>
-
+            -->
           <!-- 商品详情卡片 -->
           <el-card class="form-card" shadow="never">
             <template #header>
@@ -451,13 +723,13 @@
               </div>
 
               <div class="editor-container">
-                <textarea ref="editorRef" v-model="formData.ProductContent" placeholder="请输入商品详情描述，支持HTML格式..."
+                <textarea ref="editorRef" v-model="formData.productContent" placeholder="请输入商品详情描述，支持HTML格式..."
                   class="rich-editor" @input="handleEditorInput"></textarea>
               </div>
 
-              <div class="preview-section" v-if="formData.ProductContent">
+              <div class="preview-section" v-if="formData.productContent">
                 <h4 class="preview-title">预览：</h4>
-                <div class="preview-content" v-html="formData.ProductContent"></div>
+                <div class="preview-content" v-html="formData.productContent"></div>
               </div>
             </div>
           </el-card>
@@ -557,7 +829,7 @@
 <script setup>
 import { ref, reactive, onMounted, computed, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   ArrowLeft, Check, Upload, Delete, Picture,
   Camera, Goods, Money, Document, Setting,
@@ -570,8 +842,11 @@ import {
   getProductDetail,
   createProduct,
   updateProduct,
-  getCategoryOptions
+  getCategoryOptions,
+  deleteProductSpecs,
+  deleteBatchProductSpecs
 } from '@/api/modules/product'
+import { it } from 'element-plus/es/locales.mjs'
 
 const route = useRoute()
 const router = useRouter()
@@ -580,7 +855,7 @@ const editorRef = ref()
 const submitting = ref(false)
 const categoryOptions = ref([])
 const activeMarketingTab = ref('seckill')
-const defaultSkuId = ref('')
+const defaultIndex = ref('')
 
 const userStore = useUserStore()
 const props = {
@@ -594,6 +869,7 @@ const props = {
 // 规格数据
 const specifications = ref([])
 const skuList = ref([])
+
 
 // 营销活动数据
 const hasSeckill = ref(false)
@@ -619,8 +895,9 @@ const seckillSpecStocks = ref([])
 // 判断是新增还是编辑
 const isEditMode = computed(() => !!route.query.id)
 const pageTitle = computed(() => isEditMode.value ? '编辑商品' : '添加商品')
-const hasSpecifications = computed(() => specifications.value.length > 0)
+const hasSpecifications = computed(() => specifications.value.filter(it => it.isShow === true).length > 0)
 const totalSkus = computed(() => skuList.value.length)
+
 
 // 表单数据
 const formData = reactive({
@@ -666,29 +943,108 @@ const formRules = {
 // 规格操作方法
 const addSpecification = () => {
 
-  if (specifications.value.length === 3) {
+  if (specifications.value[2].isShow === true) {
     ElMessage.info('只能增加3种规格!')
     return
   }
-  specifications.value.push({
-    specName: '',
-    specValues: [{ specValue: '' }]
-  })
+  const sortOrder = specifications.value.filter(it => it.isShow === true).length + 1
+  specifications.value.find(it => it.sortOrder === sortOrder).isShow = true
 }
 
-const removeSpecification = (index) => {
-  specifications.value.splice(index, 1)
-  generateSkuList()
+const removeSpecification = async (index) => {
+  if (index < specifications.value.filter(it => it.isShow === true).length - 1) {
+    ElMessage.info('删除规格只能由下往上删除!')
+    return
+  }
+
+  let ids = '0'
+  if (index === 2) {
+    const iCount1 = specifications.value[0].specValues.length
+    const iCount2 = specifications.value[1].specValues.length
+    let idsarray = skuList.value.filter(it => it.sortOrder > iCount1 * iCount2).map(it => it.specId)
+    ids = idsarray.join(',')
+  }
+  if (index === 1) {
+    const iCount1 = specifications.value[0].specValues.length
+    let idsarray = skuList.value.filter(it => it.sortOrder > iCount1).map(it => it.specId)
+    ids = idsarray.join(',')
+  }
+  if (index === 0) {
+    let idsarray = skuList.value.map(it => it.specId)
+    ids = idsarray.join(',')
+  }
+  let res = await DeleteBatchsku(ids)
+  //删除数据库成功后
+  if (res === true) {
+
+    let row = specifications.value.find(it => it.sortOrder === index + 1)
+
+    //删除skuList
+    if (index === 2) {
+      const iCount1 = specifications.value[0].specValues.length
+      const iCount2 = specifications.value[1].specValues.length
+      skuList.value = skuList.value.filter(it => it.sortOrder <= iCount1 * iCount2)
+    }
+    if (index === 1) {
+      const iCount1 = specifications.value[0].specValues.length
+      skuList.value = skuList.value.filter(it => it.sortOrder <= iCount1)
+    }
+    if (index === 0) {
+      skuList.value = []
+    }
+    row.isShow = false
+    row.specName = ''
+    row.specValues = [{ specValue: '' }]
+  }
 }
 
 const addSpecValue = (specIndex) => {
   specifications.value[specIndex].specValues.push({ specValue: '' })
 }
 
-const removeSpecValue = (specIndex, valueIndex) => {
+const removeSpecValue = async (specIndex, valueIndex) => {
   if (specifications.value[specIndex].specValues.length > 1) {
-    specifications.value[specIndex].specValues.splice(valueIndex, 1)
-    generateSkuList()
+    const specValue = specifications.value[specIndex].specValues[valueIndex].specValue
+    let ids = '0'
+    if (specIndex === 0) {
+      let idsarray = skuList.value.filter(it => it.spec1Value === specValue).map(it => it.specId)
+      ids = idsarray.join(',')
+
+    }
+
+    if (specIndex === 1) {
+      let idsarray = skuList.value.filter(it => it.spec2Value === specValue).map(it => it.specId)
+      ids = idsarray.join(',')
+
+    }
+
+    if (specIndex === 2) {
+      let idsarray = skuList.value.filter(it => it.spec3Value === specValue).map(it => it.specId)
+      ids = idsarray.join(',')
+
+    }
+    let res = await DeleteBatchsku(ids)
+    //删除数据库成功后
+    if (res === true) {
+      //删除skuList
+      if (specIndex === 0) {
+        skuList.value = skuList.value.filter(it => it.spec1Value !== specValue)
+      }
+
+      if (specIndex === 1) {
+        skuList.value = skuList.value.filter(it => it.spec2Value !== specValue)
+      }
+
+      if (specIndex === 2) {
+        skuList.value = skuList.value.filter(it => it.spec3Value !== specValue)
+      }
+
+
+      specifications.value[specIndex].specValues.splice(valueIndex, 1)
+    }
+
+
+
   }
 }
 
@@ -713,64 +1069,120 @@ const generateSkuList = () => {
       seckillSpecStocks.value = []
       return
     }
-  
-    // 生成所有规格组合
-    const combinations = []
-    const generateCombinations = (index, currentSpecs, currentValues) => {
-      if (index === validSpecs.length) {
-        combinations.push({
-          specs: [...currentSpecs],
-          values: [...currentValues]
-        })
-        return
-      }
-  
-      const spec = validSpecs[index]
-      const validValues = spec.specValues.filter(v => v.specValue.trim())
-  
-      for (const value of validValues) {
-        currentSpecs.push(spec.specName)
-        currentValues.push(value)
-        generateCombinations(index + 1, currentSpecs, currentValues)
-        currentSpecs.pop()
-        currentValues.pop()
-      }
-    }
-  
-    generateCombinations(0, [], [])
-  
-    // 生成SKU列表
-    skuList.value = combinations.map(combo => {
-      const existingSku = skuList.value.find(
-        sku => JSON.stringify(sku.specs) === JSON.stringify(combo.specs)
-      )
-  
-      return existingSku || {
-        specs: combo.specs,
-        values: combo.values,
-        Price: formData.CurrentPrice,
-        Stock: formData.TotalStock,
-        IsDefault: skuList.value.length === 0 ? 1 : 0,
-        Image: '',
-        SortOrder: 0
-      }
-    })
-  */
+      */
+
+
+
+
   // 初始化秒杀规格库存
   seckillSpecStocks.value = skuList.value.map(sku => Math.min(sku.Stock, 50))
 }
 
+
 // 监听规格变化
 watch(specifications, () => {
-  generateSkuList()
+  let price = (formData.currentPrice) ? formData.currentPrice : 0
+  let sepcList = specifications.value.filter(it => it.isShow === true)
+
+  let items1 = sepcList.find(spec => spec.sortOrder === 1)
+  let items2 = sepcList.find(spec => spec.sortOrder === 2)
+  let items3 = sepcList.find(spec => spec.sortOrder === 3)
+
+
+  if (sepcList.length === 1) {
+    items1.specValues.forEach((item1, index1) => {
+      let sortOrder = index1 + 1
+      let sku = skuList.value.find(it => it.sortOrder === sortOrder)
+      if (!sku) {
+        skuList.value.push({
+          specId: 0, spec1Name: items1.specName, spec1Value: item1.specValue, spec2Name: '', spec2Value: '', spec3Name: '', spec3Value: '',
+          price: price, stock: 0, image: '', isDefault: 0, sortOrder: sortOrder
+        })
+      }
+      else {
+        sku.spec1Name = items1.specName
+        sku.spec1Value = item1.specValue
+        sku.spec2Name = ''
+        sku.spec2Value = ''
+        sku.spec3Name = ''
+        sku.spec3Value = ''
+      }
+    })
+
+  }
+
+
+
+  if (sepcList.length === 2) {
+    let iCount1 = items1.specValues.length
+    for (let [index2, item2] of items2.specValues.entries()) {
+
+
+      for (let [index1, item1] of items1.specValues.entries()) {
+        let sortOrder = index2 * iCount1 + index1 + 1
+
+
+        let sku = skuList.value.find(it => it.sortOrder === sortOrder)
+        if (!sku) {
+          skuList.value.push({
+            specId: 0, spec1Name: items1.specName, spec1Value: item1.specValue, spec2Name: items2.specName, spec2Value: item2.specValue, spec3Name: '', spec3Value: '',
+            price: price, stock: 0, image: '', isDefault: 0, sortOrder: sortOrder
+          })
+        }
+        else {
+          sku.spec1Name = items1.specName
+          sku.spec1Value = item1.specValue
+          sku.spec2Name = items2.specName
+          sku.spec2Value = item2.specValue
+          sku.spec3Name = ''
+          sku.spec3Value = ''
+        }
+      }
+    }
+  }
+
+
+  if (sepcList.length === 3) {
+    let iCount1 = items1.specValues.length
+    let iCount2 = items2.specValues.length
+    for (let [index3, item3] of items3.specValues.entries()) {
+      for (let [index2, item2] of items2.specValues.entries()) {
+        for (let [index1, item1] of items1.specValues.entries()) {
+
+          let sortOrder = index3 * iCount2 * iCount1 + index2 * iCount1 + index1 + 1
+
+          let sku = skuList.value.find(it => it.sortOrder === sortOrder)
+          if (!sku) {
+            skuList.value.push({
+              specId: 0, spec1Name: items1.specName, spec1Value: item1.specValue, spec2Name: items2.specName, spec2Value: item2.specValue, spec3Name: items3.specName, spec3Value: item3.specValue,
+              price: price, stock: 0, image: '', isDefault: 0, sortOrder: sortOrder
+            })
+          }
+          else {
+            sku.spec1Name = items1.specName
+            sku.spec1Value = item1.specValue
+            sku.spec2Name = items2.specName
+            sku.spec2Value = item2.specValue
+            sku.spec3Name = items3.specName
+            sku.spec3Value = item3.specValue
+          }
+        }
+      }
+    }
+  }
+
+
+
+
+
 }, { deep: true })
 
 // 监听价格变化，更新SKU价格
-watch(() => formData.CurrentPrice, (newPrice) => {
+watch(() => formData.currentPrice, (newPrice) => {
   if (skuList.value.length > 0) {
     skuList.value.forEach(sku => {
       if (!sku.customPrice) {
-        sku.Price = newPrice
+        sku.price = newPrice
       }
     })
   }
@@ -833,16 +1245,67 @@ const handleEditorInput = () => {
   // 可以添加实时预览或其他处理
 }
 
-const handleCellClick = (row, index) => {
-  defaultSkuId.value = row.specId
-  //row.isDefault = 1
+const handleCellClick = (index) => {
+  defaultIndex.value = index
   // 设置默认SKU
-  // skuList.value.forEach((sku, idx) => {
-  // sku.isDefault = idx === index ? 1 : 0
-  // })
+  skuList.value.forEach((sku, idx) => {
+    sku.isDefault = idx === index ? 1 : 0
+  })
 
 
 }
+//删除规格
+const handleDeleteskuClick = async (row) => {
+  try {
+    let hintstr = row.spec1Value
+    hintstr = hintstr + ((row.spec2Value) ? row.spec2Value : '')
+    hintstr = hintstr + ((row.spec3Value) ? row.spec3Value : '')
+    await ElMessageBox.confirm(
+      `确定要删除商品规格"${hintstr}"吗？此操作不可恢复！`,
+      '删除确认',
+      {
+        confirmButtonText: '确认删除',
+        cancelButtonText: '取消',
+        type: 'warning',
+        confirmButtonClass: 'el-button--danger',
+        center: true
+      }
+    )
+
+    await deleteProductSpecs(row.specId)
+    const index = skuList.value.findIndex(it => it.specId === row.specId)
+    skuList.value.splice(index, 1)
+    ElMessage.success('删除成功')
+  } catch (error) {
+
+  }
+}
+
+//批量删除规格
+const DeleteBatchsku = async (ids) => {
+  try {
+
+    await ElMessageBox.confirm(
+      `确定要删除商品规格吗？此操作不可恢复！`,
+      '删除确认',
+      {
+        confirmButtonText: '确认删除',
+        cancelButtonText: '取消',
+        type: 'warning',
+        confirmButtonClass: 'el-button--danger',
+        center: true
+      }
+    )
+
+    await deleteBatchProductSpecs(ids)
+    ElMessage.success('删除成功')
+    return true
+  } catch (error) {
+    return false
+  }
+}
+
+
 
 const handleEditorImageUpload = (response) => {
   if (response.code === 0) {
@@ -910,16 +1373,25 @@ const handleSave = async () => {
     await formRef.value.validate()
 
     // 处理规格数据加序号
-    specifications.value.forEach((spec, index) => {
-      spec.index = index + 1
+
+    const productSpec = []
+    specifications.value.filter(it => it.isShow === true).forEach((item, index) => {
+      productSpec.push({ specName: item.specName, specValues: item.specValues, sortOrder: item.sortOrder })
     })
+
 
     const productSpecs = []
 
-    skuList.value.forEach(sku => {
+    skuList.value.forEach((sku, index) => {
 
       let specs = {
         specId: sku.specId,
+        spec1Name: sku.spec1Name,
+        spec1Value: sku.spec1Value,
+        spec2Name: sku.spec2Name,
+        spec2Value: sku.spec2Value,
+        spec3Name: sku.spec3Name,
+        spec3Value: sku.spec3Value,
         price: sku.price,
         stock: sku.stock,
         isDefault: sku.isDefault,
@@ -928,11 +1400,12 @@ const handleSave = async () => {
       }
 
 
-
-      specifications.value.forEach(obj => {
-        Object(specs)['spec' + obj.index + 'Name'] = obj.specName
-        Object(specs)['spec' + obj.index + 'Value'] = sku['spec' + obj.index + 'Value']
-      })
+      /*
+            productSpec.forEach(obj => {
+              Object(specs)['spec' + obj.sortOrder + 'Name'] = obj.specName
+              Object(specs)['spec' + obj.sortOrder + 'Value'] = obj.specValues[index].specValue
+            })
+         */
       productSpecs.push(specs)
 
     })
@@ -976,7 +1449,7 @@ const handleSave = async () => {
 
       appType: userStore.userInfo.appType,
       businessId: userStore.userInfo.businessId,
-      productSpec: JSON.stringify(specifications.value),
+      productSpec: JSON.stringify(productSpec),
       productSpecs: productSpecs,
       marketing: marketingData
     }
@@ -1013,11 +1486,19 @@ const loadData = async () => {
       // 加载规格数据
       const productSpec = (res.result.productSpec) ? JSON.parse(res.result.productSpec) : []
       specifications.value = productSpec
+      //数据库里查询出来的表示允许显示 
+      for (let item of specifications.value) {
+        item.isShow = true
+      }
+      //循环把空数组补齐参与页面循环渲染
+      while (specifications.value.length < 3) {
+        specifications.value.push({ specName: '', specValues: [{ specValue: '' }], sortOrder: specifications.value.length + 1, isShow: false })
+      }
       // 加载SKU数据
       skuList.value = (res.result.productSpecs) ? res.result.productSpecs : []
       for (let [index, item] of skuList.value.entries()) {
         if (item.isDefault === 1) {
-          handleCellClick(item, index)
+          handleCellClick(index)
           break
         }
 

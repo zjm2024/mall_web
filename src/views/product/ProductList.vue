@@ -265,6 +265,7 @@ import { useUserStore } from '@/stores/user'
 import {
   getProductPageList,
   getCategoryOptions,
+  updateProduct,
   deleteProduct,
   deleteBatchProducts
 } from '@/api/modules/product'
@@ -416,18 +417,21 @@ const handleDeleteBatch = async () => {
 
 // 修改状态
 const handleStatusChange = async (row) => {
-  /*
+
   try {
     // 这里调用API更新状态
-    await updateProductStatus(row.ProductId, row.ProductStatus)
-    ElMessage.success(row.ProductStatus === 1 ? '商品已上架' : '商品已下架')
+    const saveData = {
+      productId: row.productId,
+      productStatus: row.productStatus
+
+    }
+    await updateProduct(saveData)
+    ElMessage.success(row.productStatus === 1 ? '商品已上架' : '商品已下架')
   } catch (error) {
-    console.error('更新状态失败:', error)
-    ElMessage.error('更新失败')
     // 回滚状态
-    row.ProductStatus = row.ProductStatus === 1 ? 0 : 1
+    row.productStatus = row.productStatus === 1 ? 0 : 1
   }
-    */
+
 }
 
 // 表格选择

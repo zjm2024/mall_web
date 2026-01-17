@@ -25,21 +25,28 @@ const productApi = {
 
   // 获取商品详情
   getProductDetail(id) {
-    return request.get(API_PATHS.PRODUCT.INFO(id))
+    return request.get(API_PATHS.PRODUCT.DETAIL(id))
   },
 
 
   // 删除商品
   deleteProduct(id) {
-    return request.get(API_PATHS.PRODUCT.DETAIL(id))
+    return request.get(API_PATHS.PRODUCT.DELETE(id))
   },
 
   // 批量删除商品
   deleteBatchProducts(ids) {
-    return request.get(API_PATHS.PRODUCT.DETAILBATCH(ids))
+    return request.get(API_PATHS.PRODUCT.DELETEBATCH(ids))
   },
 
-
+  // 删除规格
+  deleteProductSpecs(id) {
+    return request.get(API_PATHS.PRODUCT.DELETESPECS(id))
+  },
+  // 批量删除规格
+  deleteBatchProductSpecs(ids) {
+    return request.get(API_PATHS.PRODUCT.DELETEBATCHSPECS(ids))
+  },
   // 获取规格列表
   getSpecList(productId) {
     return request.get(`/api/products/${productId}/specs`)
@@ -55,10 +62,7 @@ const productApi = {
     return request.put(`/api/specs/${specId}`, data)
   },
 
-  // 删除规格
-  deleteSpec(specId) {
-    return request.delete(`/api/specs/${specId}`)
-  },
+
 
   // 上传商品图片
   uploadProductImage(data) {
@@ -84,7 +88,8 @@ export const {
   getSpecList,
   saveSpecs,
   updateSpec,
-  deleteSpec,
+  deleteProductSpecs,
+  deleteBatchProductSpecs,
   uploadProductImage,
   batchOperation
 } = productApi

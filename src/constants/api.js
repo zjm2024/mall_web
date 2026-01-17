@@ -56,11 +56,14 @@ export const API_PATHS = {
   // 商品管理
   PRODUCT: {
     LIST: `/shopadminApi/Product/getProductsPageList`,
-    DETAIL: (id) => `/shopadminApi/Product/deleteProducts?id=${id}`,
-    DETAILBATCH: (ids) => `/shopadminApi/Product/deleteBatchProducts?ids=${ids}`,
+    DELETE: (id) => `/shopadminApi/Product/deleteProducts?id=${id}`,
+    DELETEBATCH: (ids) => `/shopadminApi/Product/deleteBatchProducts?ids=${ids}`,
     UPDATE: '/shopadminApi/Product/updateProducts',
     CATEGORIESOPTIONS: `/shopadminApi/Product/getCategoriesOptions`,
-    INFO: (id) => `/shopadminApi/Product/getProductsById?id=${id}`,
+    DETAIL: (id) => `/shopadminApi/Product/getProductsById?id=${id}`,
+
+    DELETESPECS: (id) => `/shopadminApi/Product/deleteProductSpecs?id=${id}`,
+    DELETEBATCHSPECS: (ids) => `/shopadminApi/Product/deleteBatchProductSpecs?ids=${ids}`,
   },
 
   // 订单管理
