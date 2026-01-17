@@ -62,12 +62,8 @@ import {
     ActivityType
 } from '@/constants/order'
 
-const props = defineProps({
-    mode: {
-        type: String,
-        default: 'add'
-    }
-})
+
+const props = defineProps({})
 
 const emits = defineEmits(['success'])
 
@@ -118,58 +114,19 @@ const rules = {
 }
 
 // 计算属性
-const dialogTitle = computed(() => {
-    if (props.mode === 'add') {
-        return '取消订单'
-    }
-    return '取消订单'
-})
+const dialogTitle = computed(() => {return '取消订单'})
 
 // 打开弹窗
 const openDialog = async (row) => {
-    if (row && (row.OrderId || row.orderId)) {
-        // 处理字段名大小写不一致的问题
-        const orderData = {}
-        // 优先使用大写字段名（符合模拟数据格式），回退到小写字段名
-        Object.keys(row).forEach(key => {
-        if (key.charAt(0) === key.charAt(0).toUpperCase()) {
-            // 保留原有字段名
-            orderData[key] = row[key]
-        } else if (row[key.toUpperCase()] !== undefined) {
-            // 尝试大写字段名
-            orderData[key.toUpperCase()] = row[key.toUpperCase()]
-        } else {
-            orderData[key] = row[key]
-        }
-        })
-        Object.assign(formData, orderData)
+    Object.assign(formData, row)
         
-        // 保存原订单备注，但不显示在输入框中
-        const originalRemark = orderData.remark || ''
-        formData.originalRemark = originalRemark
+    // 保存原订单备注，但不显示在输入框中
+    const originalRemark = row.remark || ''
+    formData.originalRemark = originalRemark
         
-        // 清空用户输入的备注，避免显示原订单备注
-        formData.remark = ''
-    } else {
-        // 重置表单为默认值
-        Object.assign(formData, {
-        orderId: null,
-        receiverName: '',
-        receiverPhone: '',
-        receiverAddress: '',
-        totalAmount: 0,
-        totalPayAmount: 0,
-        orderStatus: OrderStatus.PENDING,
-        payStatus: PayStatus.UNPAID,
-        paymentMethod: PaymentMethod.WECHAT,
-        riskLevel: RiskLevel.NORMAL,
-        activityType: ActivityType.NORMAL,
-        appType: 1,
-        cancelReason: '',
-        remark: '',
-        originalRemark: ''
-        })
-    }
+    // 清空用户输入的备注，避免显示原订单备注
+    formData.remark = ''
+    
     isShowDialog.value = true
 }
 
@@ -229,19 +186,8 @@ const handleSubmit = async () => {
         cancelReason: formData.cancelReason // 添加取消原因字段
         }
 
-        // 如果是编辑模式，添加订单ID
-        if (props.mode === 'edit') {
-        submitData.orderId = formData.orderId
-        }
-
-        let res
-        if (props.mode === 'add') {
-        res = await orderApi.createOrder(submitData)
-        ElMessage.success('添加成功')
-        } else {
-        res = await orderApi.updateOrder(submitData)
-        ElMessage.success('更新成功')
-        }
+        const res = await orderApi.updateOrder(submitData)
+        ElMessage.success('订单处理成功')
 
         closeDialog(res.result)
     } catch (error) {

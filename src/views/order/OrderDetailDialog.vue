@@ -193,23 +193,8 @@ const openDialog = async (row) => {
   try {
     loading.value = true
     isShowDialog.value = true
-    
-    // 处理字段名大小写不一致的问题，参考OrderDealDialog.vue的方法
-    const standardizedData = {}
-    Object.keys(row).forEach(key => {
-      if (key.charAt(0) === key.charAt(0).toUpperCase()) {
-        // 保留原有字段名
-        standardizedData[key] = row[key]
-      } else if (row[key.toUpperCase()] !== undefined) {
-        // 尝试大写字段名
-        standardizedData[key.toUpperCase()] = row[key.toUpperCase()]
-      } else {
-        standardizedData[key] = row[key]
-      }
-    })
-    
     // 使用Object.assign而不是直接赋值，保持响应性
-    Object.assign(orderData, standardizedData)
+    Object.assign(orderData, row)
   } catch (error) {
     console.error('获取订单详情失败:', error)
   } finally {

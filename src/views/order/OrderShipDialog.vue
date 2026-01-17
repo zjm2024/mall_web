@@ -83,12 +83,7 @@ import {
   ActivityType
 } from '@/constants/order'
 
-const props = defineProps({
-  mode: {
-    type: String,
-    default: 'add'
-  }
-})
+const props = defineProps({})
 
 const emits = defineEmits(['success'])
 
@@ -147,40 +142,22 @@ const rules = {
 }
 
 // 计算属性
-const dialogTitle = computed(() => {
-  if (props.mode === 'add') {
-    return '处理订单'
-  }
-  return `处理订单 - ${formData.orderNo}`
-})
+const dialogTitle = computed(() => {return '处理订单'})
 
 // 打开弹窗
 const openDialog = async (row) => {
-  if (row && (row.OrderId || row.orderId)) {
-    // 处理字段名大小写不一致的问题
-    const orderData = {}
-    // 优先使用大写字段名（符合模拟数据格式），回退到小写字段名
-    Object.keys(row).forEach(key => {
-      if (key.charAt(0) === key.charAt(0).toUpperCase()) {
-        // 保留原有字段名
-        orderData[key] = row[key]
-      } else if (row[key.toUpperCase()] !== undefined) {
-        // 尝试大写字段名
-        orderData[key.toUpperCase()] = row[key.toUpperCase()]
-      } else {
-        orderData[key] = row[key]
-      }
-    })
-    Object.assign(formData, orderData)
-  } else {
-    // 重置表单为默认值
-    Object.assign(formData, {
-      orderStatus: OrderStatus.PENDING,
-      shippingNo: ''
-    })
-  }
-  isShowDialog.value = true
+    Object.assign(formData, row)
+        
+    // 保存原订单备注，但不显示在输入框中
+    const originalRemark = row.remark || ''
+    formData.originalRemark = originalRemark
+        
+    // 清空用户输入的备注，避免显示原订单备注
+    formData.remark = ''
+    
+    isShowDialog.value = true
 }
+
 
 // 关闭弹窗
 const closeDialog = (res) => {

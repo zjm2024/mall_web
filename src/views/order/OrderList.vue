@@ -224,7 +224,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { formatDate } from '@/utils/common'
@@ -264,9 +264,7 @@ const orderDetailDialogRef = ref(null)
 const orderShipDialogRef = ref(null)
 const dialogMode = ref('add')
 
-// 自动刷新相关
-const autoRefreshTimer = ref(null)
-const lastActivityTime = ref(Date.now())
+
 
 // 分页
 const pagination = reactive({
@@ -319,33 +317,16 @@ const filterForm = reactive({
       appType: userStore.userInfo?.appType
     })
 
-    // 如果使用真实 API，取消下面注释并注释掉上面的模拟代码
-      const res = await orderApi.getOrderPageList(params)
-      
-      // 处理方法参考request.js拦截器的期望格式
-      if (res && res.flag === 1) {
-        // 标准的成功响应格式
-        orderList.value = res.result || []
-        pagination.total = res.count || 0
-      } else if (Array.isArray(res)) {
-        // 直接返回数组
-        orderList.value = res
-        pagination.total = res.length
-      } else if (res && res.result !== undefined) {
-        // 有result但没有flag
-        orderList.value = res.result || []
-        pagination.total = res.count || 0
-      } else {
-        console.warn('[OrderList] 无法识别的响应格式:', res)
-        orderList.value = []
-        pagination.total = 0
-      }
-      
-      console.log('[OrderList] 最终数据:', {
-        orderListLength: orderList.value.length,
-        total: pagination.total,
-        firstItem: orderList.value[0]
-      })
+    // 调用API获取订单列表数据
+    const res = await orderApi.getOrderPageList(params)
+    orderList.value = res.result 
+    pagination.total = res.count   
+    console.log('[OrderList] 数据加载完成:', {
+      orderListLength: orderList.value.length,
+      total: pagination.total,
+      firstItem: orderList.value[0]
+    })
+    
   } catch (error) {
     console.error('获取订单列表失败:', error)
     ElMessage.error('获取订单列表失败')
@@ -353,13 +334,6 @@ const filterForm = reactive({
     loading.value = false
   }
 }
-
-//刷新列表
-// const refreshList = () => {
-//   fetchOrderList()
-//   ElMessage.success('已刷新')
-// }
-
 
 // 搜索
 const handleSearch = () => {
@@ -433,7 +407,7 @@ const handleCurrentChange = (val) => {
 
 // 刷新列表（类似于F5重新加载页面）
 const refreshList = async () => {
-  
+
   // 重置分页到第一页
   pagination.currentPage = 1
   
@@ -442,9 +416,6 @@ const refreshList = async () => {
     filterForm[key] = ''
   })
   
-  // 记录用户活动
-  recordUserActivity()
-  
   // 重新获取数据
   await fetchOrderList()
   
@@ -452,114 +423,12 @@ const refreshList = async () => {
   ElMessage.success('页面已刷新')
 }
 
-// 执行自动刷新
-const performAutoRefresh = async () => {
-  
-  // 重新获取数据
-  await fetchOrderList()
-  
-  // 显示自动刷新提示
-  ElMessage.success('页面自动刷新')
-}
-
-
-// 记录用户活动时间
-const recordUserActivity = () => {
-  lastActivityTime.value = Date.now()
-}
-
-// 开始自动刷新定时器
-const startAutoRefresh = () => {
-  // 清除可能存在的旧定时器
-  if (autoRefreshTimer.value) {
-    clearTimeout(autoRefreshTimer.value)
-  }
-
-  autoRefreshTimer.value = setInterval(() => {
-    const now = Date.now()
-    const timeSinceLastActivity = now - lastActivityTime.value
-
-    // 如果超过五分钟——300秒（300000毫秒）没有用户活动，则刷新列表
-    if (timeSinceLastActivity >= 300000) {
-      console.log('[OrderList] 300秒无操作，执行自动刷新')
-      // 重置分页到第一页
-      pagination.currentPage = 1
-      // 重置筛选条件
-      Object.keys(filterForm).forEach(key => {
-        filterForm[key] = ''
-      })
-      
-      // 调用refreshList而不是直接fetchOrderList，确保有统一的loading提示
-      performAutoRefresh()
-    }
-  }, 1000) // 每秒检查一次
-}
-
-// 停止自动刷新定时器
-const stopAutoRefresh = () => {
-  if (autoRefreshTimer.value) {
-    clearInterval(autoRefreshTimer.value)
-    autoRefreshTimer.value = null
-  }
-}
-
-// 设置用户活动监听器
-const setupActivityListeners = () => {
-  // 监听各种用户操作事件
-  const events = ['mousemove', 'mousedown', 'keypress', 'scroll', 'touchstart']
-
-  const handleActivity = () => {
-    recordUserActivity()
-  }
-
-  // 添加用户活动事件监听
-  events.forEach(event => {
-    window.addEventListener(event, handleActivity, true)
-  })
-
-  // 返回清理函数，在组件卸载时使用
-  return () => {
-    events.forEach(event => {
-      window.removeEventListener(event, handleActivity, true)
-    })
-  }
-}
-
-// 生命周期
-let cleanupActivityListeners = null
-
+// 组件挂载时加载订单列表
 onMounted(() => {
-  console.log('[OrderList] onMounted - 开始加载订单列表')
-  
-  // 记录初始活动时间
-  recordUserActivity()
-  
-  // 设置用户活动监听器并获取清理函数
-  cleanupActivityListeners = setupActivityListeners()
-  
-  // 开始自动刷新定时器
-  startAutoRefresh()
-  
+  console.log('[OrderList] 组件已挂载，开始加载订单列表')
   fetchOrderList()
-  
-  // 延迟检查数据是否加载
-  setTimeout(() => {
-    console.log('[OrderList] 延迟检查 - orderList 长度:', orderList.value.length)
-    console.log('[OrderList] 延迟检查 - orderList 数据:', orderList.value)
-    console.log('[OrderList] 延迟检查 - loading 状态:', loading.value)
-  }, 500)
 })
 
-// 组件卸载时清理资源
-onUnmounted(() => {
-  console.log('[OrderList] onUnmounted - 清理自动刷新资源')
-  // 停止自动刷新
-  stopAutoRefresh()
-  // 清理事件监听器
-  if (cleanupActivityListeners) {
-    cleanupActivityListeners()
-  }
-})
 </script>
 
 <style lang="scss" scoped>
