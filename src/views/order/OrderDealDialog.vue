@@ -2,21 +2,6 @@
   <el-dialog v-model="isShowDialog" :title="dialogTitle" draggable width="800px" :close-on-click-modal="false"
     :show-close="false" @closed="handleClosed">
     <el-form ref="formRef" :model="formData" :rules="rules" label-width="120px" label-position="right" size="large">
-      <el-row>
-        <el-col :span="12">
-          <!-- 订单号 -->
-          <el-form-item label="订单号" prop="orderNo" class="form-item-large">
-            <el-input v-model="formData.orderNo" placeholder="请输入订单号" maxlength="50" size="large" clearable />
-          </el-form-item>
-        </el-col>
-
-        <el-col :span="12">
-          <!-- 买家ID -->
-          <el-form-item label="买家ID" prop="personalId" class="form-item-large">
-            <el-input v-model="formData.personalId" placeholder="请输入买家ID" maxlength="50" size="large" clearable />
-          </el-form-item>
-        </el-col>
-      </el-row>
 
       <el-row>
         <el-col :span="12">
@@ -112,34 +97,9 @@
             </el-select>
           </el-form-item>
         </el-col>
-
-        <el-col :span="12">
-          <!-- 应用类型 -->
-          <el-form-item label="应用类型" prop="appType" class="form-item-large">
-            <el-select v-model="formData.appType" placeholder="请选择应用类型" size="large" style="width: 100%;">
-              <el-option label="微信小程序" :value="AppType.WECHAT" />
-              <el-option label="APP" :value="AppType.APP" />
-              <el-option label="H5" :value="AppType.H5" />
-            </el-select>
-          </el-form-item>
-        </el-col>
       </el-row>
 
-      <el-row>
-        <el-col :span="12">
-          <!-- 物流单号 -->
-          <el-form-item label="物流单号" prop="shippingNo" class="form-item-large">
-            <el-input v-model="formData.shippingNo" placeholder="请输入物流单号" maxlength="50" size="large" clearable />
-          </el-form-item>
-        </el-col>
 
-        <el-col :span="12">
-          <!-- 商户ID -->
-          <el-form-item label="商户ID" prop="businessId" class="form-item-large">
-            <el-input v-model="formData.businessId" placeholder="请输入商户ID" maxlength="50" size="large" clearable />
-          </el-form-item>
-        </el-col>
-      </el-row>
 
       <!-- 收货地址 -->
       <el-form-item label="收货地址" prop="receiverAddress" class="form-item-large">
@@ -194,8 +154,7 @@ import {
   PayStatus,
   RiskLevel,
   PaymentMethod,
-  ActivityType,
-  AppType
+  ActivityType
 } from '@/constants/order'
 
 const props = defineProps({
@@ -214,9 +173,6 @@ const submitting = ref(false)
 // 表单数据
 const formData = reactive({
   orderId: null,
-  orderNo: '',
-  personalId: '',
-  businessId: '',
   receiverName: '',
   receiverPhone: '',
   receiverAddress: '',
@@ -227,8 +183,7 @@ const formData = reactive({
   paymentMethod: PaymentMethod.WECHAT,
   riskLevel: RiskLevel.NORMAL,
   activityType: ActivityType.NORMAL,
-  appType: AppType.WECHAT,
-  shippingNo: '',
+  appType: 1,
   remark: ''
 })
 
@@ -236,13 +191,6 @@ const isShowDialog = ref(false)
 
 // 验证规则
 const rules = {
-  orderNo: [
-    { required: true, message: '请输入订单号', trigger: 'blur' },
-    { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
-  ],
-  personalId: [
-    { required: true, message: '请输入买家ID', trigger: 'blur' }
-  ],
   receiverName: [
     { required: true, message: '请输入收货人姓名', trigger: 'blur' },
     { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
@@ -256,7 +204,6 @@ const rules = {
     { type: 'number', min: 0, message: '订单总金额不能小于0', trigger: 'blur' }
   ],
   totalPayAmount: [
-    { required: true, message: '请输入实际支付金额', trigger: 'blur' },
     { type: 'number', min: 0, message: '实际支付金额不能小于0', trigger: 'blur' }
   ],
   orderStatus: [
@@ -274,12 +221,6 @@ const rules = {
   activityType: [
     { required: true, message: '请选择活动类型', trigger: 'change' }
   ],
-  appType: [
-    { required: true, message: '请选择应用类型', trigger: 'change' }
-  ],
-  businessId: [
-    { required: true, message: '请输入商户ID', trigger: 'blur' }
-  ]
 }
 
 // 计算属性
@@ -287,7 +228,7 @@ const dialogTitle = computed(() => {
   if (props.mode === 'add') {
     return '添加订单'
   }
-  return `编辑订单 - ${formData.orderNo}`
+  return '编辑订单'
 })
 
 // 打开弹窗
@@ -312,9 +253,6 @@ const openDialog = async (row) => {
     // 重置表单为默认值
     Object.assign(formData, {
       orderId: null,
-      orderNo: '',
-      personalId: '',
-      businessId: '',
       receiverName: '',
       receiverPhone: '',
       receiverAddress: '',
@@ -325,8 +263,7 @@ const openDialog = async (row) => {
       paymentMethod: PaymentMethod.WECHAT,
       riskLevel: RiskLevel.NORMAL,
       activityType: ActivityType.NORMAL,
-      appType: AppType.WECHAT,
-      shippingNo: '',
+      appType: 1,
       remark: ''
     })
   }
@@ -348,9 +285,6 @@ const handleSubmit = async () => {
     submitting.value = true
 
     const submitData = {
-      orderNo: formData.orderNo,
-      personalId: formData.personalId,
-      businessId: formData.businessId,
       receiverName: formData.receiverName,
       receiverPhone: formData.receiverPhone,
       receiverAddress: formData.receiverAddress,
@@ -361,8 +295,6 @@ const handleSubmit = async () => {
       paymentMethod: formData.paymentMethod,
       riskLevel: formData.riskLevel,
       activityType: formData.activityType,
-      appType: formData.appType,
-      shippingNo: formData.shippingNo,
       remark: formData.remark
     }
 

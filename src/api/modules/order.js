@@ -1,3 +1,4 @@
+
 /**
  * 订单管理 API 接口
  * @description 订单管理 API 接口，用于处理订单相关的请求。
@@ -17,42 +18,6 @@
  */
 import request from '@/utils/request'
 import { API_PATHS } from '@/constants/api'
-
-// 订单状态枚举
-export const OrderStatus = {
-  PENDING: 0,      // 待处理
-  SHIPPED: 1,      // 已发货
-  COMPLETED: 2,    // 已完成
-  CLOSED: 3        // 已关闭
-}
-
-// 支付状态枚举
-export const PayStatus = {
-  UNPAID: 0,      // 待支付
-  PAID: 1,        // 已支付
-  CANCELLED: 2    // 已取消
-}
-
-// 风险等级枚举
-export const RiskLevel = {
-  NORMAL: 0,      // 正常
-  SUSPICIOUS: 1,  // 可疑
-  HIGH: 2         // 高风险
-}
-
-// 支付方式枚举
-export const PaymentMethod = {
-  WECHAT: 0,      // 微信支付
-  BALANCE: 1,     // 余额支付
-  MIXED: 2        // 混合支付
-}
-
-// 活动类型枚举
-export const ActivityType = {
-  NORMAL: 0,      // 普通
-  SECKILL: 1,     // 秒杀
-  GROUP: 2        // 团购
-}
 
 // 订单管理 API
 const orderApi = {
@@ -105,18 +70,6 @@ const orderApi = {
   },
 
   /**
-   * 删除订单
-   * @param {number} orderId - 订单ID
-   * @returns {Promise}
-   */
-  deleteOrder(orderId) {
-    if (!API_PATHS.ORDER) {
-      return Promise.reject(new Error('API_PATHS.ORDER is undefined'))
-    }
-    return request.get(API_PATHS.ORDER.DELETE, { params: { orderId } })
-  },
-
-  /**
    * 发货
    * @param {Object} data - 发货数据
    * @param {number} data.orderId - 订单ID
@@ -129,20 +82,7 @@ const orderApi = {
     }
     return request.post(API_PATHS.ORDER.SHIP, data)
   },
-
-  /**
-   * 批量删除订单
-   * @param {Object} data - 批量删除数据
-   * @param {Array<number>} data.orderIds - 订单ID列表
-   * @returns {Promise}
-   */
-  batchDeleteOrders(data) {
-    if (!API_PATHS.ORDER) {
-      return Promise.reject(new Error('API_PATHS.ORDER is undefined'))
-    }
-    return request.post(API_PATHS.ORDER.BATCH_DELETE, data)
-  },
-
+  
   /**
    * 批量更新订单状态
    * @param {Object} data - 批量更新数据
@@ -179,113 +119,7 @@ const orderApi = {
       return Promise.reject(new Error('API_PATHS.ORDER is undefined'))
     }
     return request.get(API_PATHS.ORDER.CATEGORIESOPTIONS, { params })
-  },
+  },}
 
-  /**
-   * 获取订单状态文本
-   * @param {number} status - 订单状态值
-   * @returns {string} 状态文本
-   */
-  getOrderStatusText(status) {
-    const statusMap = {
-      [OrderStatus.PENDING]: '待处理',
-      [OrderStatus.SHIPPED]: '已发货',
-      [OrderStatus.COMPLETED]: '已完成',
-      [OrderStatus.CLOSED]: '已关闭'
-    }
-    return statusMap[status] || '未知'
-  },
-
-  /**
-   * 获取订单状态类型（用于 Element Plus Tag）
-   * @param {number} status - 订单状态值
-   * @returns {string} 类型
-   */
-  getOrderStatusType(status) {
-    const typeMap = {
-      [OrderStatus.PENDING]: 'warning',
-      [OrderStatus.SHIPPED]: 'primary',
-      [OrderStatus.COMPLETED]: 'success',
-      [OrderStatus.CLOSED]: 'info'
-    }
-    return typeMap[status] || 'info'
-  },
-
-  /**
-   * 获取支付状态文本
-   * @param {number} status - 支付状态值
-   * @returns {string} 状态文本
-   */
-  getPayStatusText(status) {
-    const statusMap = {
-      [PayStatus.UNPAID]: '待支付',
-      [PayStatus.PAID]: '已支付',
-      [PayStatus.CANCELLED]: '已取消'
-    }
-    return statusMap[status] || '未知'
-  },
-
-  /**
-   * 获取支付状态类型
-   * @param {number} status - 支付状态值
-   * @returns {string} 类型
-   */
-  getPayStatusType(status) {
-    const typeMap = {
-      [PayStatus.UNPAID]: 'warning',
-      [PayStatus.PAID]: 'success',
-      [PayStatus.CANCELLED]: 'info'
-    }
-    return typeMap[status] || 'info'
-  },
-
-  /**
-   * 获取风险等级文本
-   * @param {number} level - 风险等级值
-   * @returns {string} 等级文本
-   */
-  getRiskLevelText(level) {
-    const levelMap = {
-      [RiskLevel.NORMAL]: '正常',
-      [RiskLevel.SUSPICIOUS]: '可疑',
-      [RiskLevel.HIGH]: '高风险'
-    }
-    return levelMap[level] || '未知'
-  },
-
-  /**
-   * 获取风险等级类型
-   * @param {number} level - 风险等级值
-   * @returns {string} 类型
-   */
-  getRiskLevelType(level) {
-    const typeMap = {
-      [RiskLevel.NORMAL]: 'success',
-      [RiskLevel.SUSPICIOUS]: 'warning',
-      [RiskLevel.HIGH]: 'danger'
-    }
-    return typeMap[level] || 'info'
-  }
-}
-
-// 导出单个方法
-export const {
-  getOrderPageList,
-  getOrderDetail,
-  createOrder,
-  updateOrder,
-  deleteOrder,
-  shipOrder,
-  batchDeleteOrders,
-  batchUpdateOrderStatus,
-  getOrderStatistics,
-  getCategoryOptions,
-  getOrderStatusText,
-  getOrderStatusType,
-  getPayStatusText,
-  getPayStatusType,
-  getRiskLevelText,
-  getRiskLevelType
-} = orderApi
-
+// 导出默认 API 对象
 export default orderApi
