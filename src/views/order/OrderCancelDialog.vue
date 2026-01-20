@@ -74,6 +74,7 @@ const submitting = ref(false)
 // 表单数据
 const formData = reactive({
     orderId: null,
+    orderNo: '',
     receiverName: '',
     receiverPhone: '',
     receiverAddress: '',

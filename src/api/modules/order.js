@@ -66,7 +66,7 @@ const orderApi = {
     if (!API_PATHS.ORDER) {
       return Promise.reject(new Error('API_PATHS.ORDER is undefined'))
     }
-    return request.post(API_PATHS.ORDER.UPDATE, data)
+    return request.post(API_PATHS.ORDER.UPDATE, { data: data });
   },
 
   /**
@@ -119,7 +119,8 @@ const orderApi = {
       return Promise.reject(new Error('API_PATHS.ORDER is undefined'))
     }
     return request.get(API_PATHS.ORDER.CATEGORIESOPTIONS, { params })
-  },}
+  },
+}
 
 // 导出默认 API 对象
 export default orderApi

@@ -173,6 +173,7 @@ const submitting = ref(false)
 // 表单数据
 const formData = reactive({
   orderId: null,
+  orderNo: '',
   receiverName: '',
   receiverPhone: '',
   receiverAddress: '',
@@ -246,6 +247,7 @@ const openDialog = async (row) => {
     // 重置表单为默认值
     Object.assign(formData, {
       orderId: null,
+      orderNo: '',     
       receiverName: '',
       receiverPhone: '',
       receiverAddress: '',
@@ -313,6 +315,7 @@ const handleSubmit = async () => {
     }
   } finally {
     submitting.value = false
+    orderApi.totalAmount
   }
 }
 
