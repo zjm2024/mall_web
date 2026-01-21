@@ -183,30 +183,21 @@ const handleSubmit = async () => {
     }
 
     const submitData = {
+      orderId: formData.orderId,
       orderStatus: formData.orderStatus,
       shippingNo: formData.shippingNo
     }
 
-    // 如果是编辑模式，添加订单ID
-    if (props.mode === 'edit') {
-      submitData.orderId = formData.orderId
-    }
-
     // 检查是否是快递回撤操作，显示特殊提示
-    if (formData.orderStatus === 'dangerous') {
+    if (submitData.orderStatus === 'dangerous') {
       ElMessage.warning('【提示语】提示操作人要尽快撤回快递（日后可改动）')
       // 将状态转换为最终的实际状态值
-      formData.orderStatus = OrderStatus.PENDING // 切换到“待处理”状态，货物归库后选取消订单选项将订单关闭
+      submitData.orderStatus = OrderStatus.PENDING // 切换到"待处理"状态，货物归库后选取消订单选项将订单关闭
     }
 
-    let res
-    if (props.mode === 'add') {
-      res = await orderApi.createOrder(submitData)
-      ElMessage.success('添加成功')
-    } else {
-      res = await orderApi.updateOrder(submitData)
-      ElMessage.success('更新成功')
-    }
+    // 此组件仅用于订单处理（更新）
+    const res = await orderApi.updateOrder(submitData)
+    ElMessage.success('订单处理成功')
 
     closeDialog(res.result)
   } catch (error) {

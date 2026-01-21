@@ -157,12 +157,7 @@ import {
   ActivityType
 } from '@/constants/order'
 
-const props = defineProps({
-  mode: {
-    type: String,
-    default: 'add'
-  }
-})
+const props = defineProps({})
 
 const emits = defineEmits(['success'])
 
@@ -225,43 +220,17 @@ const rules = {
 }
 
 // 计算属性
-const dialogTitle = computed(() => {
-  if (props.mode === 'add') {
-    return '添加订单'
-  }
-  return '编辑订单'
-})
+const dialogTitle = computed(() => '编辑订单')
 
 // 打开弹窗
 const openDialog = async (row) => {
-    if (row && row.orderId) {
-        Object.assign(formData, row)
-        
-        // 保存原订单备注，但不显示在输入框中
-        const originalRemark = row.remark || ''
-        formData.originalRemark = originalRemark
-        
-        // 清空用户输入的备注，避免显示原订单备注
-        formData.remark = ''
-    } else {
-    // 重置表单为默认值
-    Object.assign(formData, {
-      orderId: null,
-      orderNo: '',     
-      receiverName: '',
-      receiverPhone: '',
-      receiverAddress: '',
-      totalAmount: 0,
-      totalPayAmount: 0,
-      orderStatus: OrderStatus.PENDING,
-      payStatus: PayStatus.UNPAID,
-      paymentMethod: PaymentMethod.WECHAT,
-      riskLevel: RiskLevel.NORMAL,
-      activityType: ActivityType.NORMAL,
-      appType: 1,
-      remark: ''
-    })
-  }
+  Object.assign(formData, row)
+  
+  // 保存原订单备注，同时显示在输入框中供查看和编辑
+  const originalRemark = row.remark || ''
+  formData.originalRemark = originalRemark
+  formData.remark = originalRemark // 显示在原备注栏中，用户可以在此基础上修改
+  
   isShowDialog.value = true
 }
 
@@ -293,19 +262,11 @@ const handleSubmit = async () => {
       remark: formData.remark
     }
 
-    // 如果是编辑模式，添加订单ID
-    if (props.mode === 'edit') {
-      submitData.orderId = formData.orderId
-    }
+    // 总是包含订单ID（编辑模式）
+    submitData.orderId = formData.orderId
 
-    let res
-    if (props.mode === 'add') {
-      res = await orderApi.createOrder(submitData)
-      ElMessage.success('添加成功')
-    } else {
-      res = await orderApi.updateOrder(submitData)
-      ElMessage.success('更新成功')
-    }
+    const res = await orderApi.updateOrder(submitData)
+    ElMessage.success('更新成功')
 
     closeDialog(res.result)
   } catch (error) {

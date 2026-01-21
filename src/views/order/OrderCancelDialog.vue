@@ -16,9 +16,11 @@
 
       <!-- 备注 -->
       <el-form-item label="备注" prop="remark" class="form-item-large">
+        
         <el-input v-model="formData.remark" type="textarea" :rows="3" placeholder="请输入备注信息" maxlength="500"
           show-word-limit size="large" />
-      </el-form-item>
+          <b>*注意：提交即覆备注，非取消禁动此</b>
+      </el-form-item>      
     </el-form>
 
     <template #footer>
@@ -121,12 +123,10 @@ const dialogTitle = computed(() => {return '取消订单'})
 const openDialog = async (row) => {
     Object.assign(formData, row)
         
-    // 保存原订单备注，但不显示在输入框中
+    // 保存原订单备注，并在输入框中显示供用户参考
     const originalRemark = row.remark || ''
     formData.originalRemark = originalRemark
-        
-    // 清空用户输入的备注，避免显示原订单备注
-    formData.remark = ''
+    formData.remark = originalRemark // 显示原备注
     
     isShowDialog.value = true
 }
@@ -154,16 +154,11 @@ const handleSubmit = async () => {
         finalRemarkParts.push(selectedReason.label)
         }
 
-        // 第二部分：用户在备注框中输入的内容（排除重复内容）
+        // 第二部分：用户在备注框中输入的内容
+        // 用户已经可以直接在原备注基础上编辑，所以这里直接使用
         if (formData.remark.trim() && 
             (!selectedReason || formData.remark.trim() !== selectedReason.label)) {
         finalRemarkParts.push(formData.remark.trim())
-        }
-
-        // 第三部分：原订单备注
-        const originalRemark = formData.originalRemark || ''
-        if (originalRemark.trim()) {
-        finalRemarkParts.push(`原订单备注：${originalRemark.trim()}`)
         }
 
         // 用"---"连接所有部分
@@ -173,6 +168,7 @@ const handleSubmit = async () => {
         const finalOrderStatus = OrderStatus.CLOSED
 
         const submitData = {
+        orderId: formData.orderId,
         receiverName: formData.receiverName,
         receiverPhone: formData.receiverPhone,
         receiverAddress: formData.receiverAddress,

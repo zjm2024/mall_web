@@ -213,13 +213,13 @@
     </div>
 
     <!-- 添加/编辑订单对话框 -->
-    <order-dialog ref="orderDialogRef" :mode="dialogMode" @success="handleDialogSuccess" />
+    <order-dialog ref="orderDialogRef" :mode="dialogMode" @success="refreshList" />
 
     <!-- 订单详情对话框 -->
     <order-detail-dialog ref="orderDetailDialogRef" />
 
     <!-- 订单发货对话框 -->
-    <order-ship-dialog ref="orderShipDialogRef" />
+    <order-ship-dialog ref="orderShipDialogRef" @success="refreshList" />
   </div>
 </template>
 
