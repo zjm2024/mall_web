@@ -80,7 +80,7 @@
           <el-table-column prop="totalAmount" label="订单金额" min-width="100" align="center">
             <template #default="{row}">
               <div class="order-price">
-                <div class="amount-price">¥{{row.totalPayAmount}}</div>
+                <div class="amount-price">¥{{row.payAmount}}</div>
                 <div class="total-price">原价:<b>¥{{row.totalAmount}}</b></div>
 
               </div>

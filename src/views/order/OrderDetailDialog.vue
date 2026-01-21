@@ -33,11 +33,11 @@
           <el-descriptions-item label="活动类型">
             {{ getActivityTypeText(orderData.activityType) }}
           </el-descriptions-item>
-          <el-descriptions-item label="创建时间">
-            {{ formatDate(orderData.createTime) }}
+          <el-descriptions-item label="微信交易号">
+            {{ orderData.transactionId || '-' }}
           </el-descriptions-item>
-          <el-descriptions-item label="更新时间">
-            {{ formatDate(orderData.updateTime) }}
+          <el-descriptions-item label="应用类型">
+            {{ orderData.appType }}
           </el-descriptions-item>
         </el-descriptions>
       </el-card>
@@ -46,19 +46,25 @@
       <el-card class="detail-card" shadow="never">
         <template #header>
           <div class="card-header">
-            <el-icon><Coin /></el-icon>
+            <el-icon><WalletFilled /></el-icon>
             <span>金额信息</span>
           </div>
         </template>
         <el-descriptions :column="3" border>
-          <el-descriptions-item label="订单总金额" label-class-name="desc-label">
+          <el-descriptions-item label="订单总金额" label-class-name="desc-label" :column="2">
             <span class="amount-price">¥{{ orderData.totalAmount || '0.00' }}</span>
           </el-descriptions-item>
-          <el-descriptions-item label="实际支付金额" label-class-name="desc-label">
-            <span class="pay-amount-price">¥{{ orderData.totalPayAmount || '0.00' }}</span>
+          <el-descriptions-item label="微信支付金额" label-class-name="desc-label">
+            <span class="amount-price">¥{{ orderData.wxPayAmount || '0.00' }}</span>
           </el-descriptions-item>
           <el-descriptions-item label="优惠金额" label-class-name="desc-label">
-            <span class="discount-amount">-¥{{ getDiscountAmount() }}</span>
+            <span class="discount-amount">-¥{{ orderData.discountAmount || '0.00' }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="实际支付金额" label-class-name="desc-label">
+            <span class="pay-amount-price">¥{{ orderData.payAmount || '0.00' }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="余额支付金额" label-class-name="desc-label">
+            <span class="amount-price">¥{{ orderData.balanceAmount || '0.00' }}</span>
           </el-descriptions-item>
           <el-descriptions-item label="支付方式">
             {{ getPaymentMethodText(orderData.paymentMethod) }}
@@ -125,6 +131,65 @@
           {{ orderData.remark || '暂无备注' }}
         </div>
       </el-card>
+
+      <!--  团购信息卡片 -->
+      <el-card class="detail-card" shadow="never">
+        <template #header>
+          <div class="card-header">
+          <el-icon><Orange /></el-icon>
+            <span>团购信息</span>
+          </div>
+        </template>
+          <el-descriptions :column="2" border>  
+            <el-descriptions-item label="活动类型">
+              {{ getActivityTypeText(orderData.activityType) }}
+            </el-descriptions-item>
+            <el-descriptions-item label="团购状态">
+              <el-tag :type="getGroupBuyStatusType(orderData.groupBuyStatus)" size="large">
+                {{ getGroupBuyStatusText(orderData.groupBuyStatus) }}
+              </el-tag> 
+            </el-descriptions-item>          
+            <el-descriptions-item label="一级分销员ID">
+              {{ orderData.firstLevelPersonalID || '无' }}
+            </el-descriptions-item>
+            <el-descriptions-item label="二级分销员ID">
+              {{ orderData.secondLevelPersonalID || '无' }}
+            </el-descriptions-item>
+            <el-descriptions-item label="一级分佣金额">
+              <span class="pay-amount-price">¥{{ orderData.firstLevelPersonalID || '0.00' }}</span>
+            </el-descriptions-item>
+            <el-descriptions-item label="二级分佣金额">
+              <span class="pay-amount-price">¥{{ orderData.secondLevelAmount || '0.00' }}</span>
+            </el-descriptions-item>
+          </el-descriptions>   
+      </el-card>
+
+      <!--  时间信息卡片 -->
+      <el-card class="detail-card" shadow="never">
+        <template #header>
+          <div class="card-header">
+          <el-icon><QuartzWatch /></el-icon>
+            <span>时间信息</span>
+          </div>
+        </template>
+          <el-descriptions :column="2" border>  
+            <el-descriptions-item label="订单创建时间">
+              {{ formatTimeDisplay(orderData.createTime) }}
+            </el-descriptions-item>
+            <el-descriptions-item label="支付时间">
+              {{ formatTimeDisplay(orderData.payTime) }}
+            </el-descriptions-item>
+            <el-descriptions-item label="发货时间">
+              {{ formatTimeDisplay(orderData.shippingTime) }}
+            </el-descriptions-item> 
+            <el-descriptions-item label="完成时间">
+              {{ formatTimeDisplay(orderData.completeTime) }}
+            </el-descriptions-item>
+            <el-descriptions-item label="更新时间">
+              {{ formatTimeDisplay(orderData.updateTime) }}
+            </el-descriptions-item>                          
+          </el-descriptions>   
+      </el-card>
     </div>
 
     <template #footer>
@@ -137,8 +202,7 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { Document, Coin, Location, Van, ChatDotRound } from '@element-plus/icons-vue'
-import { formatDate } from '@/utils/common'
+import { Document, WalletFilled, Location, Van, ChatDotRound, Orange, QuartzWatch } from '@element-plus/icons-vue'
 import orderApi from '@/api/modules/order'
 import {
   getOrderStatusText,
@@ -148,8 +212,20 @@ import {
   getRiskLevelText,
   getRiskLevelType,
   getPaymentMethodText,
-  getActivityTypeText
+  getActivityTypeText,
+  getGroupBuyStatusType,
+  getGroupBuyStatusText           
 } from '@/constants/order'
+
+/**
+ * 处理时间显示
+ */
+const formatTimeDisplay = (timeStr) => {
+  if (!timeStr || timeStr === '0001-01-01 00:00:00') {
+    return '-'
+  }
+  return timeStr
+}
 
 const isShowDialog = ref(false)
 const loading = ref(false)
@@ -158,32 +234,37 @@ const loading = ref(false)
 const orderData = reactive({
   orderId: null,
   orderNo: '',
+  appType: '',
+  transactionId: '',
   personalID: '',
   businessId: '',
   receiverName: '',
   receiverPhone: '',
   receiverAddress: '',
   totalAmount: 0,
-  totalPayAmount: 0,
+  payAmount: 0,
+  balanceAmount: 0,
+  discountAmount: 0,
+  wxPayAmount: 0,
   orderStatus: 0,
   payStatus: 0,
+  payTime: '',
   paymentMethod: 0,
   riskLevel: 0,
   activityType: 0,
+  activityId: '',
+  groupBuyStatus: 0,
+  firstLevelPersonalID: '',
+  secondLevelPersonalID: '',
+  firstLevelAmount: 0,
+  secondLevelAmount: 0,
   shippingNo: '',
   remark: '',
   createTime: '',
-  updateTime: ''
+  updateTime: '',
+  completeTime: '',
+  shippingTime: '',
 })
-
-/**
- * 计算优惠金额
- */
-const getDiscountAmount = () => {
-  const totalAmount = parseFloat(orderData.totalAmount) || 0
-  const payAmount = parseFloat(orderData.totalPayAmount) || 0
-  return (totalAmount - payAmount).toFixed(2)
-}
 
 
 /**
@@ -193,7 +274,6 @@ const openDialog = async (row) => {
   try {
     loading.value = true
     isShowDialog.value = true
-    // 使用Object.assign而不是直接赋值，保持响应性
     Object.assign(orderData, row)
   } catch (error) {
     console.error('获取订单详情失败:', error)
