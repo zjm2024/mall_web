@@ -116,6 +116,14 @@
             <el-tag v-if="orderData.shippingNo" type="success" size="large">已发货</el-tag>
             <el-tag v-else type="warning" size="large">待发货</el-tag>
           </el-descriptions-item>
+          <el-descriptions-item label="最新物流明细">
+            <!-- 预留接入快递查询api -->
+            <!-- operateTime 最新信息时间戳 -->
+            {{ formatTimeDisplay(orderData.payTime) }}
+            <br>
+            <!-- context 信息 -->
+            {{'【内容测试】快件在【泉州晋江集散中心】已装车，准备发往 【莆田黄石集散中心】' }}
+          </el-descriptions-item>
         </el-descriptions>
       </el-card>
 

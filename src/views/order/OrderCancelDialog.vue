@@ -101,13 +101,13 @@ const formData = reactive({
 
 // 取消原因选项配置
 const cancelReasons = [
-    // 正常，文字可出现在备注上
+    // 正常
     { label: '退货已归库或从未发货', value: '退货已归库或从未发货', riskLevel: RiskLevel.NORMAL },
     { label: '货品损坏，无法退回，我方确认客户提出该事实无误', value: '货品损坏，无法退回，我方确认客户提出该事实无误', riskLevel: RiskLevel.NORMAL },
     { label: '快递丢失，无法找回，我方确认客户提出该事实无误', value: '快递丢失，无法找回，我方确认客户提出该事实无误', riskLevel: RiskLevel.NORMAL },
-    // 可疑，风险等级更改，添加风险原因，这段文字不能出现在备注上
+    // 可疑
     { label: '可疑：疑似刷单', value: '可疑：疑似刷单', riskLevel: RiskLevel.SUSPICIOUS },
-    // 高风险，风险等级更改，添加风险原因，这段文字不能出现在备注上
+    // 高风险
     { label: '危险情况1：故意刷单用户', value: '危险情况1：故意刷单用户', riskLevel: RiskLevel.HIGH },
     { label: '危险情况2：故意白嫖用户', value: '危险情况2：故意白嫖用户', riskLevel: RiskLevel.HIGH },
     { label: '危险情况3：其他，见原因备注', value: '危险情况3：其他，见原因备注', riskLevel: RiskLevel.HIGH }
