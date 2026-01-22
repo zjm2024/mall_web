@@ -75,19 +75,6 @@
         </el-col>
 
         <el-col :span="12">
-          <!-- 风险等级 -->
-          <el-form-item label="风险等级" prop="riskLevel" class="form-item-large">
-            <el-select v-model="formData.riskLevel" placeholder="请选择风险等级" size="large" style="width: 100%;">
-              <el-option label="正常" :value="RiskLevel.NORMAL" />
-              <el-option label="可疑" :value="RiskLevel.SUSPICIOUS" />
-              <el-option label="高风险" :value="RiskLevel.HIGH" />
-            </el-select>
-          </el-form-item>
-        </el-col>
-      </el-row>
-
-      <el-row>
-        <el-col :span="12">
           <!-- 活动类型 -->
           <el-form-item label="活动类型" prop="activityType" class="form-item-large">
             <el-select v-model="formData.activityType" placeholder="请选择活动类型" size="large" style="width: 100%;">
@@ -99,7 +86,23 @@
         </el-col>
       </el-row>
 
+      <el-row>
+        <el-col :span="12">
+          <!-- 风险等级 -->
+          <el-form-item label="风险等级" prop="riskLevel" class="form-item-large">
+            <el-select v-model="formData.riskLevel" placeholder="请选择风险等级" size="large" style="width: 100%;">
+              <el-option label="正常" :value="RiskLevel.NORMAL" />
+              <el-option label="可疑" :value="RiskLevel.SUSPICIOUS" />
+              <el-option label="高风险" :value="RiskLevel.HIGH" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+      </el-row>
 
+      <!-- 风险原因 -->
+      <el-form-item label="风险原因" prop="riskReason" class="form-item-large">
+        <el-input v-model="formData.riskReason" type="textarea" :rows="2" placeholder="请输入风险原因" show-word-limit maxlength="100" size="large" clearable />
+      </el-form-item>
 
       <!-- 收货地址 -->
       <el-form-item label="收货地址" prop="receiverAddress" class="form-item-large">
@@ -177,10 +180,11 @@ const formData = reactive({
   orderStatus: OrderStatus.PENDING,
   payStatus: PayStatus.UNPAID,
   paymentMethod: PaymentMethod.WECHAT,
-  riskLevel: RiskLevel.NORMAL,
-  activityType: ActivityType.NORMAL,
-  appType: 1,
-  remark: ''
+        riskLevel: RiskLevel.NORMAL,
+        riskReason: '', // 风险原因
+        activityType: ActivityType.NORMAL,
+        appType: 1,
+        remark: ''
 })
 
 const isShowDialog = ref(false)
@@ -214,6 +218,18 @@ const rules = {
   riskLevel: [
     { required: true, message: '请选择风险等级', trigger: 'change' }
   ],
+  riskReason: [
+    { 
+      validator: (rule, value, callback) => {
+        if (formData.riskLevel > RiskLevel.NORMAL && (!value || value.trim() === '')) {
+          callback(new Error('可疑或高风险订单必须填写风险原因'))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur'
+    }
+  ],
   activityType: [
     { required: true, message: '请选择活动类型', trigger: 'change' }
   ],
@@ -230,6 +246,9 @@ const openDialog = async (row) => {
   const originalRemark = row.remark || ''
   formData.originalRemark = originalRemark
   formData.remark = originalRemark // 显示在原备注栏中，用户可以在此基础上修改
+  
+  // 处理风险原因数据
+  formData.riskReason = row.riskReason || ''
   
   isShowDialog.value = true
 }
@@ -258,6 +277,7 @@ const handleSubmit = async () => {
       payStatus: formData.payStatus,
       paymentMethod: formData.paymentMethod,
       riskLevel: formData.riskLevel,
+      riskReason: formData.riskReason, // 添加风险原因
       activityType: formData.activityType,
       remark: formData.remark
     }

@@ -74,7 +74,7 @@
               {{ getRiskLevelText(orderData.riskLevel) }}
             </el-tag>
             <br>
-            {{'暂无风险原因' }}
+            {{orderData.riskReason || '暂无风险原因' }}
           </el-descriptions-item>
         </el-descriptions>
       </el-card>

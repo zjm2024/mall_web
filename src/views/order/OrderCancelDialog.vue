@@ -14,6 +14,11 @@
         </el-col>
       </el-row>
 
+      <!-- 风险原因 -->
+      <el-form-item label="风险原因" prop="riskReason" class="form-item-large">
+        <el-input v-model="formData.riskReason" placeholder="请输入风险原因" maxlength="50" size="large" />
+      </el-form-item>
+
       <!-- 备注 -->
       <el-form-item label="备注" prop="remark" class="form-item-large">
         
@@ -85,7 +90,8 @@ const formData = reactive({
     orderStatus: OrderStatus.PENDING,
     payStatus: PayStatus.UNPAID,
     paymentMethod: PaymentMethod.WECHAT,
-    riskLevel: RiskLevel.NORMAL,
+    riskLevel: RiskLevel.NORMAL,// 风险等级
+    riskReason: '', // 风险原因  
     activityType: ActivityType.NORMAL,
     appType: 1,
     cancelReason: '', // 取消原因
@@ -95,16 +101,16 @@ const formData = reactive({
 
 // 取消原因选项配置
 const cancelReasons = [
-    // 正常
+    // 正常，文字可出现在备注上
     { label: '退货已归库或从未发货', value: '退货已归库或从未发货', riskLevel: RiskLevel.NORMAL },
-    { label: '货品损坏，无法退回，我方确认该事实无误', value: '货品损坏，无法退回，我方确认该事实无误', riskLevel: RiskLevel.NORMAL },
-    { label: '快递丢失，无法找回，我方确认该事实无误', value: '快递丢失，无法找回，我方确认该事实无误', riskLevel: RiskLevel.NORMAL },
-    // 可疑
-    { label: '可疑：疑似刷单', value: '可疑：疑似刷单', riskLevel: RiskLevel.MEDIUM },
-    // 高风险
+    { label: '货品损坏，无法退回，我方确认客户提出该事实无误', value: '货品损坏，无法退回，我方确认客户提出该事实无误', riskLevel: RiskLevel.NORMAL },
+    { label: '快递丢失，无法找回，我方确认客户提出该事实无误', value: '快递丢失，无法找回，我方确认客户提出该事实无误', riskLevel: RiskLevel.NORMAL },
+    // 可疑，风险等级更改，添加风险原因，这段文字不能出现在备注上
+    { label: '可疑：疑似刷单', value: '可疑：疑似刷单', riskLevel: RiskLevel.SUSPICIOUS },
+    // 高风险，风险等级更改，添加风险原因，这段文字不能出现在备注上
     { label: '危险情况1：故意刷单用户', value: '危险情况1：故意刷单用户', riskLevel: RiskLevel.HIGH },
     { label: '危险情况2：故意白嫖用户', value: '危险情况2：故意白嫖用户', riskLevel: RiskLevel.HIGH },
-    { label: '危险情况3：其他，见备注', value: '危险情况3：其他，见备注', riskLevel: RiskLevel.HIGH }
+    { label: '危险情况3：其他，见原因备注', value: '危险情况3：其他，见原因备注', riskLevel: RiskLevel.HIGH }
 ]
 
 const isShowDialog = ref(false)
@@ -113,6 +119,18 @@ const isShowDialog = ref(false)
 const rules = {
     cancelReason: [
         { required: true, message: '请选择取消原因', trigger: 'change' }
+    ],
+    riskReason: [
+        { 
+            validator: (rule, value, callback) => {
+                if (formData.riskLevel > RiskLevel.NORMAL && (!value || value.trim() === '')) {
+                    callback(new Error('可疑或高风险订单必须填写风险原因'))
+                } else {
+                    callback()
+                }
+            },
+            trigger: 'blur'
+        }
     ]
 }
 
@@ -149,16 +167,18 @@ const handleSubmit = async () => {
         const selectedReason = cancelReasons.find(reason => reason.value === formData.cancelReason)
         let finalRemarkParts = []
 
-        // 第一部分：取消原因标签
-        if (selectedReason) {
+        // 第一部分：取消原因标签 - 只有在正常风险级别时才添加到备注
+        if (selectedReason && selectedReason.riskLevel === RiskLevel.NORMAL) {
         finalRemarkParts.push(selectedReason.label)
         }
 
         // 第二部分：用户在备注框中输入的内容
-        // 用户已经可以直接在原备注基础上编辑，所以这里直接使用
-        if (formData.remark.trim() && 
-            (!selectedReason || formData.remark.trim() !== selectedReason.label)) {
-        finalRemarkParts.push(formData.remark.trim())
+        // 用户可以直接在原备注基础上编辑，所以这里直接使用
+        if (formData.remark.trim()) {
+        // 检查备注是否完全等于选择的标签内容，避免重复添加
+        if (!selectedReason || formData.remark.trim() !== selectedReason.label) {
+            finalRemarkParts.push(formData.remark.trim())
+        }
         }
 
         // 用"---"连接所有部分
@@ -178,6 +198,7 @@ const handleSubmit = async () => {
         payStatus: formData.payStatus,
         paymentMethod: formData.paymentMethod,
         riskLevel: formData.riskLevel,
+        riskReason: formData.riskReason, // 添加风险原因字段
         activityType: formData.activityType,
         remark: finalRemark,
         cancelReason: formData.cancelReason // 添加取消原因字段
@@ -212,9 +233,14 @@ const handleOrderStatusChange = (value) => {
     if (selectedReason) {
         // 更新风险级别
         formData.riskLevel = selectedReason.riskLevel
+
+        // 更新风险原因：如果选可疑、危险选项，则自动更新风险原因
+        if (selectedReason.riskLevel > RiskLevel.NORMAL) {
+        formData.riskReason = selectedReason.label || formData.riskReason
+        }
         
-        // 更新备注：如果没有自定义备注，则自动填充选择的选项标签
-        if (!formData.remark.trim()) {
+        // 更新备注：只有在正常风险级别时，如果没有自定义备注，才自动填充选择的选项标签
+        if (selectedReason.riskLevel === RiskLevel.NORMAL && !formData.remark.trim()) {
         formData.remark = selectedReason.label
         }
     }
