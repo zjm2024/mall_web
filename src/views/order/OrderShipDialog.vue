@@ -142,7 +142,7 @@ const rules = {
 }
 
 // 计算属性
-const dialogTitle = computed(() => {return '处理订单'})
+const dialogTitle = computed(() => {return '处理订单 '+ formData.orderNo})
 
 // 打开弹窗
 const openDialog = async (row) => {
@@ -201,7 +201,6 @@ const handleSubmit = async () => {
 
     closeDialog(res.result)
   } catch (error) {
-    console.error('提交订单失败:', error)
     if (error !== 'cancel') {
       ElMessage.error(error.message || '提交失败')
     }

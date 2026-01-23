@@ -135,7 +135,7 @@ const rules = {
 }
 
 // 计算属性
-const dialogTitle = computed(() => {return '取消订单'})
+const dialogTitle = computed(() => {return '取消订单 '+ formData.orderNo})
 
 // 打开弹窗
 const openDialog = async (row) => {
@@ -206,10 +206,8 @@ const handleSubmit = async () => {
 
         const res = await orderApi.updateOrder(submitData)
         ElMessage.success('订单处理成功')
-
         closeDialog(res.result)
     } catch (error) {
-        console.error('提交订单失败:', error)
         if (error !== 'cancel') {
         ElMessage.error(error.message || '提交失败')
         }
@@ -244,11 +242,6 @@ const handleOrderStatusChange = (value) => {
         formData.remark = selectedReason.label
         }
     }
-}
-
-// 获取当前选中的取消原因标签
-const getSelectedOrderStatusLabel = () => {
-    return formData.cancelReason
 }
 
 // 导出对象

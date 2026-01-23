@@ -228,7 +228,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { formatDate } from '@/utils/common'
-import { Plus, Refresh, Delete, Search, Edit, View, Operation } from '@element-plus/icons-vue'
+import {Refresh, Search, Edit, View, Operation } from '@element-plus/icons-vue'
 import orderApi from '@/api/modules/order'
 import {
   OrderStatus,
@@ -286,7 +286,6 @@ const filterForm = reactive({
 
     // 获取用户信息 - 确保userStore有数据
     if (!userStore.userInfo || !userStore.userInfo.businessId) {
-      console.error('[OrderList] 用户信息缺失:', userStore.userInfo)
       ElMessage.error('用户信息异常，请重新登录')
       return
     }
@@ -309,26 +308,14 @@ const filterForm = reactive({
     if (filterForm.status !== '' && filterForm.status !== null && filterForm.status !== undefined && filterForm.status !== 'All')
       params.orderStatus = filterForm.status
 
-    console.log('[OrderList] fetchOrderList params:', params)
-    console.log('[OrderList] userStore info:', {
-      userInfo: userStore.userInfo,
-      isUserStoreReady: !!userStore.userInfo,
-      businessId: userStore.userInfo?.businessId,
-      appType: userStore.userInfo?.appType
-    })
 
     // 调用API获取订单列表数据
     const res = await orderApi.getOrderPageList(params)
     orderList.value = res.result 
     pagination.total = res.count   
-    console.log('[OrderList] 数据加载完成:', {
-      orderListLength: orderList.value.length,
-      total: pagination.total,
-      firstItem: orderList.value[0]
-    })
+
     
   } catch (error) {
-    console.error('获取订单列表失败:', error)
     ElMessage.error('获取订单列表失败')
   } finally {
     loading.value = false
@@ -425,7 +412,6 @@ const refreshList = async () => {
 
 // 组件挂载时加载订单列表
 onMounted(() => {
-  console.log('[OrderList] 组件已挂载，开始加载订单列表')
   fetchOrderList()
 })
 

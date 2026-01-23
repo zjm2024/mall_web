@@ -1,7 +1,11 @@
 <template>
-  <el-dialog v-model="isShowDialog" title="订单详情" draggable width="900px" :close-on-click-modal="true"
-    @closed="handleClosed">
-    <div v-loading="loading" class="order-detail-container">
+  <!-- @opened="handleOpened": 对话框动画完全完成后触发，用于重置滚动位置-->
+  <el-dialog v-model="isShowDialog" title="订单详情" draggable width="1000px" :close-on-click-modal="true"
+  class="order-detail-dialog" @closed="handleClosed" :style="{ maxHeight: '80vh' }" @opened="handleOpened">
+    <!-- 添加滑动功能，视口宽度百分比设置为80-->
+      <!-- 内联样式（局部控制）， 智能滚动，控制内容溢出-->
+      <div v-loading="loading" ref="detailContainer" class="order-detail-container" 
+      :style="{ overflowY: 'auto', maxHeight: 'calc(80vh - 120px)' }">
       <!-- 基础信息卡片 -->
       <el-card class="detail-card" shadow="never">
         <template #header>
@@ -200,6 +204,7 @@
       </el-card>
     </div>
 
+
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="handleClose" size="large" style="width: 120px;">关闭</el-button>
@@ -209,9 +214,8 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, nextTick } from 'vue'
 import { Document, WalletFilled, Location, Van, ChatDotRound, Orange, QuartzWatch } from '@element-plus/icons-vue'
-import orderApi from '@/api/modules/order'
 import {
   getOrderStatusText,
   getOrderStatusType,
@@ -237,6 +241,7 @@ const formatTimeDisplay = (timeStr) => {
 
 const isShowDialog = ref(false)
 const loading = ref(false)
+const detailContainer = ref(null)//订单详情容器DOM引用，用于在对话框重新打开时重置滚动位置
 
 // 订单详情数据
 const orderData = reactive({
@@ -284,7 +289,6 @@ const openDialog = async (row) => {
     isShowDialog.value = true
     Object.assign(orderData, row)
   } catch (error) {
-    console.error('获取订单详情失败:', error)
   } finally {
     loading.value = false
   }
@@ -295,6 +299,27 @@ const openDialog = async (row) => {
  */
 const handleClose = () => {
   isShowDialog.value = false
+}
+
+/**
+ * 对话框完全显示后的回调函数
+ * 
+ * 解决订单详情对话框滚动位置记忆问题：
+ * 当用户关闭对话框再重新打开时，确保滚动条回到顶部位置
+ * 
+ * 采用的技术方案：
+ * 1. 使用 @opened 事件 (Element Plus dialog组件动画完成后触发)
+ * 2. 使用 nextTick 确保DOM渲染完成
+ * 3. 使用 ref 安全访问DOM元素
+ * 4. 重置 scrollTop 到0 (顶部位置)
+ */
+const handleOpened = async () => {
+  // 等待Vue完成DOM更新，确保detailContainer.value可用
+  await nextTick()
+  // 安全地访问容器DOM元素并重置滚动位置
+  if (detailContainer.value) {
+    detailContainer.value.scrollTop = 0  // 设置滚动条到最顶部位置
+  }
 }
 
 /**
@@ -331,6 +356,15 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
+.order-detail-dialog {
+  /* 使用深度选择器穿透scoped限制 */
+  :deep(.el-dialog__body) {
+    padding: 20px;
+    max-height: calc(80vh - 120px);
+    overflow-y: auto;
+  }
+}
+
 .order-detail-container {
   .detail-card {
     margin-bottom: 16px;
