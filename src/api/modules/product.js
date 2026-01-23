@@ -19,8 +19,8 @@ const productApi = {
   },
 
   // 更新商品
-  updateProduct(data) {
-    return request.post(API_PATHS.PRODUCT.UPDATE, { data: data })
+  updateProduct(data, delids) {
+    return request.post(API_PATHS.PRODUCT.UPDATE, { data: data, delSpecsids: delids })
   },
 
   // 获取商品详情
@@ -47,6 +47,13 @@ const productApi = {
   deleteBatchProductSpecs(ids) {
     return request.get(API_PATHS.PRODUCT.DELETEBATCHSPECS(ids))
   },
+
+  // 上传商品图片
+  async uploadProductImage(data) {
+    return await request.post(API_PATHS.UPLOAD.UPLOADIMAGE, data)
+  },
+
+
   // 获取规格列表
   getSpecList(productId) {
     return request.get(`/api/products/${productId}/specs`)
@@ -64,10 +71,7 @@ const productApi = {
 
 
 
-  // 上传商品图片
-  uploadProductImage(data) {
-    return request.post('/api/upload/product-image', data)
-  },
+
 
   // 批量操作（上架/下架/删除）
   batchOperation(data) {

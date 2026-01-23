@@ -55,34 +55,29 @@
 
               <el-form-item label="商品主图">
                 <div class="image-upload-area">
-                  <el-upload class="main-image-upload" action="/api/upload/product-image" :show-file-list="false"
-                    :on-success="handleImageUploadSuccess" :before-upload="beforeImageUpload">
-                    <div v-if="formData.ProductImage" class="image-preview">
-                      <el-image :src="formData.ProductImage" fit="cover" class="preview-image" />
-                      <div class="image-overlay">
-                        <el-button type="primary" size="small" circle>
-                          <el-icon>
-                            <Camera />
-                          </el-icon>
-                        </el-button>
-                      </div>
-                    </div>
-                    <div v-else class="upload-placeholder">
+                  <el-upload class="main-image-upload" v-model:file-list="productImageList" :auto-upload="false"
+                    list-type="picture-card" :multiple="false" :limit="1" accept=".jpg,.png"
+                    :on-change="handleChangeFile" :on-remove="handleRemove">
+
+                    <div class="upload-placeholder">
                       <el-icon class="upload-icon">
                         <Camera />
                       </el-icon>
-                      <div class="upload-text">点击上传商品主图</div>
+                      <div class="upload-text">点击选中商品主图</div>
                       <div class="upload-tip">建议尺寸：800x800像素</div>
                     </div>
+
                   </el-upload>
-                  <div class="image-actions" v-if="formData.ProductImage">
-                    <el-button type="danger" @click="formData.ProductImage = ''" text size="small">
-                      <el-icon>
-                        <Delete />
-                      </el-icon>删除
-                    </el-button>
-                  </div>
+
+                  <el-button type="primary" @click="handleProductImageUpLoad">
+                    <el-icon>
+                      <Upload />
+                    </el-icon>上传
+                  </el-button>
+
                 </div>
+                <el-input v-model="formData.productImage" disabled></el-input>
+
               </el-form-item>
             </el-form>
           </el-card>
@@ -712,6 +707,9 @@
                   </el-button-group>
                 </div>
 
+
+
+
                 <el-upload class="editor-image-upload" action="/api/upload/content-image" :show-file-list="false"
                   :on-success="handleEditorImageUpload" :before-upload="beforeImageUpload">
                   <el-button size="small" type="primary">
@@ -844,7 +842,8 @@ import {
   updateProduct,
   getCategoryOptions,
   deleteProductSpecs,
-  deleteBatchProductSpecs
+  deleteBatchProductSpecs,
+  uploadProductImage,
 } from '@/api/modules/product'
 import { it } from 'element-plus/es/locales.mjs'
 
@@ -856,7 +855,8 @@ const submitting = ref(false)
 const categoryOptions = ref([])
 const activeMarketingTab = ref('seckill')
 const defaultIndex = ref('')
-
+const productImageList = ref([])
+const hideUpload = ref(false)
 const userStore = useUserStore()
 const props = {
 
@@ -901,7 +901,7 @@ const totalSkus = computed(() => skuList.value.length)
 
 // 表单数据
 const formData = reactive({
-  productId: null,
+  productId: 0,
   productName: '',
   categoryId: '',
   treePath: '',
@@ -1281,7 +1281,7 @@ const handleDeleteskuClick = async (row) => {
   }
 }
 
-//批量删除规格
+//批量删除规格并修改主表中的规格
 const DeleteBatchsku = async (ids) => {
   try {
 
@@ -1297,13 +1297,20 @@ const DeleteBatchsku = async (ids) => {
       }
     )
 
-    await deleteBatchProductSpecs(ids)
+
+    const saveData = {
+      productId: formData.productId,
+      productSpec: JSON.stringify(productSpec),
+    }
+
+    await updateProduct(saveData, ids)
     ElMessage.success('删除成功')
     return true
   } catch (error) {
     return false
   }
 }
+
 
 
 
@@ -1331,14 +1338,74 @@ const handleCommissionChange = (val) => {
 }
 
 // 图片上传
-const handleImageUploadSuccess = (response) => {
-  if (response.code === 0) {
-    formData.ProductImage = response.data.url
-    ElMessage.success('主图上传成功')
-  } else {
-    ElMessage.error(response.message || '上传失败')
+const handleProductImageUpLoad = async () => {
+  if (productImageList.value.length === 0) {
+    ElMessage.info('请选择图片!')
+    return
   }
+
+  try {
+
+
+    let frmData = new FormData();//json数据
+    frmData.append('appType', 1)
+    frmData.append('businessId', 1)
+
+    let file = productImageList.value[0]
+    if (file.raw !== undefined)
+      frmData.append('file', file.raw)
+    else {
+
+      ElMessage.info('请重新选择图片!')
+      return
+
+    }
+
+
+    const res = await uploadProductImage(frmData)
+
+    formData.productImage = res.result.src
+
+    //保存如果prouctId<>0
+    if (formData.productId !== 0) {
+      const saveData = {
+        productId: formData.productId,
+        productImage: formData.productImage,
+      }
+
+      await updateProduct(saveData)
+    }
+    ElMessage.success('主图上传成功')
+  }
+
+  catch (error) {
+
+  }
+
+
+
+
 }
+
+const handleChangeFile = (file) => {
+  if (!file.raw) {
+    ElMessage.error(`文件打开失败!`)
+
+    return
+  }
+  hideUpload.value = true
+
+}
+
+const handleRemove = () => {
+  formData.productImage = ''
+  hideUpload.value = false
+
+}
+
+
+
+
 
 const handleSkuImageUpload = (response, sku) => {
   if (response.code === 0) {
@@ -1482,6 +1549,13 @@ const loadData = async () => {
 
       Object.assign(formData, res.result)
 
+      //加载图片
+      productImageList.value = []
+
+      const url = formData.productImage
+      if (url !== '') {
+        productImageList.value.push({ url: url });
+      }
 
       // 加载规格数据
       const productSpec = (res.result.productSpec) ? JSON.parse(res.result.productSpec) : []
@@ -1549,12 +1623,12 @@ onMounted(() => {
 <style lang="scss" scoped>
 .product-edit-page {
   background: #f5f7fa;
-  min-height: 100vh;
+  min-height: 82vh;
 
   .page-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     padding: 24px 32px;
-    margin-bottom: 24px;
+    margin-bottom: 12px;
 
     .header-content {
       max-width: 1400px;
@@ -1611,6 +1685,8 @@ onMounted(() => {
     max-width: 1400px;
     margin: 0 auto;
     padding: 0 32px 32px;
+    height: calc(82vh - 120px);
+    overflow-y: auto;
 
     .form-layout {
       display: grid;
