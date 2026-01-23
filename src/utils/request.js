@@ -27,6 +27,11 @@ request.interceptors.request.use(
         //_t: Date.now()
       }
     }
+    if (config.method === 'post') {
+      if (config.data instanceof FormData) {
+        config.headers['Content-Type'] = 'multipart/form-data';
+      }
+    }
 
     return config
   },

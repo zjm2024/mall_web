@@ -33,6 +33,14 @@ export const API_PATHS = {
     PROFILE: '/auth/profile'
   },
 
+  //上传管理
+  UPLOAD: {
+    UPLOADIMAGE: `/shopadminApi/UploadFile/uploadImage`,
+    UPLOADFILE: `/shopadminApi/UploadFile/uploadFile`,
+    UPLOADAUDIO: `/shopadminApi/UploadFile/uploadAudio`,
+  },
+
+
   // 店铺管理
   SHOP: {
     BASE: '/shop',
@@ -69,16 +77,14 @@ export const API_PATHS = {
   // 订单管理
   ORDER: {
     LIST: '/shopadminApi/Order/getOrdersPageList',
-    DETAIL: (id) => `/shopadminApi/Order/getOrdersById?id=${id}`,
-    UPDATE: '/shopadminApi/Order/updateOrders',
-    /**
+    DETAIL: (id) => `/shopadminApi/Order/getOrderDetail?id=${id}`,
+    UPDATE: '/shopadminApi/Order/updateOrder',
     DELETE: '/shopadminApi/Order/deleteOrder',
     SHIP: '/shopadminApi/Order/shipOrder',
     BATCH_DELETE: '/shopadminApi/Order/batchDeleteOrders',
     BATCH_UPDATE_STATUS: '/shopadminApi/Order/batchUpdateOrderStatus',
     STATISTICS: '/shopadminApi/Order/getOrderStatistics',
     CATEGORIESOPTIONS: '/shopadminApi/Order/getCategoriesOptions'
-    */
   },
 
 
@@ -90,11 +96,7 @@ export const API_PATHS = {
 
   },
 
-  // 文件上传
-  UPLOAD: {
-    IMAGE: '/upload/image',
-    FILE: '/upload/file'
-  }
+
 }
 
 // 响应代码

@@ -70,7 +70,7 @@ export const baseMenuList = [
       },
       {
         title: '添加商品',
-        path: '/product/add',
+        path: '/product/edit',
         roles: ['super_admin', 'merchant_admin'],
         hidden: false // 在菜单中显示
       }
