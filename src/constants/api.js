@@ -72,6 +72,8 @@ export const API_PATHS = {
 
     DELETESPECS: (id) => `/shopadminApi/Product/deleteProductSpecs?id=${id}`,
     DELETEBATCHSPECS: (ids) => `/shopadminApi/Product/deleteBatchProductSpecs?ids=${ids}`,
+
+    UPDATEPRODUCTSPECIMAGE: '/shopadminApi/Product/updateProductSpecsImage',
   },
 
   // 订单管理

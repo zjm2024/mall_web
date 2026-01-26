@@ -267,12 +267,15 @@
                             </el-radio>
                           </td>
 
+
+
                           <td class="sku-cell">
-                            <el-upload class="sku-image-upload" v-if="skuList[index1]" action="/api/upload/sku-image"
-                              :show-file-list="false" :on-success="(res) => handleSkuImageUpload(res, skuList[index1])"
-                              :before-upload="beforeImageUpload">
+                            <el-upload class="sku-image-upload" v-if="skuList[index1]" :http-request="handlcustomUpload"
+                              :auto-upload="true" :show-file-list="false"
+                              :on-success="(res) => handleSkuImageUpload(res, skuList[index1])"
+                              :before-upload="(file) => beforeImageUpload(file, skuList[index1])">
                               <div v-if="skuList[index1].image" class="sku-image-preview">
-                                <el-image :src="skuList[index1].image" fit="cover" />
+                                <el-image :src="skuList[index1].image" style="height: 40px;width: 40px;" />
                               </div>
                               <el-button v-else size="small" type="text">
                                 <el-icon>
@@ -343,14 +346,14 @@
                             <td class="sku-cell">
                               <el-upload class="sku-image-upload"
                                 v-if="skuList[(index2 * specifications[0].specValues.length) + index1]"
-                                action="/api/upload/sku-image" :show-file-list="false"
+                                :http-request="handlcustomUpload" :auto-upload="true" :show-file-list="false"
                                 :on-success="(res) => handleSkuImageUpload(res, skuList[(index2 * specifications[0].specValues.length) + index1])"
-                                :before-upload="beforeImageUpload">
+                                :before-upload="(file) => beforeImageUpload(file, skuList[(index2 * specifications[0].specValues.length) + index1])">
                                 <div v-if="skuList[(index2 * specifications[0].specValues.length) + index1].image"
                                   class="sku-image-preview">
                                   <el-image
                                     :src="skuList[(index2 * specifications[0].specValues.length) + index1].image"
-                                    fit="cover" />
+                                    style="height: 40px;width: 40px;" />
                                 </div>
                                 <el-button v-else size="small" type="text">
                                   <el-icon>
@@ -435,14 +438,16 @@
                               <td class="sku-cell">
                                 <el-upload class="sku-image-upload" v-if="skuList[(index3 * specifications[1].specValues.length * specifications[0].specValues.length)
                                   + (index2 * specifications[0].specValues.length) + index1]"
-                                  action="/api/upload/sku-image" :show-file-list="false" :on-success="(res) => handleSkuImageUpload(res, skuList[(index3 * specifications[1].specValues.length * specifications[0].specValues.length)
-                                    + (index2 * specifications[0].specValues.length) + index1])"
-                                  :before-upload="beforeImageUpload">
+                                  :http-request="handlcustomUpload" :auto-upload="true" :show-file-list="false"
+                                  :on-success="(res) => handleSkuImageUpload(res, skuList[(index3 * specifications[1].specValues.length * specifications[0].specValues.length)
+                                    + (index2 * specifications[0].specValues.length) + index1])" :before-upload="(file) => beforeImageUpload(file, skuList[(index3 * specifications[1].specValues.length * specifications[0].specValues.length)
+                                      + (index2 * specifications[0].specValues.length) + index1])">
                                   <div v-if="skuList[(index3 * specifications[1].specValues.length * specifications[0].specValues.length)
                                     + (index2 * specifications[0].specValues.length) + index1].image"
                                     class="sku-image-preview">
                                     <el-image :src="skuList[(index3 * specifications[1].specValues.length * specifications[0].specValues.length)
-                                      + (index2 * specifications[0].specValues.length) + index1].image" fit="cover" />
+                                      + (index2 * specifications[0].specValues.length) + index1].image"
+                                      style="height: 40px;width: 40px;" />
                                   </div>
                                   <el-button v-else size="small" type="text">
                                     <el-icon>
@@ -710,8 +715,8 @@
 
 
 
-                <el-upload class="editor-image-upload" action="/api/upload/content-image" :show-file-list="false"
-                  :on-success="handleEditorImageUpload" :before-upload="beforeImageUpload">
+                <el-upload class="editor-image-upload" :http-request="handlcustomUpload" :auto-upload="true"
+                  :show-file-list="false" :on-success="handleEditorImageUpload" :before-upload="beforeImageUpload1">
                   <el-button size="small" type="primary">
                     <el-icon>
                       <Upload />
@@ -844,8 +849,12 @@ import {
   deleteProductSpecs,
   deleteBatchProductSpecs,
   uploadProductImage,
+  updateSpecImage,
 } from '@/api/modules/product'
 import { it } from 'element-plus/es/locales.mjs'
+
+
+import { API_PATHS } from '@/constants/api'
 
 const route = useRoute()
 const router = useRouter()
@@ -898,6 +907,8 @@ const pageTitle = computed(() => isEditMode.value ? '编辑商品' : '添加商�
 const hasSpecifications = computed(() => specifications.value.filter(it => it.isShow === true).length > 0)
 const totalSkus = computed(() => skuList.value.length)
 
+const uploadAction = ref(API_PATHS.UPLOAD.UPLOADIMAGE)
+const uploadData = ref({ appType: 1, businessId: 1 })
 
 // 表单数据
 const formData = reactive({
@@ -1195,7 +1206,7 @@ const insertText = (type) => {
 
   const start = editor.selectionStart
   const end = editor.selectionEnd
-  const selectedText = formData.ProductContent.substring(start, end)
+  const selectedText = formData.productContent.substring(start, end)
 
   let wrapper = ''
   switch (type) {
@@ -1214,10 +1225,10 @@ const insertText = (type) => {
   }
 
   const newText = wrapper.replace('$1', selectedText || '新内容')
-  formData.ProductContent =
-    formData.ProductContent.substring(0, start) +
+  formData.productContent =
+    formData.productContent.substring(0, start) +
     newText +
-    formData.ProductContent.substring(end)
+    formData.productContent.substring(end)
 
   nextTick(() => {
     editor.focus()
@@ -1229,10 +1240,10 @@ const insertText = (type) => {
 const insertImage = () => {
   const start = editorRef.value.selectionStart
   const imgTag = '<img src="" alt="图片描述" class="detail-image">'
-  formData.ProductContent =
-    formData.ProductContent.substring(0, start) +
+  formData.productContent =
+    formData.productContent.substring(0, start) +
     imgTag +
-    formData.ProductContent.substring(start)
+    formData.productContent.substring(start)
 
   nextTick(() => {
     editorRef.value.focus()
@@ -1315,13 +1326,14 @@ const DeleteBatchsku = async (ids) => {
 
 
 const handleEditorImageUpload = (response) => {
-  if (response.code === 0) {
-    const imgTag = `<img src="${response.data.url}" alt="图片描述" class="detail-image">`
+  if (response.flag === 1) {
+    const url = response.result.src
+    const imgTag = `<img src="${url}" alt="图片描述" class="detail-image">`
     const start = editorRef.value.selectionStart
-    formData.ProductContent =
-      formData.ProductContent.substring(0, start) +
+    formData.productContent =
+      formData.productContent.substring(0, start) +
       imgTag +
-      formData.ProductContent.substring(start)
+      formData.productContent.substring(start)
 
     ElMessage.success('图片插入成功')
   } else {
@@ -1336,6 +1348,18 @@ const handleCommissionChange = (val) => {
     formData.SecondLevelRate = 0
   }
 }
+
+const handlcustomUpload = async (param) => {
+  let frmData = new FormData();//json数据
+  frmData.append('appType', 1)
+  frmData.append('businessId', 1)
+  frmData.append('file', param.file)
+  const res = await uploadProductImage(frmData)
+
+  return res
+}
+
+
 
 // 图片上传
 const handleProductImageUpLoad = async () => {
@@ -1407,16 +1431,42 @@ const handleRemove = () => {
 
 
 
-const handleSkuImageUpload = (response, sku) => {
-  if (response.code === 0) {
-    sku.Image = response.data.url
+const handleSkuImageUpload = async (response, sku) => {
+  if (response.flag === 1) {
+    sku.image = response.result.src
+
+
+    //修改规格表中的图片
+    //保存如果prouctId<>0
+    if (formData.productId !== 0) {
+      const saveData = {
+        specId: sku.specId,
+        image: sku.image,
+      }
+
+      await updateSpecImage(saveData)
+    }
+
+
+
+
+
+
+
+
     ElMessage.success('SKU图片上传成功')
   } else {
     ElMessage.error(response.message || '上传失败')
   }
 }
 
-const beforeImageUpload = (file) => {
+const beforeImageUpload = (file, sku) => {
+
+  if (sku.specId === 0) {
+    ElMessage.info('请先保存规格后再上传图片!')
+    return
+  }
+
   const isImage = /^image\/(jpeg|png|gif|webp)$/.test(file.type)
   const isLt5M = file.size / 1024 / 1024 < 5
 
@@ -1431,6 +1481,27 @@ const beforeImageUpload = (file) => {
 
   return true
 }
+
+
+const beforeImageUpload1 = (file) => {
+
+
+
+  const isImage = /^image\/(jpeg|png|gif|webp)$/.test(file.type)
+  const isLt5M = file.size / 1024 / 1024 < 5
+
+  if (!isImage) {
+    ElMessage.error('只能上传图片文件!')
+    return false
+  }
+  if (!isLt5M) {
+    ElMessage.error('图片大小不能超过5MB!')
+    return false
+  }
+
+  return true
+}
+
 
 // 保存商品
 const handleSave = async () => {
