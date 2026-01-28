@@ -58,7 +58,7 @@
  * 1. 取消订单
  * 
  */
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import orderApi from '@/api/modules/order'
 import {
@@ -243,7 +243,27 @@ const handleOrderStatusChange = (value) => {
         }
     }
 }
-
+// 生命周期钩子
+// 组件挂载完成后执行数据初始化，获取最新订单数据
+onMounted(async () => {
+  try {
+    if (orderApi && formData.orderId) {
+      const res = await orderApi.getOrderDetail({ orderId: formData.orderId })
+      Object.assign(formData, res.result)
+      
+      // 更新原订单备注和当前显示的备注
+      const originalRemark = res.result.remark || ''
+      formData.originalRemark = originalRemark
+      formData.remark = originalRemark
+      
+      // 更新风险原因
+      formData.riskReason = res.result.riskReason || ''
+      
+    }
+  } catch (error) {
+    ElMessage.error('获取最新订单数据失败：' + (error.message || '未知错误'))
+  }
+})
 // 导出对象
 defineExpose({ openDialog })
 </script>

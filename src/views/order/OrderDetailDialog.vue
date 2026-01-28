@@ -214,7 +214,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, nextTick } from 'vue'
+import { ref, reactive, nextTick, onMounted } from 'vue'
 import { Document, WalletFilled, Location, Van, ChatDotRound, Orange, QuartzWatch } from '@element-plus/icons-vue'
 import {
   getOrderStatusText,
@@ -348,6 +348,11 @@ const handleClosed = () => {
     updateTime: ''
   })
 }
+
+// 生命周期钩子
+// 组件挂载完成后执行数据初始化
+onMounted(() => {
+})
 
 // 暴露方法给父组件
 defineExpose({
