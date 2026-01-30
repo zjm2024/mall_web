@@ -45,7 +45,7 @@ const orderApi = {
    * @returns {Promise}
    */
   getOrderDetail(orderId) {
-    return request.get(`/shopadminApi/Order/getOrderDetail?id=${orderId}`)
+    return request.get(`/shopadminApi/Order/getOrdersById?id=${orderId}`)
   },
 
   /**

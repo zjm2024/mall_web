@@ -139,14 +139,25 @@ const dialogTitle = computed(() => {return '取消订单 '+ formData.orderNo})
 
 // 打开弹窗
 const openDialog = async (row) => {
-    Object.assign(formData, row)
-        
-    // 保存原订单备注，并在输入框中显示供用户参考
-    const originalRemark = row.remark || ''
-    formData.originalRemark = originalRemark
-    formData.remark = originalRemark // 显示原备注
-    
-    isShowDialog.value = true
+  try {
+    // 获取服务器最新数据
+    const res = await orderApi.getOrderDetail(row.orderId)
+    if (res.flag === 1) {
+      Object.assign(formData, res.result)
+      // 保存原订单备注，并在输入框中显示供用户参考
+      const originalRemark = res.result.remark || ''
+      formData.originalRemark = originalRemark
+      formData.remark = originalRemark // 显示原备注
+      formData.remark = ''
+      // 成功才显示弹窗
+      isShowDialog.value = true
+    } else {
+      throw new Error('获取数据失败')
+    }
+  } catch (error) {
+    isShowDialog.value = false
+    ElMessage.error('同步失败')
+  }
 }
 
 // 关闭弹窗
@@ -243,27 +254,6 @@ const handleOrderStatusChange = (value) => {
         }
     }
 }
-// 生命周期钩子
-// 组件挂载完成后执行数据初始化，获取最新订单数据
-onMounted(async () => {
-  try {
-    if (orderApi && formData.orderId) {
-      const res = await orderApi.getOrderDetail({ orderId: formData.orderId })
-      Object.assign(formData, res.result)
-      
-      // 更新原订单备注和当前显示的备注
-      const originalRemark = res.result.remark || ''
-      formData.originalRemark = originalRemark
-      formData.remark = originalRemark
-      
-      // 更新风险原因
-      formData.riskReason = res.result.riskReason || ''
-      
-    }
-  } catch (error) {
-    ElMessage.error('获取最新订单数据失败：' + (error.message || '未知错误'))
-  }
-})
 // 导出对象
 defineExpose({ openDialog })
 </script>
