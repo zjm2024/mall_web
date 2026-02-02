@@ -984,7 +984,7 @@ const removeSpecification = async (index) => {
     let idsarray = skuList.value.map(it => it.specId)
     ids = idsarray.join(',')
   }
-  let res = await DeleteBatchsku(ids)
+  let res = await DeleteBatchsku(ids, index)
   //删除数据库成功后
   if (res === true) {
 
@@ -1034,7 +1034,7 @@ const removeSpecValue = async (specIndex, valueIndex) => {
       ids = idsarray.join(',')
 
     }
-    let res = await DeleteBatchsku(ids)
+    let res = await DeleteBatchsku(ids, specIndex, valueIndex)
     //删除数据库成功后
     if (res === true) {
       //删除skuList
@@ -1293,7 +1293,7 @@ const handleDeleteskuClick = async (row) => {
 }
 
 //批量删除规格并修改主表中的规格
-const DeleteBatchsku = async (ids) => {
+const DeleteBatchsku = async (ids, specIndex, valueIndex) => {
   try {
 
     await ElMessageBox.confirm(
@@ -1307,8 +1307,21 @@ const DeleteBatchsku = async (ids) => {
         center: true
       }
     )
+    const productSpec = []
 
+    if (valueIndex) {
+      specifications.value.filter(it => it.isShow === true).forEach((item, index) => {
+        let values = item.specValues.filter((itx, idexx) => idexx !== valueIndex)
+        productSpec.push({ specName: item.specName, specValues: values, sortOrder: item.sortOrder })
+      })
+    }
+    else {
 
+      specifications.value.filter((it, idex) => it.isShow === true && idex !== specIndex).forEach((item, index) => {
+        productSpec.push({ specName: item.specName, specValues: item.specValues, sortOrder: item.sortOrder })
+      })
+
+    }
     const saveData = {
       productId: formData.productId,
       productSpec: JSON.stringify(productSpec),
@@ -1520,16 +1533,18 @@ const handleSave = async () => {
 
     const productSpecs = []
 
+    let sepcList = specifications.value.filter(it => it.isShow === true)
+
     skuList.value.forEach((sku, index) => {
 
       let specs = {
         specId: sku.specId,
         spec1Name: sku.spec1Name,
         spec1Value: sku.spec1Value,
-        spec2Name: sku.spec2Name,
-        spec2Value: sku.spec2Value,
-        spec3Name: sku.spec3Name,
-        spec3Value: sku.spec3Value,
+        spec2Name: (sepcList.length > 1) ? sku.spec2Name : "",
+        spec2Value: (sepcList.length > 1) ? sku.spec2Value : "",
+        spec3Name: (sepcList.length > 2) ? sku.spec3Name : "",
+        spec3Value: (sepcList.length > 2) ? sku.spec3Value : "",
         price: sku.price,
         stock: sku.stock,
         isDefault: sku.isDefault,

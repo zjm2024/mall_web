@@ -512,6 +512,11 @@ onMounted(() => {
     :deep(.el-table) {
       .el-table__header-wrapper {
         border-bottom: 1px solid #e4e7ed;
+
+      }
+
+      .cell {
+        display: flex;
       }
 
       .el-table__body-wrapper {

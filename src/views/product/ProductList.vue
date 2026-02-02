@@ -248,6 +248,14 @@
         <el-button @click="detailDialogVisible = false" size="default">关闭</el-button>
       </template>
     </el-dialog>
+
+
+
+
+
+    <productSpec-dialog ref="productSpecDialogref" />
+
+
   </div>
 </template>
 
@@ -269,6 +277,10 @@ import {
   deleteProduct,
   deleteBatchProducts
 } from '@/api/modules/product'
+
+import ProductSpecDialog from './ProductSpecDialog.vue'
+
+const productSpecDialogref = ref(null)
 
 const router = useRouter()
 const loading = ref(false)
@@ -344,7 +356,7 @@ const handleViewDetail = (row) => {
 // 管理规格
 const handleManageSpec = (row) => {
   ElMessageBox.confirm(
-    `是否要管理商品"${row.ProductName}"的规格？`,
+    `是否要管理商品"${row.productName}"的规格？`,
     '管理规格',
     {
       confirmButtonText: '前往管理',
@@ -352,7 +364,8 @@ const handleManageSpec = (row) => {
       type: 'info'
     }
   ).then(() => {
-    router.push(`/product/spec/${row.ProductId}`)
+    productSpecDialogref.value.openDialog({ productId: row.productId })
+
   })
 }
 
