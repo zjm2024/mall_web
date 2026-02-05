@@ -232,7 +232,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -257,11 +257,6 @@ import OrderDialog from './OrderDealDialog.vue' //订单处理对话框(改动)
 import OrderDetailDialog from './OrderDetailDialog.vue' //订单详情对话框
 import OrderShipDialog from './OrderShipDialog.vue' //发货处理对话框
 
-
-
-
-const router = useRouter()
-
 // 数据
 const userStore = useUserStore()
 const loading = ref(false)
@@ -271,8 +266,6 @@ const orderDialogRef = ref(null)
 const orderDetailDialogRef = ref(null)
 const orderShipDialogRef = ref(null)
 const dialogMode = ref('add')
-
-
 
 // 分页
 const pagination = reactive({
@@ -321,7 +314,6 @@ const filterForm = reactive({
     const res = await orderApi.getOrderPageList(params)
     orderList.value = res.result 
     pagination.total = res.count   
-
     
   } catch (error) {
     ElMessage.error('获取订单列表失败')
@@ -386,7 +378,6 @@ const exportExcel = () => {
     ElMessage.error('导出失败')
   }
 }
-
 
 // 搜索
 const handleSearch = () => {
