@@ -13,9 +13,17 @@
           <el-button @click="exportExcel" size="large" :disabled="!selectedRows.length">
             批量导出 ({{ selectedRows.length }})
           </el-button>
+          <el-button 
+            @click="handleBatchShip" 
+            size="large" 
+            :disabled="!canBatchShip"
+            type="success"
+          >
+            批量发货 ({{ canBatchShipCount }})
+          </el-button>
           <div class="tip">
             <b>
-            *批量导出单次限制500条
+            *批量功能单次限制500条
             </b>
           </div>
         </div>
@@ -229,11 +237,18 @@
 
     <!-- 订单发货对话框 -->
     <order-ship-dialog ref="orderShipDialogRef" @success="refreshList" />
+
+    <!-- 批量发货对话框 -->
+    <batch-ship-dialog 
+      ref="batchShipDialogRef" 
+      :selected-orders="eligibleOrdersForBatchShip"
+      @success="handleBatchShipSuccess"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { formatDate } from '@/utils/common'
@@ -256,6 +271,7 @@ import * as XLSX from 'xlsx'
 import OrderDialog from './OrderDealDialog.vue' //订单处理对话框(改动)
 import OrderDetailDialog from './OrderDetailDialog.vue' //订单详情对话框
 import OrderShipDialog from './OrderShipDialog.vue' //发货处理对话框
+import BatchShipDialog from './BatchShipDialog.vue' //批量发货对话框
 
 // 数据
 const userStore = useUserStore()
@@ -265,6 +281,7 @@ const selectedRows = ref([])
 const orderDialogRef = ref(null)
 const orderDetailDialogRef = ref(null)
 const orderShipDialogRef = ref(null)
+const batchShipDialogRef = ref(null)
 const dialogMode = ref('add')
 
 // 分页
@@ -424,6 +441,27 @@ const handleDialogSuccess = (res) => {
   fetchOrderList()
 }
 
+// 计算可批量发货的订单数量和条件
+const canBatchShipCount = computed(() => {
+  return selectedRows.value.filter(order => 
+    order.orderStatus === OrderStatus.PENDING && !order.shippingNo
+  ).length
+})
+
+const canBatchShip = computed(() => {
+  return canBatchShipCount.value > 0 && selectedRows.value.length > 0
+})
+
+// 符合条件的批量发货订单列表
+const eligibleOrdersForBatchShip = computed(() => {
+  if (!selectedRows.value || selectedRows.value.length === 0) {
+    return []
+  }
+  return selectedRows.value.filter(order => 
+    order.orderStatus === OrderStatus.PENDING && !order.shippingNo
+  )
+})
+
 // 格式化备注显示，隐藏原订单备注
 const formatRemark = (remark) => {
   if (!remark) return '-'
@@ -447,6 +485,52 @@ const handleSizeChange = (val) => {
 const handleCurrentChange = (val) => {
   pagination.currentPage = val
   fetchOrderList()
+}
+
+// 批量发货操作
+const handleBatchShip = () => {
+  try {
+    // 使用计算属性获取符合条件的订单
+    const eligibleOrders = eligibleOrdersForBatchShip.value
+    
+    // 检查是否有选中的订单
+    if (!selectedRows.value || selectedRows.value.length === 0) {
+      ElMessage.warning('请先勾选需要批量发货的订单')
+      return
+    }
+
+    if (eligibleOrders.length === 0) {
+      ElMessage.warning('选中的订单中无可批量发货的订单（需要：待处理状态且无快递单号）')
+      return
+    }
+
+    // 检查选中订单中是否有不符合条件的订单
+    const ineligibleOrdersCount = selectedRows.value.length - eligibleOrders.length
+
+    if (ineligibleOrdersCount > 0) {
+      ElMessage.info(
+        `已自动过滤 ${ineligibleOrdersCount} 个不符合条件的订单，只处理 ${eligibleOrders.length} 个符合条件的订单`
+      )
+    }
+
+    // 打开批量发货对话框（计算属性自动提供符合条件的订单）
+    batchShipDialogRef.value.openDialog()
+    
+  } catch (error) {
+    console.error('批量发货操作失败:', error)
+    ElMessage.error('操作失败，请重试')
+  }
+}
+
+// 批量发货成功回调
+const handleBatchShipSuccess = (response) => {
+  // 刷新订单列表
+  fetchOrderList()
+  
+  // 重置选中状态
+  selectedRows.value = []
+  
+  ElMessage.success('批量发货操作已完成')
 }
 
 // 刷新列表（类似于F5重新加载页面）

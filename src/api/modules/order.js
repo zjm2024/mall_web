@@ -98,6 +98,21 @@ const orderApi = {
   },
 
   /**
+   * 批量发货
+   * @param {Array<Object>} data - 批量发货数据数组
+   * @param {number} data[].orderId - 订单ID
+   * @param {string} data[].orderNo - 订单号
+   * @param {string} data[].shippingNo - 快递单号
+   * @returns {Promise}
+   */
+  batchShip(data) {
+    if (!API_PATHS.ORDER) {
+      return Promise.reject(new Error('API_PATHS.ORDER is undefined'))
+    }
+    return request.post(API_PATHS.ORDER.BATCH_SHIP, data)
+  },
+
+  /**
    * 获取订单统计
    * @param {Object} params - 查询参数
    * @returns {Promise}

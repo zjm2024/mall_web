@@ -78,18 +78,19 @@ export const API_PATHS = {
 
   // 订单管理
    ORDER: {
-    LIST: '/shopadminApi/Order/getOrdersPageList',
-    DETAIL: (id) => `/shopadminApi/Order/getOrdersById?id=${id}`,
-    UPDATE: '/shopadminApi/Order/updateOrders',
-    /** 
-    DELETE: '/shopadminApi/Order/deleteOrder',
-    SHIP: '/shopadminApi/Order/shipOrder',
-    BATCH_DELETE: '/shopadminApi/Order/batchDeleteOrders',
-    BATCH_UPDATE_STATUS: '/shopadminApi/Order/batchUpdateOrderStatus',
-    STATISTICS: '/shopadminApi/Order/getOrderStatistics',
-    CATEGORIESOPTIONS: '/shopadminApi/Order/getCategoriesOptions'
+     LIST: '/shopadminApi/Order/getOrdersPageList',
+     DETAIL: (id) => `/shopadminApi/Order/getOrdersById?id=${id}`,
+     UPDATE: '/shopadminApi/Order/updateOrders',
+     /** 
+     DELETE: '/shopadminApi/Order/deleteOrder',
+     SHIP: '/shopadminApi/Order/shipOrder',
+     BATCH_SHIP: '/shopadminApi/Order/batchShipOrder',
+     BATCH_DELETE: '/shopadminApi/Order/batchDeleteOrders',
+     BATCH_UPDATE_STATUS: '/shopadminApi/Order/batchUpdateOrderStatus',
+     STATISTICS: '/shopadminApi/Order/getOrderStatistics',
+     CATEGORIESOPTIONS: '/shopadminApi/Order/getCategoriesOptions'
      */
-  },
+   },
 
 
   // 分类管理 
