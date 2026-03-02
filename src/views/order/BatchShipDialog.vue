@@ -158,7 +158,10 @@ const completionPercentage = computed(() => {
 
 const canConfirm = computed(() => {
   return filledshippingNoCount.value > 0 && 
-         selectedOrders.value.every(order => !order.trackingError || !order.shippingNo)
+         selectedOrders.value.every(order => 
+           !order.shippingNo || // 如果没填快递单号，则跳过验证
+           (!order.trackingError && order.shippingNo.trim()) // 如果填了快递单号，则必须没有错误且内容非空
+         )
 })
 
   // 监听visible变化
@@ -264,7 +267,7 @@ const handleConfirm = async () => {
       shippingNo: order.shippingNo.trim()
     }))
 
-    // 调用批量发货API
+    // 调用批量发货API（前期实现先临时使用UPDATE接口）
     const response = await orderApi.batchShip(batchShipData)
     
     ElMessage.success(
