@@ -98,6 +98,41 @@ const orderApi = {
   },
 
   /**
+   * 批量发货（临时实现：使用 UPDATE 接口）
+   * @param {Array<Object>} data - 批量发货数据数组
+   * @param {number} data[].orderId - 订单ID
+   * @param {string} data[].orderNo - 订单号
+   * @param {string} data[].shippingNo - 快递单号
+   * @returns {Promise}
+   */
+  batchShip(data) {
+    if (!API_PATHS.ORDER) {
+      return Promise.reject(new Error('API_PATHS.ORDER is undefined'))
+    }
+    // 批量发货接口，使用 UPDATE 接口逐个更新订单，现在暂时不实现
+    // return request.post(API_PATHS.ORDER.BATCH_SHIP, data)
+    
+    // 批量使用 UPDATE 接口处理发货
+    const updatePromises = data.map(orderData => {
+      const updateData = {
+        OrderId: orderData.orderId,
+        OrderNo: orderData.orderNo,
+        OrderStatus: 1, // 已发货状态
+        ShippingNo: orderData.shippingNo,
+        ShipTime: new Date().toISOString()
+      }
+      return request.post(API_PATHS.ORDER.UPDATE, { data: updateData })
+    })
+    
+    return Promise.all(updatePromises).then(results => {
+      return {
+        successCount: results.length,
+        data: results
+      }
+    })
+  },
+
+  /**
    * 获取订单统计
    * @param {Object} params - 查询参数
    * @returns {Promise}

@@ -10,7 +10,24 @@
               <Refresh />
             </el-icon>刷新
           </el-button>
+          <el-button @click="exportExcel" size="large" :disabled="!selectedRows.length">
+            批量导出 ({{ selectedRows.length }})
+          </el-button>
+          <el-button 
+            @click="handleBatchShip" 
+            size="large" 
+            :disabled="!canBatchShip"
+            type="success"
+          >
+            批量发货 ({{ canBatchShipCount }})
+          </el-button>
+          <div class="tip">
+            <b>
+            *批量功能单次限制500条
+            </b>
+          </div>
         </div>
+
 
         <div class="right-search">
           <el-input v-model="filterForm.searchKey" placeholder="订单号、客户姓名、联系方式" clearable size="large"
@@ -220,11 +237,18 @@
 
     <!-- 订单发货对话框 -->
     <order-ship-dialog ref="orderShipDialogRef" @success="refreshList" />
+
+    <!-- 批量发货对话框 -->
+    <batch-ship-dialog 
+      ref="batchShipDialogRef" 
+      :selected-orders="eligibleOrdersForBatchShip"
+      @success="handleBatchShipSuccess"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { formatDate } from '@/utils/common'
@@ -232,9 +256,6 @@ import {Refresh, Search, Edit, View, Operation } from '@element-plus/icons-vue'
 import orderApi from '@/api/modules/order'
 import {
   OrderStatus,
-  PayStatus,
-  RiskLevel,
-  PaymentMethod,
   getOrderStatusText,
   getOrderStatusType,
   getPayStatusText,
@@ -244,15 +265,13 @@ import {
   getPaymentMethodText
 } from '@/constants/order'
 import { useUserStore } from '@/stores/user'
+// 导入表格文件导出组件
+import * as XLSX from 'xlsx'
 // 导入弹窗组件
 import OrderDialog from './OrderDealDialog.vue' //订单处理对话框(改动)
 import OrderDetailDialog from './OrderDetailDialog.vue' //订单详情对话框
 import OrderShipDialog from './OrderShipDialog.vue' //发货处理对话框
-
-
-
-
-const router = useRouter()
+import BatchShipDialog from './BatchShipDialog.vue' //批量发货对话框
 
 // 数据
 const userStore = useUserStore()
@@ -262,9 +281,8 @@ const selectedRows = ref([])
 const orderDialogRef = ref(null)
 const orderDetailDialogRef = ref(null)
 const orderShipDialogRef = ref(null)
+const batchShipDialogRef = ref(null)
 const dialogMode = ref('add')
-
-
 
 // 分页
 const pagination = reactive({
@@ -313,12 +331,68 @@ const filterForm = reactive({
     const res = await orderApi.getOrderPageList(params)
     orderList.value = res.result 
     pagination.total = res.count   
-
     
   } catch (error) {
     ElMessage.error('获取订单列表失败')
   } finally {
     loading.value = false
+  }
+}
+
+// 批量导出订单详情
+const exportExcel = () => {
+  try {
+    // 检查有无选中的数据
+    if (!selectedRows.value || selectedRows.value.length === 0) {
+      ElMessage.warning('请先勾选要导出的订单') // 未勾选无法导出
+      return
+    }
+
+    // 检查数量限制
+    if (selectedRows.value.length > 500) {
+      // 超限报错提示
+      ElMessageBox.alert(
+        `尊敬的用户：您当前选择了 ${selectedRows.value.length} 条数据，单次导出数量超限，请您减少选择数量，谢谢！！！`,
+        '导出数量超500条',
+        {
+          confirmButtonText: '确定',
+          type: 'warning',
+          center: true
+        }
+      )
+      return
+    }
+    
+    // 导出数据类型
+    const exportData = selectedRows.value.map(item => ({
+      '订单编号': item.orderNo,
+      '创建时间': item.createTime,
+      '订单状态': getOrderStatusText(item.orderStatus),
+      '实付金额': item.payAmount,
+      '原总价': item.totalAmount,
+      '支付方式': getPaymentMethodText(item.paymentMethod),
+      '支付状态': getPayStatusText(item.payStatus),
+      '客户姓名': item.receiverName,
+      '客户电话': item.receiverPhone,
+      '客户ID': item.personalID,
+      '风险等级': getRiskLevelText(item.riskLevel),
+      '收货地址': item.receiverAddress,
+      '物流单号': item.shippingNo || '未发货',
+      '备注': item.remark,
+      '更新时间': item.updateTime
+    }))
+
+    // 导出文件
+    const wb = XLSX.utils.book_new() // 创建工作簿 
+    const ws = XLSX.utils.json_to_sheet(exportData) // 创建工作表
+    XLSX.utils.book_append_sheet(wb, ws, '选中订单数据') // 添加工作表到工作簿
+    XLSX.writeFile(wb, `批量导出_${new Date().toLocaleDateString()}.xlsx`) // 批量导出
+    ElMessage.success(`成功导出 ${selectedRows.value.length} 条订单数据`) // 提示导出量
+
+  } catch (error) { 
+    // 执行失败
+    console.error('导出失败:', error)
+    ElMessage.error('导出失败')
   }
 }
 
@@ -367,6 +441,27 @@ const handleDialogSuccess = (res) => {
   fetchOrderList()
 }
 
+// 计算可批量发货的订单数量和条件
+const canBatchShipCount = computed(() => {
+  return selectedRows.value.filter(order => 
+    order.orderStatus === OrderStatus.PENDING && !order.shippingNo
+  ).length
+})
+
+const canBatchShip = computed(() => {
+  return canBatchShipCount.value > 0 && selectedRows.value.length > 0
+})
+
+// 符合条件的批量发货订单列表
+const eligibleOrdersForBatchShip = computed(() => {
+  if (!selectedRows.value || selectedRows.value.length === 0) {
+    return []
+  }
+  return selectedRows.value.filter(order => 
+    order.orderStatus === OrderStatus.PENDING && !order.shippingNo
+  )
+})
+
 // 格式化备注显示，隐藏原订单备注
 const formatRemark = (remark) => {
   if (!remark) return '-'
@@ -390,6 +485,52 @@ const handleSizeChange = (val) => {
 const handleCurrentChange = (val) => {
   pagination.currentPage = val
   fetchOrderList()
+}
+
+// 批量发货操作
+const handleBatchShip = () => {
+  try {
+    // 使用计算属性获取符合条件的订单
+    const eligibleOrders = eligibleOrdersForBatchShip.value
+    
+    // 检查是否有选中的订单
+    if (!selectedRows.value || selectedRows.value.length === 0) {
+      ElMessage.warning('请先勾选需要批量发货的订单')
+      return
+    }
+
+    if (eligibleOrders.length === 0) {
+      ElMessage.warning('选中的订单中无可批量发货的订单（需要：待处理状态且无快递单号）')
+      return
+    }
+
+    // 检查选中订单中是否有不符合条件的订单
+    const ineligibleOrdersCount = selectedRows.value.length - eligibleOrders.length
+
+    if (ineligibleOrdersCount > 0) {
+      ElMessage.info(
+        `已自动过滤 ${ineligibleOrdersCount} 个不符合条件的订单，只处理 ${eligibleOrders.length} 个符合条件的订单`
+      )
+    }
+
+    // 打开批量发货对话框（计算属性自动提供符合条件的订单）
+    batchShipDialogRef.value.openDialog()
+    
+  } catch (error) {
+    console.error('批量发货操作失败:', error)
+    ElMessage.error('操作失败，请重试')
+  }
+}
+
+// 批量发货成功回调
+const handleBatchShipSuccess = (response) => {
+  // 刷新订单列表
+  fetchOrderList()
+  
+  // 重置选中状态
+  selectedRows.value = []
+  
+  ElMessage.success('批量发货操作已完成')
 }
 
 // 刷新列表（类似于F5重新加载页面）
@@ -445,6 +586,12 @@ onMounted(() => {
       display: flex;
       align-items: center;
       gap: 12px;
+    }
+
+    .tip{
+      // 提示文字规格
+      font-size: 10px;
+      color: #909399;
     }
   }
 
