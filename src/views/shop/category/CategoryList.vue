@@ -333,7 +333,7 @@ const handleAddSubCategory = (parent) => {
     sortOrder: 0,
     status: 1,
     icon: '',
-    appType: 1
+    appType: 0
   }
   parentCategory.value = parent
   categorydialogRef.value.openDialog(category)

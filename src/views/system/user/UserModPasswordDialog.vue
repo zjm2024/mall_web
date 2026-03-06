@@ -142,7 +142,7 @@ const handleSubmit = async () => {
       userNo: formData.userNo,
       oldPassword: formData.oldPassword,
       newPassword: formData.newPassword,
-      appType: 1
+      appType: 0
     }
     var res = await changeUserPassword(submitData)
     ElMessage.success('修改密码成功')
@@ -165,7 +165,7 @@ const handleResetSubmit = async () => {
 
     const submitData = {
       userNo: formData.userNo,
-      appType: 1
+      appType: 0
     }
     var res = await resetUserPassword(submitData)
     ElMessage.success('重置成功!')

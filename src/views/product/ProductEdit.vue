@@ -908,7 +908,7 @@ const hasSpecifications = computed(() => specifications.value.filter(it => it.is
 const totalSkus = computed(() => skuList.value.length)
 
 const uploadAction = ref(API_PATHS.UPLOAD.UPLOADIMAGE)
-const uploadData = ref({ appType: 1, businessId: 1 })
+const uploadData = ref({ appType: 0, businessId: 100 })
 
 // 表单数据
 const formData = reactive({
@@ -1364,8 +1364,8 @@ const handleCommissionChange = (val) => {
 
 const handlcustomUpload = async (param) => {
   let frmData = new FormData();//json数据
-  frmData.append('appType', 1)
-  frmData.append('businessId', 1)
+  frmData.append('appType', 0)
+  frmData.append('businessId', 100)
   frmData.append('file', param.file)
   const res = await uploadProductImage(frmData)
 
@@ -1385,8 +1385,8 @@ const handleProductImageUpLoad = async () => {
 
 
     let frmData = new FormData();//json数据
-    frmData.append('appType', 1)
-    frmData.append('businessId', 1)
+    frmData.append('appType', 0)
+    frmData.append('businessId', 100)
 
     let file = productImageList.value[0]
     if (file.raw !== undefined)

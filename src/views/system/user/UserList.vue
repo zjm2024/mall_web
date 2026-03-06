@@ -271,7 +271,7 @@ const fetchuserList = async () => {
     let params = {
       pageIndex: pagination.currentPage,
       pageSize: pagination.pageSize,
-      appType: 1
+      appType: 0
     }
 
     if (filterForm.searchKey !== '')
@@ -331,7 +331,7 @@ const handleAdduser = () => {
     avatar: '',
     status: 1,
     isSuperAdmin: 0,
-    appType: 1
+    appType: 0
   }
   userdialogRef.value.openDialog(user)
 

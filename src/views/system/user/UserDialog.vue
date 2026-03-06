@@ -192,7 +192,7 @@ const handleSubmit = async () => {
       status: formData.status,
       phone: formData.phone,
       email: formData.email,
-      appType: 1
+      appType: 0
     }
     var res
     if (props.mode === 'add') {
