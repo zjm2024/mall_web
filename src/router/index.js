@@ -108,6 +108,26 @@ const routes = [
                 ]
             },
 
+            // 秒杀管理
+            {
+                path: 'seckill',
+                name: 'Seckill',
+                redirect: '/seckill/list',
+                meta: {
+                    title: '秒杀管理',
+                    icon: 'Box',
+                    requiresAuth: true
+                },
+                children: [
+                    {
+                        path: 'list',
+                        name: 'SeckillList',
+                        component: () => import('@/views/seckill/SeckillList.vue'),
+                        meta: { title: '秒杀列表' }
+                    }
+                ]
+            },
+
             // 售后管理
             {
                 path: 'after-sale',

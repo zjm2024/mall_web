@@ -20,7 +20,8 @@ export const menuIcons = {
   'List': 'List',
   'OrderedList': 'OrderedList',
   'Picture': 'Picture',
-  'Camera': 'Camera'
+  'Camera': 'Camera',
+  'Timer': 'Timer'
 }
 
 // 基础菜单配置（所有用户都有的菜单）
@@ -84,6 +85,18 @@ export const baseMenuList = [
       {
         title: '订单列表',
         path: '/order/list',
+        roles: ['super_admin', 'merchant_admin']
+      }
+    ]
+  },
+  {
+    title: '秒杀管理',
+    icon: 'Timer',
+    roles: ['super_admin', 'merchant_admin'],
+    children: [
+      {
+        title: '秒杀列表',
+        path: '/seckill/list',
         roles: ['super_admin', 'merchant_admin']
       }
     ]

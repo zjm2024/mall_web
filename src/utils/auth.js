@@ -115,7 +115,7 @@ export const role = {
 
 // 登录API
 export const login = async (username, password) => {
-  let inputobj = { data: { UserName: username, Password: password, AppType: 1 } };
+  let inputobj = { data: { UserName: username, Password: password, AppType: 0 } };
   try {
     const response = await request.post(API_PATHS.AUTH.LOGIN, inputobj);
 

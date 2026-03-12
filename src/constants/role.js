@@ -25,6 +25,9 @@ export const ROUTE_PERMISSIONS = {
   // 订单管理
   '/order/list': ['super_admin', 'merchant_admin'],
 
+  // 秒杀管理
+  '/seckill/list': ['super_admin', 'merchant_admin'],
+
   // 售后管理
   '/after-sale/list': ['super_admin', 'merchant_admin'],
 

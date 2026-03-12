@@ -76,20 +76,28 @@ export const API_PATHS = {
     UPDATEPRODUCTSPECIMAGE: '/shopadminApi/Product/updateProductSpecsImage',
   },
 
+  // 秒杀管理
+  SECKILL: {
+    LIST: `/shopadminApi/Seckill/getSeckillPageList`,
+    UPDATE: '/shopadminApi/Seckill/updateSeckill',
+    DETAIL: (id) => `/shopadminApi/Seckill/deleteSeckill?id=${id}`,
+    TIMEOPTIONS: (appType) => `/shopadminApi/Seckill/getTimeOptions?appType=${appType}`,
+  },
+
   // 订单管理
-   ORDER: {
-     LIST: '/shopadminApi/Order/getOrdersPageList',
-     DETAIL: (id) => `/shopadminApi/Order/getOrdersById?id=${id}`,
-     UPDATE: '/shopadminApi/Order/updateOrders',
-     /** 
-     DELETE: '/shopadminApi/Order/deleteOrder', // 删除订单
-     BATCH_SHIP: '/shopadminApi/Order/batchShipOrder', // 批量发货，暂时注释掉，测试期间先使用 UPDATE 代替
-     BATCH_DELETE: '/shopadminApi/Order/batchDeleteOrders', // 批量删除
-     BATCH_UPDATE_STATUS: '/shopadminApi/Order/batchUpdateOrderStatus', // 批量更新状态
-     STATISTICS: '/shopadminApi/Order/getOrderStatistics', // 订单统计，日后功能
-     CATEGORIESOPTIONS: '/shopadminApi/Order/getCategoriesOptions'  // 分类选项
-     */
-   },
+  ORDER: {
+    LIST: '/shopadminApi/Order/getOrdersPageList',
+    DETAIL: (id) => `/shopadminApi/Order/getOrdersById?id=${id}`,
+    UPDATE: '/shopadminApi/Order/updateOrders',
+    /** 
+    DELETE: '/shopadminApi/Order/deleteOrder', // 删除订单
+    BATCH_SHIP: '/shopadminApi/Order/batchShipOrder', // 批量发货，暂时注释掉，测试期间先使用 UPDATE 代替
+    BATCH_DELETE: '/shopadminApi/Order/batchDeleteOrders', // 批量删除
+    BATCH_UPDATE_STATUS: '/shopadminApi/Order/batchUpdateOrderStatus', // 批量更新状态
+    STATISTICS: '/shopadminApi/Order/getOrderStatistics', // 订单统计，日后功能
+    CATEGORIESOPTIONS: '/shopadminApi/Order/getCategoriesOptions'  // 分类选项
+    */
+  },
 
 
   // 分类管理 
