@@ -153,7 +153,7 @@ import { ElMessage } from 'element-plus'
 
 // 导入提取的模块
 import MetricCard from '@/components/common/MetricCard.vue'
-import CardHeader from '@/components/CardHeader.vue'
+import CardHeader from '@/views/settlement/components/CardHeader.vue'
 import { useDashboardChart } from '@/composables/useDashboardChart'
 import { formatTime, generateMockData, calculateYAxisMax } from '@/utils/dashboard'
 import {
