@@ -30,6 +30,12 @@ const userApi = {
     changeUserPassword(data) {
         return request.post(API_PATHS.USER.CHANGEUSERPASSWORD, { data: data });
     },
+
+    // 上传用户头像
+    uploadUserAvatar(data) {
+        return request.post(API_PATHS.UPLOAD.UPLOADIMAGE, data)
+    },
+
 }
 
 
@@ -39,7 +45,8 @@ export const {
     updateUser,
     deleteUser,
     resetUserPassword,
-    changeUserPassword
+    changeUserPassword,
+    uploadUserAvatar
 
 } = userApi
 

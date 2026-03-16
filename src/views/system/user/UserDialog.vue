@@ -15,13 +15,6 @@
               :disabled="mode == 'edit'" clearable />
           </el-form-item>
 
-          <!-- 商户号 -->
-          <el-form-item label="商户号" prop="businessId" class="form-item-large">
-            <el-input v-model="formData.businessId" placeholder="请输入商户号" maxlength="50" size="large"
-              :disabled="mode == 'edit'" clearable />
-          </el-form-item>
-
-
 
           <!-- 用户昵称 -->
           <el-form-item label="用户昵称" prop="userName" class="form-item-large">
@@ -39,8 +32,8 @@
         <el-col :span="12">
           <el-form-item label="头像" class="form-item-large">
             <el-upload :class="{ 'hidePlus': hideUpload }" v-model:file-list="filelist" :auto-upload="false"
-              list-type="picture-card" :multiple="false" :limit="1" :on-change="onChangeFile"
-              :on-preview="handlePictureCardPreview" accept=".jpg,.png" :on-remove="handleRemove">
+              list-type="picture-card" :multiple="false" :limit="1" :on-change="handleChangeFile"
+              :on-preview="handlePictureCardPreview" accept=".jpeg,.jpg,.png" :on-remove="handleRemove">
               <el-icon>
                 <Plus />
               </el-icon>
@@ -73,28 +66,63 @@
         <el-col :span="12">
           <!-- 超管 -->
           <el-form-item label="" prop="isSuperAdmin" class="form-item-large">
-            <el-checkbox v-model="formData.isSuperAdmin" label="超级管理员" :true-label="1" :false-label="0"></el-checkbox>
+            <el-checkbox v-model="formData.isSuperAdmin" label="超级管理员" :true-label="1" :false-label="0"
+              @change="handleCheck"></el-checkbox>
           </el-form-item>
         </el-col>
       </el-row>
+
+      <el-row>
+        <el-col :span="12">
+          <!-- 商户号 -->
+          <el-form-item label="商户号" prop="businessNo" class="form-item-large">
+            <el-input v-model="formData.businessNo" placeholder="请输入商户号" maxlength="50" size="large"
+              :readonly="mode == 'edit'" :disabled="formData.isSuperAdmin == 1" ref="businessNoRef" clearable>
+
+              <template #suffix>
+                <Search style="margin-right: 0px; width: 1.5em; height: 1.5em" @click.stop="handleClick()" />
+              </template>
+
+            </el-input>
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <!-- 商户名称 -->
+          <el-form-item label="商户名称" prop="businessName" class="form-item-large">
+            <el-input v-model="formData.businessName" placeholder="请输入商户名称" maxlength="50" size="large"
+              :readonly="mode == 'edit'" :disabled="formData.isSuperAdmin == 1" ref="businessNameRef" clearable />
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+
 
     </el-form>
 
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="handleCancel" size="large" style="width: 120px;">取消</el-button>
-        <el-button type="primary" @click="handleSubmit" :loading="submitting" size="large" style="width: 120px;">
+        <el-button type="primary" @click="handleSubmit" :loading="submitting" size="large" style="width: 120px;"
+          v-if="props.mode !== 'detail'">
           {{ submitting ? '处理中...' : '确定' }}
         </el-button>
       </div>
     </template>
   </el-dialog>
+  <PickShopDialog ref="pickshopdialogRef" @handleQuery="handleDialogQuery" />
 </template>
 
 <script setup>
 import { ref, reactive, computed, watch, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
-import { createUser, updateUser } from '@/api/modules/user'
+import { createUser, updateUser, uploadUserAvatar } from '@/api/modules/user'
+import { useUserStore } from '@/stores/user'
+import PickShopDialog from '../../../components/common/PickShopDialog.vue'
+
+const pickshopdialogRef = ref(null)
+const businessNoRef = ref(null)
+const businessNameRef = ref(null)
+
 
 const props = defineProps({
 
@@ -111,11 +139,15 @@ const emits = defineEmits(['success'])
 // 表单引用
 const formRef = ref()
 const submitting = ref(false)
+const hideUpload = ref(false)
 
 // 表单数据
+const userStore = useUserStore()
 const formData = reactive({
   adminId: null,
   businessId: 0,
+  businessNo: '',
+  businessName: '',
   userNo: '',
   userName: '',
   realName: '',
@@ -163,6 +195,17 @@ const dialogTitle = computed(() => {
 // 打开弹窗
 const openDialog = async (row) => {
   Object.assign(formData, JSON.parse(JSON.stringify(row)));
+
+  filelist.value = [];
+  const url = (formData.avatar) ? formData.avatar : ''
+  if (url !== '') {
+    filelist.value.push({ url: url });
+    hideUpload.value = true;
+  }
+  else
+    hideUpload.value = false
+
+
   isShowDialog.value = true
 
 }
@@ -181,9 +224,33 @@ const handleSubmit = async () => {
     await formRef.value.validate()
     submitting.value = true
 
+    //上传文件
+    if (filelist.value.length > 0) {
+      let file = filelist.value[0]
+      if (file.status !== 'success') {
+        if (file.raw === undefined) {
+
+          ElMessage.info('请重新选择图片!')
+          return
+
+        }
+
+
+        let frmData = new FormData();//json数据
+        frmData.append('appType', userStore.userInfo.appType)
+        frmData.append('businessId', 0)
+        frmData.append('file', file.raw)
+        const result = await uploadUserAvatar(frmData)
+
+        formData.avatar = result.result.src
+      }
+    }
+
     const submitData = {
       adminId: formData.adminId,
       businessId: formData.businessId,
+      businessNo: formData.businessNo,
+      businessName: formData.businessName,
       userNo: formData.userNo,
       userName: formData.userName,
       realName: formData.realName,
@@ -219,6 +286,37 @@ const handleCancel = () => {
 const handleClosed = () => {
 
 }
+const handleChangeFile = (file) => {
+  if (!file.raw) {
+    ElMessage.error(`文件打开失败`);
+    return;
+  }
+  hideUpload.value = true;
+
+}
+const handleRemove = () => {
+  formData.avatar = ''
+  hideUpload.value = false;
+}
+
+const handleCheck = (val) => {
+  if (val === 1) {
+    formData.businessId = 0;
+    formData.businessNo = '';
+    formData.businessName = '';
+  }
+
+}
+
+const handleClick = () => {
+  pickshopdialogRef.value.openDialog()
+}
+
+const handleDialogQuery = (res) => {
+  formData.businessId = res.businessId;
+  formData.businessNo = res.businessNo;
+  formData.businessName = res.businessName;
+}
 
 const handleUploadSuccess = (response) => {
   if (response.code === 0) {
@@ -230,7 +328,7 @@ const handleUploadSuccess = (response) => {
 }
 
 const beforeUpload = (file) => {
-  const isImage = /^image\/(jpeg|png|gif|webp|svg\+xml)$/.test(file.type)
+  const isImage = /^image\/(jpeg|jpg|png|gif|webp|svg\+xml)$/.test(file.type)
   const isLt2M = file.size / 1024 / 1024 < 2
 
   if (!isImage) {
@@ -273,6 +371,13 @@ defineExpose({ openDialog })
     border-top: 1px solid #e4e7ed;
   }
 }
+
+.hidePlus {
+  :deep(.el-upload--picture-card) {
+    display: none;
+  }
+}
+
 
 .form-item-large {
   margin-bottom: 22px;

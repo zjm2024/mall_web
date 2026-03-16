@@ -33,7 +33,7 @@ export const baseMenuList = [
     roles: ['super_admin', 'merchant_admin']
   },
   {
-    title: '店铺管理',
+    title: '我的商号',
     icon: 'Shop',
     roles: ['super_admin', 'merchant_admin'],
     children: [
@@ -47,11 +47,7 @@ export const baseMenuList = [
         path: '/shop/home',
         roles: ['super_admin', 'merchant_admin']
       },
-      {
-        title: '类型管理',
-        path: '/shop/category',
-        roles: ['super_admin', 'merchant_admin']
-      },
+
       {
         title: '店员管理',
         path: '/shop/user',
@@ -64,6 +60,11 @@ export const baseMenuList = [
     icon: 'Goods',
     roles: ['super_admin', 'merchant_admin'],
     children: [
+      {
+        title: '类型管理',
+        path: '/product/category',
+        roles: ['super_admin']
+      },
       {
         title: '商品列表',
         path: '/product/list',
@@ -137,6 +138,11 @@ export const adminMenuList = [
     roles: ['super_admin'], // 只有超管
     children: [
       {
+        title: '商户管理',
+        path: '/system/shop',
+        roles: ['super_admin']
+      },
+      {
         title: '用户管理',
         path: '/system/user',
         roles: ['super_admin']
@@ -159,11 +165,13 @@ export function getMenuByUser(isSuperAdmin) {
   const userRole = isSuperAdmin ? 'super_admin' : 'merchant_admin'
 
   // 基础菜单
-  let filteredMenu = filterMenuByRole(baseMenuList, userRole)
+  const menuList = JSON.parse(JSON.stringify(baseMenuList))
+  let filteredMenu = filterMenuByRole(menuList, userRole)
 
   // 如果是超管，添加超管专属菜单
   if (isSuperAdmin) {
-    const adminMenu = filterMenuByRole(adminMenuList, userRole)
+    const menuList = JSON.parse(JSON.stringify(adminMenuList))
+    const adminMenu = filterMenuByRole(menuList, userRole)
     filteredMenu = [...filteredMenu, ...adminMenu]
   }
 

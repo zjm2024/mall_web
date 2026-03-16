@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="isShowDialog" :title="dialogTitle" draggable width="520px" :close-on-click-modal="false"
+  <el-dialog v-model="isShowDialog" :title="dialogTitle" draggable width="600px" :close-on-click-modal="false"
     :show-close="false" @update:model-value="$emit('update:modelValue', $event)" @closed="handleClosed">
     <el-form ref="formRef" :model="formData" :rules="rules" label-width="100px" label-position="right" size="large">
       <!-- 父分类显示 -->
@@ -18,38 +18,41 @@
           :disabled="mode == 'edit'" clearable />
       </el-form-item>
 
-      <!-- 分类图标 -->
-      <el-form-item label="分类图标" prop="Icon" class="form-item-large">
-        <div class="icon-upload">
-          <el-input v-model="formData.icon" placeholder="请输入图标URL或选择上传" size="large" clearable
-            style="flex: 1; margin-right: 12px;" />
-          <el-upload action="/api/upload/image" :show-file-list="false" :on-success="handleUploadSuccess"
-            :before-upload="beforeUpload">
-            <el-button type="primary" size="large">上传</el-button>
-          </el-upload>
-        </div>
-        <div v-if="formData.icon" class="icon-preview">
-          <span class="preview-text">图标预览：</span>i
-          <img :src="formData.icon" alt="图标" class="icon-image" />
-        </div>
-      </el-form-item>
 
-      <!-- 排序 -->
-      <el-form-item label="排序" prop="sortOrder" class="form-item-large">
-        <div class="sort-container">
-          <el-input-number v-model="formData.sortOrder" :min="0" :max="9999" controls-position="right" size="large"
-            style="width: 160px;" />
-          <span class="form-tip">数字越大，排序越靠前</span>
-        </div>
-      </el-form-item>
 
-      <!-- 状态 -->
-      <el-form-item label="状态" prop="status" class="form-item-large">
-        <el-radio-group v-model="formData.status">
-          <el-radio :label="1" size="large">显示</el-radio>
-          <el-radio :label="0" size="large">隐藏</el-radio>
-        </el-radio-group>
-      </el-form-item>
+      <el-row>
+        <el-col :span="12">
+          <!-- 排序 -->
+          <el-form-item label="排序" prop="sortOrder" class="form-item-large">
+            <div class="sort-container">
+              <el-input-number v-model="formData.sortOrder" :min="0" :max="9999" controls-position="right" size="large"
+                style="width: 160px;" />
+              <span class="form-tip">数字越大，排序越靠前</span>
+            </div>
+          </el-form-item>
+
+          <!-- 状态 -->
+          <el-form-item label="状态" prop="status" class="form-item-large">
+            <el-radio-group v-model="formData.status">
+              <el-radio :label="1" size="large">显示</el-radio>
+              <el-radio :label="0" size="large">隐藏</el-radio>
+            </el-radio-group>
+          </el-form-item>
+
+
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="图标" class="form-item-large">
+            <el-upload :class="{ 'hidePlus': hideUpload }" v-model:file-list="filelist" :auto-upload="false"
+              list-type="picture-card" :multiple="false" :limit="1" :on-change="handleChangeFile"
+              :on-preview="handlePictureCardPreview" accept=".jpeg,.jpg,.png" :on-remove="handleRemove">
+              <el-icon>
+                <Plus />
+              </el-icon>
+            </el-upload>
+          </el-form-item>
+        </el-col>
+      </el-row>
     </el-form>
 
     <template #footer>
@@ -66,7 +69,7 @@
 <script setup>
 import { ref, reactive, computed, watch, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
-import { createCategory, updateCategory } from '@/api/modules/category'
+import { createCategory, updateCategory, uploadCategoryIcon } from '@/api/modules/category'
 import { useUserStore } from '@/stores/user'
 
 const props = defineProps({
@@ -87,7 +90,7 @@ const emits = defineEmits(['success'])
 // 表单引用
 const formRef = ref()
 const submitting = ref(false)
-
+const hideUpload = ref(false)
 const userStore = useUserStore()
 
 // 表单数据
@@ -100,6 +103,8 @@ const formData = reactive({
   parentId: 0,
   level: 1
 })
+
+const filelist = ref([])
 
 const isShowDialog = ref(false)
 
@@ -130,6 +135,17 @@ const dialogTitle = computed(() => {
 // 打开弹窗
 const openDialog = async (row) => {
   Object.assign(formData, JSON.parse(JSON.stringify(row)));
+
+  filelist.value = [];
+  const url = (formData.icon) ? formData.icon : ''
+  if (url !== '') {
+    filelist.value.push({ url: url });
+    hideUpload.value = true;
+  }
+  else
+    hideUpload.value = false
+
+
   isShowDialog.value = true
 
 }
@@ -147,6 +163,29 @@ const handleSubmit = async () => {
   try {
     await formRef.value.validate()
     submitting.value = true
+
+    //上传文件
+    if (filelist.value.length > 0) {
+      let file = filelist.value[0]
+      if (file.status !== 'success') {
+        if (file.raw === undefined) {
+
+          ElMessage.info('请重新选择图片!')
+          return
+
+        }
+
+
+        let frmData = new FormData();//json数据
+        frmData.append('appType', userStore.userInfo.appType)
+        frmData.append('businessId', 0)
+        frmData.append('file', file.raw)
+        const result = await uploadCategoryIcon(frmData)
+
+        formData.icon = result.result.src
+      }
+    }
+
 
     const submitData = {
       categoryId: formData.categoryId,
@@ -184,6 +223,19 @@ const handleClosed = () => {
 
 }
 
+const handleChangeFile = (file) => {
+  if (!file.raw) {
+    ElMessage.error(`文件打开失败`);
+    return;
+  }
+  hideUpload.value = true;
+
+}
+const handleRemove = () => {
+  formData.icon = ''
+  hideUpload.value = false;
+}
+
 const handleUploadSuccess = (response) => {
   if (response.code === 0) {
     localFormData.Icon = response.data.url
@@ -194,7 +246,7 @@ const handleUploadSuccess = (response) => {
 }
 
 const beforeUpload = (file) => {
-  const isImage = /^image\/(jpeg|png|gif|webp|svg\+xml)$/.test(file.type)
+  const isImage = /^image\/(jpeg|jpg|png|gif|webp|svg\+xml)$/.test(file.type)
   const isLt2M = file.size / 1024 / 1024 < 2
 
   if (!isImage) {
@@ -235,6 +287,12 @@ defineExpose({ openDialog })
   .el-dialog__footer {
     padding: 20px 24px;
     border-top: 1px solid #e4e7ed;
+  }
+}
+
+.hidePlus {
+  :deep(.el-upload--picture-card) {
+    display: none;
   }
 }
 

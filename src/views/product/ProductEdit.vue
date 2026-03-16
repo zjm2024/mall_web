@@ -39,46 +39,118 @@
             </template>
 
             <el-form ref="formRef" :model="formData" :rules="formRules" label-width="100px" size="default"
-              class="compact-form">
+              v-loading="loading" class="compact-form">
               <div class="form-grid">
-                <el-form-item label="商品名称" prop="productName">
-                  <el-input v-model="formData.productName" placeholder="请输入商品名称" maxlength="100" show-word-limit
-                    clearable />
-                </el-form-item>
+                <el-row v-if="userStore.userInfo.isSuperAdmin == 1" style="padding-bottom: 12px;">
+                  <el-col :span="6">
+                    <el-form-item label="商户号" prop="businessNo">
+                      <el-input v-model="formData.businessNo" placeholder="请输入商户号"
+                        style="width: 150px; margin-right: 10px;" size="default" :readonly="true" clearable>
 
-                <el-form-item label="商品分类" prop="categoryId">
-                  <el-cascader v-model="formData.categoryId" :options="categoryOptions" :props="props"
-                    @change="handlecascaderChange" placeholder="请选择商品分类" clearable size="default"
-                    style="width: 300px; margin-right: 10px;" />
-                </el-form-item>
+                        <template #suffix>
+                          <Search style="margin-right: 0px; width: 1.5em; height: 1.5em" @click.stop="handleClick()" />
+                        </template>
+
+                      </el-input>
+                    </el-form-item>
+                  </el-col>
+
+                  <el-col :span="10">
+                    <!-- 商户名称 -->
+                    <el-form-item label="商户名称">
+                      <el-input v-model="formData.businessName" placeholder="请输入商户名称" maxlength="50" size="default"
+                        :readonly="true" clearable />
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="8"></el-col>
+                </el-row>
+
+                <el-row style="padding-bottom: 12px;">
+                  <el-col :span="6">
+                    <el-form-item label="商品编号" prop="productNo">
+                      <el-input v-model="formData.productNo" placeholder="商品编号" maxlength="100" s clearable />
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="10">
+                    <el-form-item label="商品名称" prop="productName">
+                      <el-input v-model="formData.productName" placeholder="请输入商品名称" maxlength="100" show-word-limit
+                        clearable />
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="8">
+                    <el-form-item label="商品分类" prop="categoryId">
+                      <el-cascader v-model="formData.categoryId" :options="categoryOptions" :props="props"
+                        @change="handlecascaderChange" ref="cascaderRef" placeholder="请选择商品分类" clearable size="default"
+                        style="width: 300px; margin-right: 10px;" />
+                    </el-form-item>
+                  </el-col>
+                </el-row>
+
+
+                <el-row>
+                  <el-col :span="12">
+
+                    <el-form-item label="商品主图">
+                      <div class="image-upload-area">
+                        <el-upload :class="{ 'hidePlus': hideUpload }" class="main-image-upload"
+                          v-model:file-list="productImageList" :auto-upload="false" list-type="picture-card"
+                          :multiple="false" :limit="1" accept=".jpeg,.jpg,.png" :on-change="handleChangeFile"
+                          :on-remove="handleRemove">
+
+                          <div class="upload-placeholder">
+                            <el-icon class="upload-icon">
+                              <Camera />
+                            </el-icon>
+                            <div class="upload-text">点击选商品主图</div>
+                            <div class="upload-tip">建议尺寸：800x800像素</div>
+                          </div>
+
+                        </el-upload>
+
+                        <el-button type="primary" @click="handleProductImageUpLoad">
+                          <el-icon>
+                            <Upload />
+                          </el-icon>上传
+                        </el-button>
+
+                      </div>
+                      <el-input v-model="formData.productImage" disabled></el-input>
+
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="12">
+                    <el-form-item label="商品图片集">
+                      <div class="image-upload-area">
+                        <el-upload :class="{ 'hidesPlus': hidesUpload }" class="main-image-upload"
+                          v-model:file-list="productImagesList" :auto-upload="false" list-type="picture-card"
+                          :multiple="false" :limit="3" accept=".jpeg,.jpg,.png" :on-change="handleChangeFiles"
+                          :on-remove="handleRemoves">
+
+                          <div class="upload-placeholder">
+                            <el-icon class="upload-icon">
+                              <Camera />
+                            </el-icon>
+                            <div class="upload-text">点击选商品图片集</div>
+                            <div class="upload-tip">建议尺寸：800x400像素</div>
+                          </div>
+
+                        </el-upload>
+
+                        <el-button type="primary" @click="handleProductImageUpLoads">
+                          <el-icon>
+                            <Upload />
+                          </el-icon>上传
+                        </el-button>
+
+                      </div>
+                      <el-input type="textarea" rows="3" v-model="formData.productImages" disabled></el-input>
+
+                    </el-form-item>
+                  </el-col>
+                </el-row>
+
               </div>
 
-              <el-form-item label="商品主图">
-                <div class="image-upload-area">
-                  <el-upload class="main-image-upload" v-model:file-list="productImageList" :auto-upload="false"
-                    list-type="picture-card" :multiple="false" :limit="1" accept=".jpg,.png"
-                    :on-change="handleChangeFile" :on-remove="handleRemove">
-
-                    <div class="upload-placeholder">
-                      <el-icon class="upload-icon">
-                        <Camera />
-                      </el-icon>
-                      <div class="upload-text">点击选中商品主图</div>
-                      <div class="upload-tip">建议尺寸：800x800像素</div>
-                    </div>
-
-                  </el-upload>
-
-                  <el-button type="primary" @click="handleProductImageUpLoad">
-                    <el-icon>
-                      <Upload />
-                    </el-icon>上传
-                  </el-button>
-
-                </div>
-                <el-input v-model="formData.productImage" disabled></el-input>
-
-              </el-form-item>
             </el-form>
           </el-card>
 
@@ -759,10 +831,26 @@
               </div>
 
               <div class="setting-item">
+                <span class="setting-label">推荐商品</span>
+                <el-switch v-model="formData.hotProduct" :active-value="1" :inactive-value="0" active-text="推荐"
+                  inactive-text="免推" />
+              </div>
+
+              <div class="setting-item">
+                <span class="setting-label">轮播商品</span>
+                <el-switch v-model="formData.bannerProduct" :active-value="1" :inactive-value="0" active-text="轮播"
+                  inactive-text="免播" />
+              </div>
+
+
+              <div class="setting-item">
                 <span class="setting-label">显示价格</span>
                 <el-switch v-model="formData.showPrice" :active-value="1" :inactive-value="0" active-text="显示"
                   inactive-text="隐藏" />
               </div>
+
+
+
 
               <div class="setting-item">
                 <span class="setting-label">防刷单</span>
@@ -770,7 +858,7 @@
                   inactive-text="关闭" />
               </div>
 
-              <div class="setting-item" v-if="formData.AntiRefresh">
+              <div class="setting-item" v-if="formData.antiRefresh">
                 <span class="setting-label">每日最大订单</span>
                 <el-input-number v-model="formData.maxDailyOrders" :min="0" controls-position="right" size="small"
                   style="width: 120px;" />
@@ -826,7 +914,10 @@
         </div>
       </div>
     </div>
+
+    <PickShopDialog ref="pickshopdialogRef" @handleQuery="handleDialogQuery" />
   </div>
+
 </template>
 
 <script setup>
@@ -839,7 +930,6 @@ import {
   Share, SetUp, Plus, Close, Box,
   TrendCharts
 } from '@element-plus/icons-vue'
-import { useUserStore } from '@/stores/user'
 
 import {
   getProductDetail,
@@ -851,21 +941,30 @@ import {
   uploadProductImage,
   updateSpecImage,
 } from '@/api/modules/product'
-import { it } from 'element-plus/es/locales.mjs'
-
 
 import { API_PATHS } from '@/constants/api'
 
 const route = useRoute()
+
+import { useUserStore } from '@/stores/user'
+
+import PickShopDialog from '../../components/common/PickShopDialog.vue'
+
+const pickshopdialogRef = ref(null)
+
 const router = useRouter()
 const formRef = ref()
 const editorRef = ref()
+const cascaderRef = ref();
 const submitting = ref(false)
+const loading = ref(false)
 const categoryOptions = ref([])
 const activeMarketingTab = ref('seckill')
 const defaultIndex = ref('')
 const productImageList = ref([])
+const productImagesList = ref([])
 const hideUpload = ref(false)
+const hidesUpload = ref(false)
 const userStore = useUserStore()
 const props = {
 
@@ -908,15 +1007,20 @@ const hasSpecifications = computed(() => specifications.value.filter(it => it.is
 const totalSkus = computed(() => skuList.value.length)
 
 const uploadAction = ref(API_PATHS.UPLOAD.UPLOADIMAGE)
-const uploadData = ref({ appType: 0, businessId: 100 })
 
 // 表单数据
 const formData = reactive({
+  businessId: 0,
+  businessNo: '',
+  businessName: '',
   productId: 0,
+  productNo: '',
   productName: '',
   categoryId: '',
   treePath: '',
+  treePathName: '',
   productImage: '',
+  productImages: '',
   originalPrice: 0,
   currentPrice: 0,
   totalStock: 0,
@@ -924,6 +1028,8 @@ const formData = reactive({
   productContent: '',
   showPrice: 1,
   productStatus: 1,
+  hotProduct: 0,
+  bannerProduct: 0,
   commissionEnabled: 0,
   firstLevelRate: 0,
   secondLevelRate: 0,
@@ -934,6 +1040,12 @@ const formData = reactive({
 
 // 表单验证规则
 const formRules = {
+  businessNo: [
+    { required: true, message: '请选择商户号', trigger: 'blur' }
+  ],
+  productNo: [
+    { required: true, message: '请输入商品编号', trigger: 'blur' }
+  ],
   productName: [
     { required: true, message: '请输入商品名称', trigger: 'blur' },
     { min: 2, max: 100, message: '长度在2到100个字符', trigger: 'blur' }
@@ -1061,11 +1173,19 @@ const removeSpecValue = async (specIndex, valueIndex) => {
 
 const handlecascaderChange = (value) => {
   //生成TreePath
-  console.log(value)
-  if (value == null)
+  const checkedNodes = cascaderRef.value.getCheckedNodes();
+  if (checkedNodes.length > 0) {
+    // 获取选中节点的路径标签（文本）
+    formData.treePathName = checkedNodes[0].pathLabels.join('/');
+    formData.treePath = checkedNodes[0].pathValues.join('.')
+  }
+  else {
     formData.treePath = ''
-  else
-    formData.treePath = value.join('.')
+    formData.treePathName = ''
+  }
+
+
+
 }
 
 // 生成SKU列表
@@ -1365,7 +1485,7 @@ const handleCommissionChange = (val) => {
 const handlcustomUpload = async (param) => {
   let frmData = new FormData();//json数据
   frmData.append('appType', 0)
-  frmData.append('businessId', 100)
+  frmData.append('businessId', formData.businessId)
   frmData.append('file', param.file)
   const res = await uploadProductImage(frmData)
 
@@ -1374,55 +1494,111 @@ const handlcustomUpload = async (param) => {
 
 
 
-// 图片上传
+// 主图片上传
 const handleProductImageUpLoad = async () => {
   if (productImageList.value.length === 0) {
-    ElMessage.info('请选择图片!')
+    ElMessage.info('请选择主图片!')
     return
   }
 
   try {
-
-
-    let frmData = new FormData();//json数据
-    frmData.append('appType', 0)
-    frmData.append('businessId', 100)
-
     let file = productImageList.value[0]
-    if (file.raw !== undefined)
-      frmData.append('file', file.raw)
-    else {
-
-      ElMessage.info('请重新选择图片!')
-      return
-
-    }
-
-
-    const res = await uploadProductImage(frmData)
-
-    formData.productImage = res.result.src
-
-    //保存如果prouctId<>0
-    if (formData.productId !== 0) {
-      const saveData = {
-        productId: formData.productId,
-        productImage: formData.productImage,
+    if (file.status !== 'success') {
+      if (file.raw === undefined) {
+        ElMessage.info('请重新选择图片!')
+        return
       }
+      let frmData = new FormData();//json数据
+      frmData.append('appType', 0)
+      frmData.append('businessId', formData.businessId)
+      frmData.append('file', file.raw)
 
-      await updateProduct(saveData)
+
+
+      const res = await uploadProductImage(frmData)
+      file.url = res.result.src
+      file.status = 'success'
+      formData.productImage = res.result.src
+
+      //保存如果prouctId<>0
+      if (formData.productId !== 0) {
+        const saveData = {
+          productId: formData.productId,
+          productImage: formData.productImage,
+        }
+
+        await updateProduct(saveData)
+      }
+      ElMessage.success('主图上传成功')
     }
-    ElMessage.success('主图上传成功')
+    else
+      ElMessage.success('主图已经上传')
+
   }
 
   catch (error) {
 
   }
 
+}
 
 
+// 商品图片集图片上传
+const handleProductImageUpLoads = async () => {
+  if (productImagesList.value.length === 0) {
+    ElMessage.info('请选择图片集图片!')
+    return
+  }
+
+  try {
+    let imageList = []
+    for (let file of productImagesList.value) {
+      if (file.status !== 'success') {
+        if (file.raw === undefined) {
+          ElMessage.info('请重新选择图片!')
+          return
+        }
+
+        let frmData = new FormData();//json数据
+        frmData.append('appType', 0)
+        frmData.append('businessId', formData.businessId)
+        frmData.append('file', file.raw)
+
+        const res = await uploadProductImage(frmData)
+        file.url = res.result.src
+        file.status = 'success'
+        imageList.push(res.result.src)
+      }
+      else {
+        imageList.push(file.url)
+      }
+
+
+    }
+
+    formData.productImages = JSON.stringify(imageList)
+
+    //保存如果prouctId<>0
+    if (formData.productId !== 0) {
+      const saveData = {
+        productId: formData.productId,
+        productImages: formData.productImages,
+      }
+
+      await updateProduct(saveData)
+    }
+    ElMessage.success('图片集图上传成功')
+  }
+
+  catch (error) {
+
+  }
 
 }
+
+
+
+
 
 const handleChangeFile = (file) => {
   if (!file.raw) {
@@ -1441,6 +1617,34 @@ const handleRemove = () => {
 }
 
 
+const handleChangeFiles = (file) => {
+  if (!file.raw) {
+    ElMessage.error(`文件打开失败!`)
+
+    return
+  }
+  if (productImagesList.value.length === 3)
+    hidesUpload.value = true
+  else
+    hidesUpload.value = false
+
+}
+
+const handleRemoves = (file) => {
+  const url = file.url
+  let sourceList = JSON.parse(formData.productImages)
+  let index = sourceList.findIndex(it => it === url)
+  if (index !== -1) {
+    sourceList.splice(index, 1)
+    if (sourceList.length === 0)
+      formData.productImages = ''
+    else
+      formData.productImages = JSON.stringify(sourceList)
+  }
+
+  hidesUpload.value = false
+
+}
 
 
 
@@ -1480,7 +1684,7 @@ const beforeImageUpload = (file, sku) => {
     return
   }
 
-  const isImage = /^image\/(jpeg|png|gif|webp)$/.test(file.type)
+  const isImage = /^image\/(jpeg|jpg|png|gif|webp)$/.test(file.type)
   const isLt5M = file.size / 1024 / 1024 < 5
 
   if (!isImage) {
@@ -1500,7 +1704,7 @@ const beforeImageUpload1 = (file) => {
 
 
 
-  const isImage = /^image\/(jpeg|png|gif|webp)$/.test(file.type)
+  const isImage = /^image\/(jpeg|jpg|png|gif|webp)$/.test(file.type)
   const isLt5M = file.size / 1024 / 1024 < 5
 
   if (!isImage) {
@@ -1518,6 +1722,11 @@ const beforeImageUpload1 = (file) => {
 
 // 保存商品
 const handleSave = async () => {
+  if (formData.businessId === 0) {
+    ElMessage.error('请选择商户号!')
+    return
+  }
+
   if (!formRef.value) return
 
   try {
@@ -1580,11 +1789,15 @@ const handleSave = async () => {
 
 
     const saveData = {
+
       productId: formData.productId,
+      productNo: formData.productNo,
       productName: formData.productName,
       categoryId: Array.isArray(formData.categoryId) ? formData.categoryId[formData.categoryId.length - 1] : formData.categoryId,
       treePath: formData.treePath,
+      treePathName: formData.treePathName,
       productImage: formData.productImage,
+      productImages: formData.productImages,
       originalPrice: formData.originalPrice,
       currentPrice: formData.currentPrice,
       totalStock: formData.totalStock,
@@ -1592,6 +1805,8 @@ const handleSave = async () => {
       productContent: formData.productContent,
       showPrice: formData.showPrice,
       productStatus: formData.productStatus,
+      hotProduct: formData.hotProduct,
+      bannerProduct: formData.bannerProduct,
       commissionEnabled: formData.commissionEnabled,
       firstLevelRate: formData.firstLevelRate,
       secondLevelRate: formData.secondLevelRate,
@@ -1601,7 +1816,7 @@ const handleSave = async () => {
 
 
       appType: userStore.userInfo.appType,
-      businessId: userStore.userInfo.businessId,
+      businessId: formData.businessId,
       productSpec: JSON.stringify(productSpec),
       productSpecs: productSpecs,
       marketing: marketingData
@@ -1630,6 +1845,8 @@ const handleSave = async () => {
 const loadData = async () => {
   if (isEditMode.value) {
     try {
+      loading.value = true
+
       const res = await getProductDetail(route.query.id)
 
 
@@ -1638,10 +1855,33 @@ const loadData = async () => {
       //加载图片
       productImageList.value = []
 
-      const url = formData.productImage
+      const url = (formData.productImage) ? formData.productImage : ''
       if (url !== '') {
         productImageList.value.push({ url: url });
+        hideUpload.value = true;
       }
+      else
+        hideUpload.value = false
+
+      //加载图片集图片
+      productImagesList.value = []
+
+      const urls = (formData.productImages) ? formData.productImages : ''
+      if (urls !== '') {
+        const imageList = JSON.parse(urls);
+        imageList.forEach(it => {
+          productImagesList.value.push({ url: it });
+        })
+
+        if (imageList.length === 3)
+          hidesUpload.value = true;
+        else
+          hidesUpload.value = false;
+      }
+      else
+        hidesUpload.value = false
+
+
 
       // 加载规格数据
       const productSpec = (res.result.productSpec) ? JSON.parse(res.result.productSpec) : []
@@ -1677,12 +1917,21 @@ const loadData = async () => {
         }
       }
     } catch (error) {
-      console.error('加载商品详情失败:', error)
       ElMessage.error('加载商品详情失败')
+    }
+    finally {
+      loading.value = false
     }
   }
   else {
     formData.productId = 0
+    formData.productImage = ''
+    formData.productImages = ''
+    specifications.value = []
+    //循环把空数组补齐参与页面循环渲染
+    while (specifications.value.length < 3) {
+      specifications.value.push({ specName: '', specValues: [{ specValue: '' }], sortOrder: specifications.value.length + 1, isShow: false })
+    }
   }
 }
 
@@ -1691,7 +1940,7 @@ const loadData = async () => {
 const fetchCategoryOptions = async () => {
   try {
     const appType = userStore.userInfo.appType
-    const businessId = userStore.userInfo.businessId
+    const businessId = 0
     let params = { appType: appType, businessId: businessId }
     const res = await getCategoryOptions(params)
     categoryOptions.value = res.result || []
@@ -1700,9 +1949,33 @@ const fetchCategoryOptions = async () => {
   }
 }
 
-onMounted(() => {
-  fetchCategoryOptions()
-  loadData()
+const handleClick = () => {
+  pickshopdialogRef.value.openDialog()
+}
+
+const handleDialogQuery = (res) => {
+  formData.businessId = res.businessId;
+  formData.businessNo = res.businessNo;
+  formData.businessName = res.businessName;
+}
+
+onMounted(async () => {
+  //超管用户需要选择商户才能查询
+  const result = localStorage.getItem("curselectbusiness")
+  if (result != '' && userStore.isSuperAdmin) {
+    const dataobj = JSON.parse(result)
+    formData.businessId = dataobj.businessId
+    formData.businessNo = dataobj.businessNo
+    formData.businessName = dataobj.businessName
+  }
+  else {
+    formData.businessId = (userStore.isSuperAdmin) ? 0 : userStore.userInfo.businessId
+    formData.businessNo = (userStore.isSuperAdmin) ? '' : userStore.userInfo.businessNo
+    formData.businessName = (userStore.isSuperAdmin) ? '' : userStore.userInfo.businessName
+  }
+  await fetchCategoryOptions()
+  await loadData()
+
 })
 </script>
 
@@ -1768,7 +2041,7 @@ onMounted(() => {
   }
 
   .edit-container {
-    max-width: 1400px;
+    max-width: 100%;
     margin: 0 auto;
     padding: 0 32px 32px;
     height: calc(82vh - 120px);
@@ -1830,7 +2103,7 @@ onMounted(() => {
 
   .compact-form {
     .form-grid {
-      display: grid;
+
       grid-template-columns: repeat(2, 1fr);
       gap: 20px;
       margin-bottom: 20px;
@@ -1883,6 +2156,19 @@ onMounted(() => {
   }
 
   .image-upload-area {
+
+    .hidePlus {
+      :deep(.el-upload--picture-card) {
+        display: none;
+      }
+    }
+
+    .hidesPlus {
+      :deep(.el-upload--picture-card) {
+        display: none;
+      }
+    }
+
     .main-image-upload {
       width: 100%;
 

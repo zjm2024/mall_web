@@ -4,78 +4,51 @@
     <el-form ref="formRef" :model="formData" :rules="rules" label-width="100px" label-position="right" size="large">
 
       <el-row>
-        <el-col :span="12">
+        <el-col>
 
 
 
 
-          <!-- 账号 -->
-          <el-form-item label="账号" prop="userNo" class="form-item-large">
-            <el-input v-model="formData.userNo" placeholder="请输入账号(手机号码)" maxlength="50" size="large"
-              :disabled="mode == 'edit'" clearable />
-          </el-form-item>
+
 
           <!-- 商户号 -->
-          <el-form-item label="商户号" prop="businessId" class="form-item-large">
-            <el-input v-model="formData.businessId" placeholder="请输入商户号" maxlength="50" size="large"
+          <el-form-item label="商户号" prop="businessNo" class="form-item-large">
+            <el-input v-model="formData.businessNo" placeholder="请输入商户号" maxlength="50" size="large"
               :disabled="mode == 'edit'" clearable />
           </el-form-item>
 
 
 
-          <!-- 用户昵称 -->
-          <el-form-item label="用户昵称" prop="userName" class="form-item-large">
-            <el-input v-model="formData.userName" placeholder="请输入用户昵称" maxlength="50" size="large"
+          <!-- 商户名称 -->
+          <el-form-item label="商户名称" prop="businessName" class="form-item-large">
+            <el-input v-model="formData.businessName" placeholder="请输入商户名称" maxlength="50" size="large"
               :disabled="mode == 'edit'" clearable />
           </el-form-item>
 
-          <!-- 用户姓名 -->
-          <el-form-item label="用户姓名" prop="realName" class="form-item-large">
-            <el-input v-model="formData.realName" placeholder="请输入用户姓名" maxlength="50" size="large"
-              :disabled="mode == 'edit'" clearable />
-          </el-form-item>
+
 
         </el-col>
-        <el-col :span="12">
-          <el-form-item label="头像" class="form-item-large">
-            <el-upload :class="{ 'hidePlus': hideUpload }" v-model:file-list="filelist" :auto-upload="false"
-              list-type="picture-card" :multiple="false" :limit="1" :on-change="handleChangeFile"
-              :on-preview="handlePictureCardPreview" accept=".jpeg,.jpg,.png" :on-remove="handleRemove">
-              <el-icon>
-                <Plus />
-              </el-icon>
-            </el-upload>
-          </el-form-item>
-        </el-col>
+
       </el-row>
-      <!-- 手机号码 -->
-      <el-form-item label="手机号码" prop="phone" class="form-item-large">
-        <el-input v-model="formData.phone" placeholder="请输入手机号码" show-word-limit size="large" clearable />
-      </el-form-item>
-
-      <!-- 邮箱地址 -->
-      <el-form-item label="邮箱地址" prop="email" class="form-item-large">
-        <el-input v-model="formData.email" placeholder="请输入邮箱地址" show-word-limit size="large" clearable />
-      </el-form-item>
 
 
       <el-row>
-        <el-col :span="12">
+        <el-col>
           <!-- 状态 -->
           <el-form-item label="状态" prop="status" class="form-item-large">
             <el-radio-group v-model="formData.status">
-              <el-radio :label="1" size="large">正常</el-radio>
-              <el-radio :label="0" size="large">禁用</el-radio>
+
+              <el-radio :label="0" size="large">审批</el-radio>
+              <el-radio :label="1" size="large">上线</el-radio>
+              <el-radio :label="2" size="large">下线</el-radio>
+              <el-radio :label="3" size="large">删除</el-radio>
+
+
             </el-radio-group>
           </el-form-item>
         </el-col>
 
-        <el-col :span="12">
-          <!-- 超管 -->
-          <el-form-item label="" prop="isSuperAdmin" class="form-item-large">
-            <el-checkbox v-model="formData.isSuperAdmin" label="超级管理员" :true-label="1" :false-label="0"></el-checkbox>
-          </el-form-item>
-        </el-col>
+
       </el-row>
 
     </el-form>
@@ -83,7 +56,8 @@
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="handleCancel" size="large" style="width: 120px;">取消</el-button>
-        <el-button type="primary" @click="handleSubmit" :loading="submitting" size="large" style="width: 120px;">
+        <el-button type="primary" @click="handleSubmit" :loading="submitting" size="large" style="width: 120px;"
+          v-if="props.mode !== 'detail'">
           {{ submitting ? '处理中...' : '确定' }}
         </el-button>
       </div>
@@ -94,7 +68,7 @@
 <script setup>
 import { ref, reactive, computed, watch, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
-import { createUser, updateUser } from '@/api/modules/user'
+import { createShop, updateShop } from '@/api/modules/shop'
 import { useUserStore } from '@/stores/user'
 
 const props = defineProps({
@@ -117,16 +91,10 @@ const hideUpload = ref(false)
 // 表单数据
 const userStore = useUserStore()
 const formData = reactive({
-  adminId: null,
-  businessId: 0,
-  userNo: '',
-  userName: '',
-  realName: '',
-  avatar: '',
-  isSuperAdmin: 0,
+  businessId: null,
+  businessNo: '',
+  businessName: '',
   status: 1,
-  phone: '',
-  email: '',
 })
 
 const filelist = ref([])
@@ -135,18 +103,14 @@ const isShowDialog = ref(false)
 
 // 验证规则
 const rules = {
-  userNo: [
-    { required: true, message: '请输入账号(手机号码)', trigger: 'blur' },
-    { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
+  businessNo: [
+    { required: true, message: '请输入商户号', trigger: 'blur' },
+
   ],
-  userName: [
-    { required: true, message: '请输入用户昵称', trigger: 'blur' },
-    { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
+  businessName: [
+    { required: true, message: '请输入商户名称', trigger: 'blur' },
   ],
-  realName: [
-    { required: true, message: '请输入用户姓名', trigger: 'blur' },
-    { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
-  ],
+
   status: [
     { required: true, message: '请选择状态', trigger: 'change' }
   ]
@@ -157,24 +121,15 @@ const rules = {
 // 计算属性
 const dialogTitle = computed(() => {
   if (props.mode === 'add') {
-    return '添加用户'
+    return '添加商户'
   }
-  return `编辑用户 - ${formData.userName}`
+  return `编辑商户 - ${formData.businessName}`
 })
 
 
 // 打开弹窗
 const openDialog = async (row) => {
   Object.assign(formData, JSON.parse(JSON.stringify(row)));
-  filelist.value = [];
-  const url = (formData.avatar) ? formData.avatar : ''
-  if (url !== '') {
-    filelist.value.push({ url: url });
-    hideUpload.value = true;
-  }
-  else
-    hideUpload.value = false
-
   isShowDialog.value = true
 
 }
@@ -193,48 +148,21 @@ const handleSubmit = async () => {
     await formRef.value.validate()
     submitting.value = true
 
-    //上传文件
-    if (filelist.value.length > 0) {
-      let file = filelist.value[0]
-      if (file.status !== 'success') {
-        if (file.raw === undefined) {
-
-          ElMessage.info('请重新选择图片!')
-          return
-
-        }
-
-
-        let frmData = new FormData();//json数据
-        frmData.append('appType', 0)
-        frmData.append('businessId', userStore.userInfo.businessId)
-        frmData.append('file', file.raw)
-        const result = await uploadUserAvatar(frmData)
-
-        formData.avatar = result.result.src
-      }
-    }
 
 
     const submitData = {
-      adminId: formData.adminId,
       businessId: formData.businessId,
-      userNo: formData.userNo,
-      userName: formData.userName,
-      realName: formData.realName,
-      avatar: formData.avatar,
-      isSuperAdmin: formData.isSuperAdmin,
+      businessNo: formData.businessNo,
+      businessName: formData.businessName,
       status: formData.status,
-      phone: formData.phone,
-      email: formData.email,
       appType: 0
     }
     var res
     if (props.mode === 'add') {
-      res = await createUser(submitData)
+      res = await createShop(submitData)
       ElMessage.success('添加成功')
     } else {
-      res = await updateUser(submitData)
+      res = await updateShop(submitData)
       ElMessage.success('更新成功')
     }
     //传回user
@@ -254,7 +182,6 @@ const handleCancel = () => {
 const handleClosed = () => {
 
 }
-
 const handleChangeFile = (file) => {
   if (!file.raw) {
     ElMessage.error(`文件打开失败`);
@@ -327,6 +254,7 @@ defineExpose({ openDialog })
     display: none;
   }
 }
+
 
 .form-item-large {
   margin-bottom: 22px;

@@ -20,13 +20,13 @@ const routes = [
                 }
             },
 
-            // 店铺管理
+            // 我的商号
             {
                 path: 'shop',
                 name: 'Shop',
                 redirect: '/shop/base',
                 meta: {
-                    title: '店铺管理',
+                    title: '我的商号',
                     icon: 'Shop',
                     requiresAuth: true
                 },
@@ -43,14 +43,7 @@ const routes = [
                         component: () => import('@/views/shop/HomeManagement.vue'),
                         meta: { title: '主页管理' }
                     },
-                    {
-                        path: 'category',
-                        name: 'ShopCategory',
-                        // 如果 category 下有多个页面，这里可以是父路由
-                        component: () => import('@/views/shop/category/CategoryList.vue'),
-                        meta: { title: '类型管理' }
 
-                    },
                     {
                         path: 'user',
                         name: 'userManagement',
@@ -72,6 +65,14 @@ const routes = [
                     requiresAuth: true
                 },
                 children: [
+                    {
+                        path: 'category',
+                        name: 'ShopCategory',
+                        // 如果 category 下有多个页面，这里可以是父路由
+                        component: () => import('@/views/product/category/CategoryList.vue'),
+                        meta: { title: '类型管理' }
+
+                    },
                     {
                         path: 'list',
                         name: 'ProductList',
@@ -180,6 +181,12 @@ const routes = [
                     requiresAuth: true
                 },
                 children: [
+                    {
+                        path: 'shop',
+                        name: 'shop',
+                        component: () => import('@/views/system/shop/ShopList.vue'),
+                        meta: { title: '商户管理' }
+                    },
                     {
                         path: 'user',
                         name: 'user',

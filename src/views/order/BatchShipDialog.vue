@@ -1,37 +1,22 @@
 <template>
-  <el-dialog
-    v-model="dialogVisible"
-    title="批量发货"
-    width="600px"
-    :close-on-click-modal="false"
-    :close-on-press-escape="false"
-  >
+  <el-dialog v-model="dialogVisible" title="批量发货" width="600px" :close-on-click-modal="false"
+    :close-on-press-escape="false">
     <div class="batch-ship-dialog">
       <!-- 提示信息 -->
       <div class="tip-section">
-        <el-alert
-          title="请为每个订单填写对应的快递单号，支持批量操作"
-          type="info"
-          :closable="false"
-          show-icon
-        />
+        <el-alert title="请为每个订单填写对应的快递单号，支持批量操作" type="info" :closable="false" show-icon />
       </div>
 
       <!-- 批量发货表格 -->
       <div class="table-section">
-        <el-table
-          :data="selectedOrders"
-          style="width: 100%"
-          max-height="300"
-          :header-cell-style="{
-            background: '#f5f7fa',
-            color: '#303133',
-            fontWeight: 'bold'
-          }"
-        >
+        <el-table :data="selectedOrders" style="width: 100%" max-height="300" :header-cell-style="{
+          background: '#f5f7fa',
+          color: '#303133',
+          fontWeight: 'bold'
+        }">
           <!-- 订单编号 -->
           <el-table-column prop="orderNo" label="订单编号" min-width="120" align="center">
-            <template #default="{row}">
+            <template #default="{ row }">
               <div class="order-cell">
                 <div class="order-no">{{ row.orderNo }}</div>
                 <div class="customer-name">{{ row.receiverName }}</div>
@@ -41,13 +26,9 @@
 
           <!-- 快递单号输入 -->
           <el-table-column label="快递单号" min-width="180" align="center">
-            <template #default="{row, $index}">
-                <el-input
-                v-model="row.shippingNo"
-                placeholder="请输入快递单号"
-                size="large"
-                @blur="validateshippingNo(row, $index)"
-              >
+            <template #default="{ row, $index }">
+              <el-input v-model="row.shippingNo" placeholder="请输入快递单号" size="large"
+                @blur="validateshippingNo(row, $index)">
                 <template #prefix>
                   <el-icon>
                     <Van />
@@ -95,12 +76,7 @@
         <el-button @click="handleCancel" :disabled="loading">
           取消
         </el-button>
-        <el-button
-          type="primary"
-          @click="handleConfirm"
-          :disabled="!canConfirm"
-          :loading="loading"
-        >
+        <el-button type="primary" @click="handleConfirm" :disabled="!canConfirm" :loading="loading">
           确认发货 ({{ filledshippingNoCount }})
         </el-button>
       </div>
@@ -144,9 +120,9 @@ const selectedOrders = computed({
   set: (val) => val
 })
 
-  // 统计信息计算
+// 统计信息计算
 const filledshippingNoCount = computed(() => {
-  return selectedOrders.value.filter(order => 
+  return selectedOrders.value.filter(order =>
     order.shippingNo && order.shippingNo.trim()
   ).length
 })
@@ -157,14 +133,14 @@ const completionPercentage = computed(() => {
 })
 
 const canConfirm = computed(() => {
-  return filledshippingNoCount.value > 0 && 
-         selectedOrders.value.every(order => 
-           !order.shippingNo || // 如果没填快递单号，则跳过验证
-           (!order.trackingError && order.shippingNo.trim()) // 如果填了快递单号，则必须没有错误且内容非空
-         )
+  return filledshippingNoCount.value > 0 &&
+    selectedOrders.value.every(order =>
+      !order.shippingNo || // 如果没填快递单号，则跳过验证
+      (!order.trackingError && order.shippingNo.trim()) // 如果填了快递单号，则必须没有错误且内容非空
+    )
 })
 
-  // 监听visible变化
+// 监听visible变化
 watch(() => props.visible, (val) => {
   dialogVisible.value = val
 })
@@ -188,24 +164,24 @@ const validateshippingNo = (order, index) => {
   }
 
   const shippingNo = order.shippingNo.trim()
-  
+
   // 基础验证规则
   if (shippingNo.length < 6) {
     order.trackingError = '快递单号长度不能少于6位'
     return
   }
-  
+
   if (shippingNo.length > 30) {
     order.trackingError = '快递单号长度不能超过30位'
     return
   }
-  
+
   // 检查是否包含非法字符
   if (!/^[A-Za-z0-9\-\s\(\)]+$/.test(shippingNo)) {
     order.trackingError = '快递单号包含非法字符'
     return
   }
-  
+
   order.trackingError = ''
 }
 
@@ -239,20 +215,20 @@ const handleCancel = () => {
 const handleConfirm = async () => {
   try {
     // 验证是否有填写的快递单号
-    const filledOrders = selectedOrders.value.filter(order => 
+    const filledOrders = selectedOrders.value.filter(order =>
       order.shippingNo && order.shippingNo.trim()
     )
-    
+
     if (filledOrders.length === 0) {
       ElMessage.warning('请至少填写一个快递单号')
       return
     }
 
     // 检查是否有验证错误
-    const hasErrors = selectedOrders.value.some(order => 
+    const hasErrors = selectedOrders.value.some(order =>
       order.trackingError && order.shippingNo
     )
-    
+
     if (hasErrors) {
       ElMessage.error('请修正快递单号输入错误后再提交')
       return
@@ -269,15 +245,15 @@ const handleConfirm = async () => {
 
     // 调用批量发货API（前期实现先临时使用UPDATE接口）
     const response = await orderApi.batchShip(batchShipData)
-    
+
     ElMessage.success(
       `批量发货成功！成功处理 ${response.successCount || filledOrders.length} 个订单`
     )
-    
+
     // 关闭对话框并通知父组件
     dialogVisible.value = false
     emit('success', response)
-    
+
   } catch (error) {
     console.error('批量发货失败:', error)
     ElMessage.error(error.message || '批量发货失败，请重试')
@@ -319,7 +295,7 @@ defineExpose({
         color: #303133;
         margin-bottom: 4px;
       }
-      
+
       .customer-name {
         font-size: 12px;
         color: #606266;

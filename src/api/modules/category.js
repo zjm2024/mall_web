@@ -33,7 +33,13 @@ const categoryApi = {
   // 批量更新排序
   batchUpdateSort(data) {
     return request.put('/api/categories/batch-sort', data)
-  }
+  },
+
+  // 上传分类图标
+  uploadCategoryIcon(data) {
+    return request.post(API_PATHS.UPLOAD.UPLOADIMAGE, data)
+  },
+
 }
 
 export const {
@@ -42,7 +48,8 @@ export const {
   createCategory,
   updateCategory,
   deleteCategory,
-  batchUpdateSort
+  batchUpdateSort,
+  uploadCategoryIcon
 } = categoryApi
 
 export default categoryApi

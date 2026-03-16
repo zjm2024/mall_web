@@ -44,7 +44,7 @@
         <el-col :span="12">
           <el-form-item label="商品主图" class="form-item-large">
             <el-upload :class="{ 'hidePlus': hideUpload }" v-model:file-list="filelist" :auto-upload="false"
-              list-type="picture-card" :multiple="false" :limit="1" accept=".jpg,.png">
+              list-type="picture-card" :multiple="false" :limit="1" accept=".jpeg,.jpg,.png">
               <el-icon>
                 <Plus />
               </el-icon>
@@ -241,11 +241,14 @@ const openDialog = async (row) => {
   Object.assign(formData, JSON.parse(JSON.stringify(row)));
   timeoptions.value = props.seckilltimeoptions
   filelist.value = [];
-  const url = formData.productImage
+  const url = (formData.productImage) ? formData.productImage : ''
   if (url !== '') {
     filelist.value.push({ url: url });
     hideUpload.value = true;
   }
+  else
+    hideUpload.value = false
+
   isShowDialog.value = true
 
 
@@ -340,7 +343,7 @@ const handleDialogQuery = (res) => {
   formData.productImage = res.productImage;
 
   filelist.value = [];
-  const url = formData.productImage
+  const url = (formData.productImage) ? formData.productImage : ''
   if (url !== '') {
     filelist.value.push({ url: url });
     hideUpload.value = true;

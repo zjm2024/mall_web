@@ -11,7 +11,7 @@ export const ROUTE_PERMISSIONS = {
   // 仪表盘
   '/dashboard': ['super_admin', 'merchant_admin'],
 
-  // 店铺管理
+  // 我的商号
   '/shop/base': ['super_admin', 'merchant_admin'],
   '/shop/home': ['super_admin', 'merchant_admin'],
   '/shop/category': ['super_admin', 'merchant_admin'],

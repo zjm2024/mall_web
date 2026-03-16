@@ -66,7 +66,7 @@
 
       <!-- 底部信息 -->
       <div class="login-footer">
-        <p>© 2024 系统平台 · 版本 2.1.0</p>
+        <p>© 2026 系统平台 · 版本 2.1.0</p>
         <div class="footer-links">
           <a href="#" @click.prevent="handleHelp">帮助中心</a>
           <span class="separator">|</span>
@@ -169,6 +169,14 @@ const handleLogin = async () => {
     if (response.flag === 1) {
 
       userStore.login("token", response.result)
+
+      if (form.rememberMe === true) {
+        localStorage.setItem('rememberedUserNo', form.userNo)
+      }
+      else {
+        localStorage.removeItem('rememberedUserNo')
+      }
+
 
       ElMessage.success({
         message: `欢迎回来，${response.result.realName}！`,

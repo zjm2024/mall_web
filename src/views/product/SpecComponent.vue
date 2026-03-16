@@ -632,8 +632,8 @@ const DeleteBatchsku = async (ids, specIndex, valueIndex) => {
 
 const handlcustomUpload = async (param) => {
   let frmData = new FormData();//json数据
-  frmData.append('appType', 1)
-  frmData.append('businessId', 1)
+  frmData.append('appType', 0)
+  frmData.append('businessId', formData.businessId)
   frmData.append('file', param.file)
   const res = await uploadProductImage(frmData)
 
@@ -678,7 +678,7 @@ const beforeImageUpload = (file, sku) => {
     return
   }
 
-  const isImage = /^image\/(jpeg|png|gif|webp)$/.test(file.type)
+  const isImage = /^image\/(jpeg|jpg|png|gif|webp)$/.test(file.type)
   const isLt5M = file.size / 1024 / 1024 < 5
 
   if (!isImage) {
@@ -698,7 +698,7 @@ const beforeImageUpload1 = (file) => {
 
 
 
-  const isImage = /^image\/(jpeg|png|gif|webp)$/.test(file.type)
+  const isImage = /^image\/(jpeg|jpg|png|gif|webp)$/.test(file.type)
   const isLt5M = file.size / 1024 / 1024 < 5
 
   if (!isImage) {

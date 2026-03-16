@@ -1,16 +1,16 @@
 <template>
-  <div class="user-management">
+  <div class="shop-management">
     <!-- 整体容器 -->
-    <div class="user-container">
+    <div class="shop-container">
       <!-- 头部：操作按钮和搜索区域 -->
       <div class="header-section">
         <div class="left-operations">
-          <el-button type="primary" @click="handleAdduser" size="large">
+          <el-button type="primary" @click="handleAddshop" size="large">
 
 
             <el-icon>
               <Plus />
-            </el-icon>添加用户
+            </el-icon>添加商户
           </el-button>
           <el-button @click="refreshList" size="large">
             <el-icon>
@@ -21,7 +21,7 @@
         </div>
 
         <div class="right-search">
-          <el-input v-model="filterForm.searchKey" placeholder="用户名、姓名、电话号码" clearable size="large"
+          <el-input v-model="filterForm.searchKey" placeholder="店铺名" clearable size="large"
             style="width: 180px; margin-right: 12px;" @keyup.enter="handleSearch">
             <template #prefix>
               <el-icon>
@@ -32,11 +32,13 @@
 
 
 
-          <el-select v-model="filterForm.status" placeholder="用户状态" clearable size="large"
+          <el-select v-model="filterForm.status" placeholder="店铺状态" clearable size="large"
             style="width: 120px; margin-right: 12px;">
             <el-option label="全部" value="" />
-            <el-option label="正常" :value="1" />
-            <el-option label="禁用" :value="0" />
+            <el-option label="审批" :value="0" />
+            <el-option label="上线" :value="1" />
+            <el-option label="下线" :value="2" />
+            <el-option label="删除" :value="3" />
           </el-select>
 
           <el-button type="primary" @click="handleSearch" size="large">
@@ -53,7 +55,7 @@
 
 
       <div class="table-section">
-        <el-table :data="userList" v-loading="loading" style="width: 100%;" @selection-change="handleSelectionChange"
+        <el-table :data="shopList" v-loading="loading" style="width: 100%;" @selection-change="handleSelectionChange"
           :header-cell-style="{
             background: '#f5f7fa',
             color: '#303133',
@@ -61,100 +63,41 @@
             height: '56px'
           }" height="100%">
           <el-table-column type="selection" width="55" align="center" />
+
+
+
+
+
           <!-- 商户号 -->
-          <el-table-column prop="businessNo" label="商户号" min-width="120">
+          <el-table-column prop="shopNo" label="商户号" width="150">
             <template #default="{ row }">
-              <div class="user-info">
-                <div class="user-name">{{ row.businessNo }}</div>
+              <div class="shop-info">
+                <div class="shop-name">{{ row.businessNo }}</div>
 
               </div>
             </template>
           </el-table-column>
+
+
+
 
           <!-- 商户名称 -->
-          <el-table-column prop="businessName" label="商户名称" min-width="120">
+          <el-table-column label="商户名称" align="center">
             <template #default="{ row }">
-              <div class="user-info">
-                <div class="user-name">{{ row.businessName }}</div>
-
-              </div>
+              {{ row.businessName }}
             </template>
           </el-table-column>
 
 
-          <!-- 用户头像 -->
-          <el-table-column label="用户头像" width="120" align="center">
+          <!-- 认证状态 -->
+          <el-table-column prop="status" label="认证状态" width="100" align="center">
             <template #default="{ row }">
-              <el-image :src="row.avatar" :preview-src-list="[row.avatar]" fit="cover" class="user-image">
-                <template #error>
-                  <div class="image-error">
-                    <el-icon>
-                      <Picture />
-                    </el-icon>
-                  </div>
-                </template>
-              </el-image>
-            </template>
-          </el-table-column>
 
-          <!-- 超管 -->
-          <el-table-column label="超级管理员" min-width="120">
-            <template #default="{ row }">
-              <el-tag :type="row.isSuperAdmin === 1 ? 'error' : 'success'" size="large">
-                {{ row.isSuperAdmin === 1 ? '超管' : '普通' }}
-              </el-tag>
-            </template>
-          </el-table-column>
+              <el-tag type="info" v-if="row.status === 0">审批</el-tag>
+              <el-tag type="success" v-if="row.status === 1">上线</el-tag>
+              <el-tag type="warning" v-if="row.status === 2">下线</el-tag>
+              <el-tag type="danger" v-if="row.status === 3">删除</el-tag>
 
-
-          <!-- 账号 -->
-          <el-table-column prop="userNo" label="账号" min-width="120">
-            <template #default="{ row }">
-              <div class="user-info">
-                <div class="user-name">{{ row.userNo }}</div>
-
-              </div>
-            </template>
-          </el-table-column>
-
-
-          <!-- 用户昵称 -->
-          <el-table-column prop="userName" label="用户昵称" min-width="150">
-            <template #default="{ row }">
-              <div class="user-info">
-                <div class="user-name">{{ row.userName }}</div>
-
-              </div>
-            </template>
-          </el-table-column>
-
-          <!-- 用户姓名 -->
-          <el-table-column label="姓名" width="150" align="center">
-            <template #default="{ row }">
-              {{ row.realName }}
-            </template>
-          </el-table-column>
-
-          <!-- 手机号码 -->
-          <el-table-column label="手机号码" width="150" align="center">
-            <template #default="{ row }">
-              {{ row.phone }}
-            </template>
-          </el-table-column>
-
-          <!-- 邮箱地址 -->
-          <el-table-column label="邮箱地址" width="150" align="center">
-            <template #default="{ row }">
-              {{ row.email }}
-            </template>
-          </el-table-column>
-
-          <!-- 状态 -->
-          <el-table-column prop="status" label="状态" width="100" align="center">
-            <template #default="{ row }">
-              <el-tag :type="row.status === 1 ? 'success' : 'info'" size="large">
-                {{ row.status === 1 ? '正常' : '禁用' }}
-              </el-tag>
             </template>
           </el-table-column>
 
@@ -169,7 +112,7 @@
           <el-table-column label="操作" width="300" fixed="right" align="center">
             <template #default="{ row }">
               <div class="action-buttons">
-                <el-button type="primary" link size="large" @click="handleEdituser(row)">
+                <el-button type="primary" link size="large" @click="handleEditshop(row)">
                   <el-icon>
                     <Edit />
                   </el-icon>编辑
@@ -181,14 +124,10 @@
                   </el-icon>详情
                 </el-button>
 
-                <el-button type="primary" link size="large" @click="handleResetPassword(row)">
-                  <el-icon>
-                    <SetUp />
-                  </el-icon>重置密码
-                </el-button>
 
-                <el-popconfirm title="确定要删除这个用户吗？" confirm-button-text="确定" cancel-button-text="取消"
-                  @confirm="handleDeleteuser(row)">
+
+                <el-popconfirm title="确定要删除这个商户吗？" confirm-button-text="确定" cancel-button-text="取消"
+                  @confirm="handleDeleteshop(row)">
                   <template #reference>
                     <el-button type="danger" link size="large">
                       <el-icon>
@@ -212,7 +151,7 @@
         </div>
 
         <!-- 空状态 -->
-        <el-empty v-if="!loading && userList.length === 0" description="暂无用户数据" :image-size="160" />
+        <el-empty v-if="!loading && shopList.length === 0" description="暂无商户数据" :image-size="160" />
       </div>
 
 
@@ -220,11 +159,9 @@
 
     </div>
 
-    <!-- 添加/编辑用户对话框 -->
-    <user-dialog ref="userdialogRef" :mode="dialogMode" @success="handleDialogSuccess" />
+    <!-- 添加/编辑店铺对话框 -->
+    <shop-dialog ref="shopdialogRef" :mode="dialogMode" @success="handleDialogSuccess" />
 
-    <!-- 重置密码对话框 -->
-    <userModPassword-dialog ref="usermodpassworddialogRef" :mode="resetdialogMode" />
 
   </div>
 
@@ -237,21 +174,18 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { ElMessage, ElMessageBox } from 'element-plus'
-import UserDialog from './UserDialog.vue'
-import UserModPasswordDialog from './UserModPasswordDialog.vue'
+import ShopDialog from './ShopDialog.vue'
 import { formatDate } from '@/utils/common'
-import userApi from '@/api/modules/user'
+import shopApi from '@/api/modules/shop'
 
 const router = useRouter()
 
 // 数据
 const loading = ref(false)
-const userList = ref([])
+const shopList = ref([])
 const selectedRows = ref([])
-const userdialogRef = ref(null)
-const usermodpassworddialogRef = ref(null)
+const shopdialogRef = ref(null)
 const dialogMode = ref('add')
-const resetdialogMode = ref('add')
 // 分页
 const pagination = reactive({
   currentPage: 1,
@@ -266,7 +200,7 @@ const filterForm = reactive({
 })
 
 // 方法
-const fetchuserList = async () => {
+const fetchshopList = async () => {
   try {
     loading.value = true
 
@@ -282,32 +216,24 @@ const fetchuserList = async () => {
       params.status = filterForm.status;
 
 
-    const res = await userApi.getUserPageList(params)
-    userList.value = res.result || []
+    const res = await shopApi.getShopPageList(params)
+    shopList.value = res.result || []
     pagination.total = res.count || 0
   } catch (error) {
 
-    ElMessage.error('获取用户列表失败')
+    ElMessage.error('获取商户列表失败')
   } finally {
     loading.value = false
   }
 }
 
-const fetchCategoryOptions = async () => {
-  try {
-    const res = await userApi.getCategoryOptions()
-    categoryOptions.value = res.data || []
-  } catch (error) {
-    console.error('获取分类选项失败:', error)
-  }
-}
 
 
 
 // 搜索
 const handleSearch = () => {
   pagination.currentPage = 1
-  fetchuserList()
+  fetchshopList()
 }
 
 // 重置
@@ -316,77 +242,58 @@ const handleReset = () => {
     filterForm[key] = ''
   })
   pagination.currentPage = 1
-  fetchuserList()
+  fetchshopList()
 }
 
-// 添加用户
-const handleAdduser = () => {
+// 添加店铺
+const handleAddshop = () => {
   dialogMode.value = 'add'
-  let user = {
-    adminId: 0,
-    userNo: '',
-    userName: '',
+  let shop = {
     businessId: 0,
     businessNo: '',
     businessName: '',
-    realName: '',
-    phone: '',
-    email: '',
-    avatar: '',
     status: 1,
-    isSuperAdmin: 0,
     appType: 0
   }
-  userdialogRef.value.openDialog(user)
+  shopdialogRef.value.openDialog(shop)
 
 
 }
 
 // 对话框成功回调
 const handleDialogSuccess = (res) => {
-  let row = userList.value.find(it => it.adminId === res.adminId)
+  let row = shopList.value.find(it => it.businessId === res.businessId)
   if (row) {
-    row.businessId = res.businessId;
     row.businessNo = res.businessNo;
     row.businessName = res.businessName;
-    row.userNo = res.userNo;
-    row.userName = res.userName;
-    row.realName = res.realName;
-    row.avatar = res.avatar;
-    row.phone = res.phone;
-    row.email = res.email;
     row.status = res.status;
-    row.isSuperAdmin = res.isSuperAdmin;
   }
   else {
-    userList.value.splice(0, 0, res);
+    shopList.value.splice(0, 0, res);
   }
 }
 
-// 编辑用户
-const handleEdituser = (row) => {
+// 编辑店铺
+const handleEditshop = (row) => {
   dialogMode.value = 'edit'
-  userdialogRef.value.openDialog(row)
+  shopdialogRef.value.openDialog(row)
 }
 
-// 查看用户
+// 查看店铺
 const handleViewDetail = (row) => {
   dialogMode.value = 'detail'
-  userdialogRef.value.openDialog(row)
+  shopdialogRef.value.openDialog(row)
+
 }
 
-// 重置密码
-const handleResetPassword = (row) => {
-  resetdialogMode.value = 'reset'
-  usermodpassworddialogRef.value.openDialog(row)
-}
 
-// 删除用户
-const handleDeleteuser = async (user) => {
+
+// 删除店铺
+const handleDeleteshop = async (shop) => {
   try {
-    await userApi.deleteUser(user.adminId)
-    let index = userList.value.findIndex(it => it.adminId == user.adminId)
-    userList.value.splice(index, 1)
+    await shopApi.deleteShop(shop.businessId)
+    let index = shopList.value.findIndex(it => it.businessId == shop.businessId)
+    shopList.value.splice(index, 1)
     ElMessage.success('删除成功')
 
   } catch (error) {
@@ -396,21 +303,6 @@ const handleDeleteuser = async (user) => {
 
 
 
-// 修改状态
-const handleStatusChange = async (row) => {
-  try {
-    await userApi.updateuser(row.userId, {
-      userStatus: row.userStatus
-    })
-    ElMessage.success(row.userStatus === 1 ? '商品已上架' : '商品已下架')
-  } catch (error) {
-    console.error('更新状态失败:', error)
-    ElMessage.error('更新失败')
-    // 回滚状态
-    row.userStatus = row.userStatus === 1 ? 0 : 1
-  }
-}
-
 // 表格选择
 const handleSelectionChange = (selection) => {
   selectedRows.value = selection
@@ -419,31 +311,30 @@ const handleSelectionChange = (selection) => {
 // 分页
 const handleSizeChange = (val) => {
   pagination.pageSize = val
-  fetchuserList()
+  fetchshopList()
 }
 
 const handleCurrentChange = (val) => {
   pagination.currentPage = val
-  fetchuserList()
+  fetchshopList()
 }
 
 // 刷新列表
 const refreshList = () => {
-  fetchuserList()
+  fetchshopList()
 }
 
 // 生命周期
 onMounted(() => {
-  // fetchCategoryOptions()
-  fetchuserList()
+  fetchshopList()
 })
 </script>
 
 <style lang="scss" scoped>
-.user-management {
+.shop-management {
   padding: 20px;
 
-  .user-container {
+  .shop-container {
     background: #ffffff;
     border-radius: 8px;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
@@ -473,7 +364,7 @@ onMounted(() => {
     padding: 0;
     height: calc(100vh - 300px);
 
-    .user-image {
+    .shop-image {
       width: 60px;
       height: 60px;
       border-radius: 4px;
@@ -490,22 +381,22 @@ onMounted(() => {
       }
     }
 
-    .user-info {
-      .user-name {
+    .shop-info {
+      .shop-name {
         font-size: 14px;
         font-weight: 500;
         color: #303133;
         margin-bottom: 6px;
       }
 
-      .user-category {
+      .shop-category {
         .el-tag {
           font-size: 12px;
         }
       }
     }
 
-    .user-price {
+    .shop-price {
       .current-price {
         font-size: 16px;
         font-weight: 600;

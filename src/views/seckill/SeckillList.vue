@@ -58,20 +58,19 @@
 
 
       <div class="table-section">
-        <el-table :data="seckillList" v-loading="loading" style="width: 100%;" heigth="600"
-          @selection-change="handleSelectionChange" :header-cell-style="{
+        <el-table :data="seckillList" v-loading="loading" style="width: 100%;" @selection-change="handleSelectionChange"
+          :header-cell-style="{
             background: '#f5f7fa',
             color: '#303133',
             fontWeight: 'bold',
             height: '56px'
-          }">
+          }" height="100%">
           <el-table-column type="selection" width="55" align="center" />
 
           <!-- 商品图片 -->
           <el-table-column label="商品图片" width="120" align="center">
             <template #default="{ row }">
-              <el-image :src="row.productImage || '/default-user.png'" :preview-src-list="[row.avatar]" fit="cover"
-                class="user-image">
+              <el-image :src="row.productImage" :preview-src-list="[row.avatar]" fit="cover" class="user-image">
                 <template #error>
                   <div class="image-error">
                     <el-icon>
@@ -494,6 +493,7 @@ onMounted(() => {
 
   .table-section {
     padding: 0;
+    height: calc(100vh - 300px);
 
     .user-image {
       width: 60px;

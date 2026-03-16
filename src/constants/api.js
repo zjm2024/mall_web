@@ -41,14 +41,11 @@ export const API_PATHS = {
   },
 
 
-  // 店铺管理
+  // 商户管理
   SHOP: {
-    BASE: '/shop',
-    INFO: '/shop/info',
-    MEMBERS: '/shop/members',
-    MEMBER_DETAIL: (id) => `/shop/members/${id}`,
-    LOGIN_RECORDS: '/shop/login-records',
-    OPERATION_LOGS: '/shop/operation-logs'
+    LIST: `/shopadminApi/Shop/getShopsPageList`,
+    UPDATE: '/shopadminApi/Shop/updateShops',
+    DETAIL: (id) => `/shopadminApi/Shop/deleteShops?id=${id}`,
   },
   // 用户管理
   USER: {

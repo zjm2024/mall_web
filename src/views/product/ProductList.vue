@@ -20,9 +20,23 @@
               <Delete />
             </el-icon>批量删除({{ selectedRows.length }})
           </el-button>
+
+
+
         </div>
 
         <div class="right-search">
+
+          <el-input v-model="filterForm.businessNo" placeholder="请输入商户号" style="width: 150px; margin-right: 10px;"
+            size="default" v-if="userStore.userInfo.isSuperAdmin == 1" :readonly="true" clearable>
+
+            <template #suffix>
+              <Search style="margin-right: 0px; width: 1.5em; height: 1.5em" @click.stop="handleClick()" />
+            </template>
+
+          </el-input>
+
+
           <el-input v-model="filterForm.productName" placeholder="商品名称" clearable size="default"
             style="width: 180px; margin-right: 10px;" @keyup.enter="handleSearch">
             <template #prefix>
@@ -61,15 +75,37 @@
             color: '#303133',
             fontWeight: 'bold',
             height: '48px'
-          }" stripe>
+          }" height="100%" stripe>
           <el-table-column type="selection" width="48" align="center" fixed />
+
+
+          <!-- 商户号 -->
+          <el-table-column prop="businessNo" label="商户号" width="100">
+            <template #default="{ row }">
+              <div class="user-info">
+                <div class="user-name">{{ row.businessNo }}</div>
+
+              </div>
+            </template>
+          </el-table-column>
+
+          <!-- 商户名称 -->
+          <el-table-column prop="businessName" label="商户名称" width="150">
+            <template #default="{ row }">
+              <div class="user-info">
+                <div class="user-name">{{ row.businessName }}</div>
+
+              </div>
+            </template>
+          </el-table-column>
+
 
           <!-- 商品图片 -->
           <el-table-column label="商品图片" width="100" align="center">
             <template #default="{ row }">
               <div class="product-image-container">
-                <el-image :src="row.productImage || '/default-product.png'" :preview-src-list="[row.productImage]"
-                  fit="cover" class="product-image" :hide-on-click-modal="true">
+                <el-image :src="row.productImage" :preview-src-list="[row.productImage]" fit="cover"
+                  class="product-image" :hide-on-click-modal="true">
                   <template #error>
                     <div class="image-error">
                       <el-icon>
@@ -89,6 +125,15 @@
               </div>
             </template>
           </el-table-column>
+          <!-- 商品编号 -->
+          <el-table-column prop="productNo" label="商品编号" width="100">
+            <template #default="{ row }">
+              <div class="user-info">
+                <div class="user-name">{{ row.productNo }}</div>
+
+              </div>
+            </template>
+          </el-table-column>
 
           <!-- 商品名称 -->
           <el-table-column prop="productName" label="商品名称" min-width="200">
@@ -97,7 +142,7 @@
                 <div class="product-name">{{ row.productName }}</div>
                 <div class="product-category">
                   <el-tag size="small" type="info" effect="light">
-                    {{ getCategoryName(row.categoryId) }}
+                    {{ row.treePathName }}
                   </el-tag>
                   <el-tag v-if="row.CommissionEnabled" size="small" type="success" effect="light"
                     style="margin-left: 4px;">
@@ -194,53 +239,57 @@
 
     <!-- 商品详情对话框 -->
     <el-dialog v-model="detailDialogVisible" :title="`商品详情 - ${selectedProduct?.ProductName || ''}`" width="800px"
-      :close-on-click-modal="false">
+      top="30px" :close-on-click-modal="false">
       <div v-if="selectedProduct" class="product-detail-content">
         <!-- 基本信息 -->
         <div class="detail-section">
           <h3 class="section-title">基本信息</h3>
           <div class="info-grid">
             <div class="info-item">
+              <span class="info-label">商品编号：</span>
+              <span class="info-value">{{ selectedProduct.productNo }}</span>
+            </div>
+            <div class="info-item">
               <span class="info-label">商品名称：</span>
-              <span class="info-value">{{ selectedProduct.ProductName }}</span>
+              <span class="info-value">{{ selectedProduct.productName }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">商品分类：</span>
-              <span class="info-value">{{ getCategoryName(selectedProduct.CategoryId) }}</span>
+              <span class="info-value">{{ selectedProduct.treePathName }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">原价：</span>
-              <span class="info-value">¥{{ selectedProduct.OriginalPrice }}</span>
+              <span class="info-value">¥{{ selectedProduct.originalPrice }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">当前售价：</span>
-              <span class="info-value">¥{{ selectedProduct.CurrentPrice }}</span>
+              <span class="info-value">¥{{ selectedProduct.currentPrice }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">库存：</span>
-              <span class="info-value">{{ selectedProduct.TotalStock === 0 ? '不限' : selectedProduct.TotalStock }}</span>
+              <span class="info-value">{{ selectedProduct.totalStock === 0 ? '不限' : selectedProduct.totalStock }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">销量：</span>
-              <span class="info-value">{{ selectedProduct.Sales || 0 }}</span>
+              <span class="info-value">{{ selectedProduct.sales || 0 }}</span>
             </div>
           </div>
         </div>
 
         <!-- 商品主图 -->
-        <div class="detail-section" v-if="selectedProduct.ProductImage">
+        <div class="detail-section" v-if="selectedProduct.productImage">
           <h3 class="section-title">商品主图</h3>
           <div class="image-section">
-            <el-image :src="selectedProduct.ProductImage" :preview-src-list="[selectedProduct.ProductImage]"
+            <el-image :src="selectedProduct.productImage" :preview-src-list="[selectedProduct.productImage]"
               fit="contain" style="width: 200px; height: 200px; border-radius: 8px;" />
           </div>
         </div>
 
         <!-- 商品详情（富文本内容） -->
-        <div class="detail-section" v-if="selectedProduct.ProductContent">
+        <div class="detail-section" v-if="selectedProduct.productContent">
           <h3 class="section-title">商品详情</h3>
           <div class="rich-content-wrapper">
-            <div class="rich-content" v-html="selectedProduct.ProductContent"></div>
+            <div class="rich-content" v-html="selectedProduct.productContent"></div>
           </div>
         </div>
       </div>
@@ -254,7 +303,7 @@
 
 
     <productSpec-dialog ref="productSpecDialogref" />
-
+    <PickShopDialog ref="pickshopdialogRef" @handleQuery="handleDialogQuery" />
 
   </div>
 </template>
@@ -268,7 +317,6 @@ import {
 } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { formatDate } from '@/utils/common'
-import { useUserStore } from '@/stores/user'
 
 import {
   getProductPageList,
@@ -278,8 +326,14 @@ import {
   deleteBatchProducts
 } from '@/api/modules/product'
 
+import { useUserStore } from '@/stores/user'
+
+import PickShopDialog from '../../components/common/PickShopDialog.vue'
 import ProductSpecDialog from './ProductSpecDialog.vue'
 
+const pickshopdialogRef = ref(null)
+const businessNoRef = ref(null)
+const businessNameRef = ref(null)
 const productSpecDialogref = ref(null)
 
 const router = useRouter()
@@ -310,16 +364,14 @@ const pagination = reactive({
 
 // 筛选表单
 const filterForm = reactive({
+  businessId: 0,
+  businessNo: '',
+  businessName: '',
   productName: '',
   categoryId: '',
   productStatus: ''
 })
 
-// 获取分类名称
-const getCategoryName = (categoryId) => {
-  const category = categoryOptions.value.find(c => c.CategoryId === categoryId)
-  return category ? category.CategoryName : '未知分类'
-}
 
 // 搜索
 const handleSearch = () => {
@@ -472,9 +524,11 @@ const refreshList = () => {
 const fetchProductList = async () => {
   try {
     loading.value = true
-
     const appType = userStore.userInfo.appType
-    const businessId = userStore.userInfo.businessId
+    const businessId = filterForm.businessId
+
+    if (businessId === 0)
+      return
 
     let params = {
       pageIndex: pagination.currentPage,
@@ -524,7 +578,6 @@ const fetchProductList = async () => {
     productList.value = res.result || []
     pagination.total = res.count
   } catch (error) {
-    console.error('获取商品列表失败:', error)
     ElMessage.error('获取商品列表失败')
   } finally {
     loading.value = false
@@ -534,7 +587,7 @@ const fetchProductList = async () => {
 const fetchCategoryOptions = async () => {
   try {
     const appType = userStore.userInfo.appType
-    const businessId = userStore.userInfo.businessId
+    const businessId = 0
     let params = { appType: appType, businessId: businessId }
     const res = await getCategoryOptions(params)
     categoryOptions.value = res.result || []
@@ -543,10 +596,35 @@ const fetchCategoryOptions = async () => {
   }
 }
 
+const handleClick = () => {
+  pickshopdialogRef.value.openDialog()
+}
+
+const handleDialogQuery = (res) => {
+  filterForm.businessId = res.businessId;
+  filterForm.businessNo = res.businessNo;
+  filterForm.businessName = res.businessName;
+  localStorage.setItem("curselectbusiness", JSON.stringify(filterForm))
+}
+
 // 生命周期
-onMounted(() => {
-  fetchCategoryOptions()
-  fetchProductList()
+onMounted(async () => {
+  //超管用户需要选择商户才能查询
+  const result = localStorage.getItem("curselectbusiness")
+  if (result != '' && userStore.isSuperAdmin) {
+    const dataobj = JSON.parse(result)
+    filterForm.businessId = dataobj.businessId
+    filterForm.businessNo = dataobj.businessNo
+    filterForm.businessName = dataobj.businessName
+  }
+  else {
+    filterForm.businessId = (userStore.isSuperAdmin) ? 0 : userStore.userInfo.businessId
+    filterForm.businessNo = (userStore.isSuperAdmin) ? '' : userStore.userInfo.businessNo
+    filterForm.businessName = (userStore.isSuperAdmin) ? '' : userStore.userInfo.businessName
+  }
+
+  //await fetchCategoryOptions()
+  await fetchProductList()
 })
 </script>
 
@@ -585,6 +663,7 @@ onMounted(() => {
 
   .table-section {
     padding: 0;
+    height: calc(100vh - 300px);
 
     .product-image-container {
       display: flex;
@@ -756,7 +835,7 @@ onMounted(() => {
   }
 
   .product-detail-content {
-    max-height: 70vh;
+    /*max-height: 70vh; */
     overflow-y: auto;
     padding-right: 10px;
 

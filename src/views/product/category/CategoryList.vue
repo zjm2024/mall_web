@@ -50,7 +50,7 @@
       <!-- 分类表格区域 -->
       <div class="table-section">
         <el-table ref="tabletreeRef" :data="categoryList" v-loading="loading" highlight-current-row row-key="categoryId"
-          @row-click="handleRowClick" :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
+          @row-click="handleRowClick" :tree-props="{ children: 'children', hasChildren: 'hasChildren' }" height="100%"
           :header-cell-style="{
             background: '#f5f7fa',
             color: '#303133',
@@ -77,6 +77,23 @@
               </div>
             </template>
           </el-table-column>
+
+
+          <!-- 分类图标 -->
+          <el-table-column label="分类图标" width="120" align="center">
+            <template #default="{ row }">
+              <el-image :src="row.icon" :preview-src-list="[row.icon]" fit="cover" class="category-image">
+                <template #error>
+                  <div class="image-error">
+                    <el-icon>
+                      <Picture />
+                    </el-icon>
+                  </div>
+                </template>
+              </el-image>
+            </template>
+          </el-table-column>
+
 
           <!-- 分类层级 -->
           <el-table-column prop="level" label="层级" width="120" align="center">
@@ -491,6 +508,24 @@ onMounted(() => {
 
   .table-section {
     padding: 0;
+    height: calc(100vh - 300px);
+
+    .category-image {
+      width: 60px;
+      height: 60px;
+      border-radius: 4px;
+      border: 1px solid #e4e7ed;
+
+      .image-error {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f5f7fa;
+        color: #909399;
+      }
+    }
 
     .category-name {
       display: flex;
