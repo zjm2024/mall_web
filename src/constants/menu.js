@@ -111,6 +111,12 @@ export const baseMenuList = [
         title: '售后列表',
         path: '/after-sale/list',
         roles: ['super_admin', 'merchant_admin']
+      },
+      {
+        title: '物流列表',
+        path: '/after-sale/exchange-return',
+        roles: ['super_admin', 'merchant_admin'],
+        hidden: false // 在菜单中显示
       }
     ]
   },
@@ -123,7 +129,13 @@ export const baseMenuList = [
         title: '结算列表',
         path: '/settlement/list',
         roles: ['super_admin', 'merchant_admin']
-      }
+      },
+      {
+        title: '数据报表',
+        path: '/settlement/datadashboard',
+        roles: ['super_admin', 'merchant_admin'],
+        hidden: false // 在菜单中显示
+      },
     ]
   }
 ]

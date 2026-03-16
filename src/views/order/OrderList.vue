@@ -340,7 +340,7 @@ const filterForm = reactive({
 }
 
 // 批量导出订单详情
-const exportExcel = () => {
+const exportExcel = async () => {
   try {
     // 检查有无选中的数据
     if (!selectedRows.value || selectedRows.value.length === 0) {
@@ -362,37 +362,68 @@ const exportExcel = () => {
       )
       return
     }
+
+    // 显示加载提示
+    ElMessage.info('正在获取订单详情，请稍候...')
     
-    // 导出数据类型
-    const exportData = selectedRows.value.map(item => ({
-      '订单编号': item.orderNo,
-      '创建时间': item.createTime,
-      '订单状态': getOrderStatusText(item.orderStatus),
-      '实付金额': item.payAmount,
-      '原总价': item.totalAmount,
-      '支付方式': getPaymentMethodText(item.paymentMethod),
-      '支付状态': getPayStatusText(item.payStatus),
-      '客户姓名': item.receiverName,
-      '客户电话': item.receiverPhone,
-      '客户ID': item.personalID,
-      '风险等级': getRiskLevelText(item.riskLevel),
-      '收货地址': item.receiverAddress,
-      '物流单号': item.shippingNo || '未发货',
-      '备注': item.remark,
-      '更新时间': item.updateTime
-    }))
+    // 获取选中订单的详细信息
+    const detailPromises = selectedRows.value.map(order => 
+      orderApi.getOrderDetail(order.orderId || order.id)
+    )
+    
+    const detailResults = await Promise.all(detailPromises)
+    
+    // 转换为导出数据格式
+    const exportData = detailResults.map((res, index) => {
+      const detail = res.result || res.data || {}
+      const original = selectedRows.value[index]
+      
+      return {
+        '订单编号': detail.orderNo || original.orderNo,
+        '订单ID': detail.orderId || detail.id || '',
+        '创建时间': detail.createTime || original.createTime,
+        '更新时间': detail.updateTime || original.updateTime,
+        '订单状态': getOrderStatusText(detail.orderStatus || original.orderStatus),
+        '支付状态': getPayStatusText(detail.payStatus || original.payStatus),
+        '风险等级': getRiskLevelText(detail.riskLevel || original.riskLevel),
+        '实付金额': detail.payAmount || original.payAmount,
+        '原总价': detail.totalAmount || original.totalAmount,
+        '优惠金额': detail.discountAmount || '',
+        '支付方式': getPaymentMethodText(detail.paymentMethod || original.paymentMethod),
+        '客户姓名': detail.receiverName || original.receiverName,
+        '客户电话': detail.receiverPhone || original.receiverPhone,
+        '客户ID': detail.personalID || original.personalID,
+        '收货地址': detail.receiverAddress || original.receiverAddress,
+        '收货人邮箱': detail.receiverEmail || '',
+        '物流单号': detail.shippingNo || original.shippingNo || '未发货',
+        '物流公司': detail.shippingCompany || '',
+        '发货时间': detail.shipTime || '',
+        '订单商品': formatOrderItems(detail.orderItems || []),
+        '商品数量': detail.totalQuantity || '',
+        '订单备注': detail.remark || original.remark || '',
+        '商家备注': detail.businessRemark || '',
+        '买家留言': detail.buyerMessage || '',
+        '退款状态': detail.refundStatus || '无',
+        '退款金额': detail.refundAmount || '',
+        '取消原因': detail.cancelReason || '',
+        '支付时间': detail.payTime || '',
+        '支付单号': detail.payOrderNo || '',
+        '创建时间戳': detail.createTimestamp || '',
+        '更新时间戳': detail.updateTimestamp || ''
+      }
+    })
 
     // 导出文件
     const wb = XLSX.utils.book_new() // 创建工作簿 
     const ws = XLSX.utils.json_to_sheet(exportData) // 创建工作表
-    XLSX.utils.book_append_sheet(wb, ws, '选中订单数据') // 添加工作表到工作簿
-    XLSX.writeFile(wb, `批量导出_${new Date().toLocaleDateString()}.xlsx`) // 批量导出
-    ElMessage.success(`成功导出 ${selectedRows.value.length} 条订单数据`) // 提示导出量
+    XLSX.utils.book_append_sheet(wb, ws, '订单详情数据') // 添加工作表到工作簿
+    XLSX.writeFile(wb, `订单详情导出_${new Date().toLocaleDateString()}.xlsx`) // 批量导出
+    ElMessage.success(`成功导出 ${selectedRows.value.length} 条订单详情数据`) // 提示导出量
 
   } catch (error) { 
     // 执行失败
     console.error('导出失败:', error)
-    ElMessage.error('导出失败')
+    ElMessage.error('导出失败，请重试')
   }
 }
 
@@ -474,6 +505,21 @@ const formatRemark = (remark) => {
   if (filteredParts.length === 0) return '-'
   
   return filteredParts.join('---')
+}
+
+// 格式化订单商品信息
+const formatOrderItems = (items) => {
+  if (!items || items.length === 0) return '无商品信息'
+  
+  return items.map(item => {
+    const parts = []
+    if (item.productName) parts.push(item.productName)
+    if (item.skuName) parts.push(item.skuName)
+    if (item.quantity) parts.push(`数量:${item.quantity}`)
+    if (item.price) parts.push(`单价:¥${item.price}`)
+    if (item.subtotal) parts.push(`小计:¥${item.subtotal}`)
+    return parts.join(' | ')
+  }).join('; ')
 }
 
 // 分页

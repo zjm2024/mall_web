@@ -145,6 +145,12 @@ const routes = [
                         name: 'AfterSaleList',
                         component: () => import('@/views/after-sale/AfterSaleList.vue'),
                         meta: { title: '售后列表' }
+                    },
+                    {
+                        path: 'exchange-return',
+                        name: 'GoodsExchangeReturn',
+                        component: () => import('@/views/after-sale/GoodsExchangeReturn.vue'),
+                        meta: { title: '物流列表' }
                     }
                 ]
             },
@@ -165,6 +171,12 @@ const routes = [
                         name: 'SettlementList',
                         component: () => import('@/views/settlement/SettlementList.vue'),
                         meta: { title: '结算列表' }
+                    },
+                    {
+                        path: 'datadashboard',
+                        name: 'DataDashboard',
+                        component: () => import('@/views/settlement/DataDashboard.vue'),
+                        meta: { title: '数据报表' }
                     }
                 ]
             },
