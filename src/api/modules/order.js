@@ -22,10 +22,12 @@ import { API_PATHS } from '@/constants/api'
 // 订单管理 API
 const orderApi = {
   /**
-   * 获取订单列表（分页）
+   * 【超级管理员】获取订单列表（分页）
+   * @description 超级管理员专用接口，可查看所有商家的订单
    * @param {Object} params - 查询参数
    * @param {number} params.pageIndex - 页码
    * @param {number} params.pageSize - 每页数量
+   * @param {number} params.businessId - 商家ID（超管可传，用于筛选指定商家）
    * @param {string} params.searchKey - 搜索关键字（订单号、收货人姓名、电话）
    * @param {number} params.orderStatus - 订单状态
    * @param {number} params.payStatus - 支付状态
@@ -40,12 +42,41 @@ const orderApi = {
   },
 
   /**
-   * 获取订单详情
+   * 【商家/普通用户】获取订单子列表（分页）
+   * @description 商家或普通用户专用接口，只能查看自己商家的订单
+   * @param {Object} params - 查询参数
+   * @param {number} params.pageIndex - 页码
+   * @param {number} params.pageSize - 每页数量
+   * @param {number} params.appType - 应用类型
+   * @param {number} params.businessId - 商家ID（必须，用于控制只能看自己的订单）
+   * @param {string} params.searchKey - 搜索关键字（订单号、收货人姓名、电话）
+   * @param {number} params.orderStatus - 订单状态
+   * @param {number} params.payStatus - 支付状态
+   * @param {number} params.riskLevel - 风险等级
+   * @param {string} params.startTime - 开始时间
+   * @param {string} params.endTime - 结束时间
+   * @returns {Promise}
+   */
+  getOrderSubPageList(params) {
+    return request.post('/shopadminApi/Order/getOrdersSubsPageList', { params: params })
+  },
+
+  /**
+   * 【超级管理员】获取订单详情
    * @param {number} orderId - 订单ID
    * @returns {Promise}
    */
   getOrderDetail(orderId) {
     return request.get(`/shopadminApi/Order/getOrdersById?id=${orderId}`)
+  },
+
+  /**
+   * 【商家/普通用户】获取订单子详情
+   * @param {number} orderId - 订单ID
+   * @returns {Promise}
+   */
+  getOrderSubDetail(orderId) {
+    return request.get(`/shopadminApi/Order/getOrdersSubsById?id=${orderId}`)
   },
 
   /**
