@@ -37,7 +37,6 @@ const orderApi = {
    * @returns {Promise}
    */
   getOrderPageList(params) {
-    // 使用硬编码路径，仿照createOrder的做法
     return request.post('/shopadminApi/Order/getOrdersPageList', { params: params })
   },
 

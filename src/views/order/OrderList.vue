@@ -30,24 +30,14 @@
 
 
         <div class="right-search">
-          <!-- ==================== 超管搜索功能 ==================== -->
-          <!-- 
-            功能说明：
-            1. 仅对超级管理员（isSuperAdmin == 1）显示
-            2. 用于选择指定商户查看该商户的订单
-            3. 点击后缀图标打开商户选择对话框
-            4. 商户信息会缓存到 localStorage，刷新页面后保持选择
-          -->
           <el-input v-model="filterForm.businessNo" placeholder="商户号" clearable size="large"
             style="width: 180px; margin-right: 12px;" v-if="userStore.userInfo.isSuperAdmin == 1" :readonly="true"
             @keyup.enter="handleSearch">
-            <!-- 前缀搜索图标，保持与其他搜索框一致的视觉风格 -->
             <template #prefix>
               <el-icon>
                 <Search />
               </el-icon>
             </template>
-            <!-- 后缀点击图标：打开商户选择对话框 -->
             <template #suffix>
               <Search style="margin-right: 0px; width: 1.5em; height: 1.5em; cursor: pointer;" @click.stop="handleClick()" />
             </template>
@@ -100,20 +90,20 @@
             </template>
           </el-table-column>
 
-          <!-- 商户号（超级管理员和商家都可见） -->
-          <el-table-column prop="businessNo" label="商户号" min-width="120" align="center">
+          <!-- 商户号（仅超级管理员可见） -->
+          <el-table-column prop="businessNo" label="商户号" min-width="120" align="center" v-if="userStore.userInfo.isSuperAdmin == 1">
             <template #default="{row}">
               <div class="order-info">
-                <div class="order-no">{{ row.businessNo }}</div>
+                <div class="order-no">{{ filterForm.businessNo }}</div>
               </div>
             </template>
           </el-table-column>
 
-          <!-- 订单子编号 -->
+          <!-- 订单编号（子订单号） -->
           <el-table-column prop="subOrderNo" label="订单编号" min-width="150" align="center">
             <template #default="{row}">
               <div class="order-info">
-                <div class="order-no">{{ row.subOrderNo || row.orderNo }}</div>
+                <div class="order-no">{{ row.subOrderNo}}</div>
               </div>
             </template>
           </el-table-column>
@@ -346,43 +336,36 @@ const filterForm = reactive({
   status: '',
 })
 
-  // ==================== 获取订单列表 ====================
-  const fetchOrderList = async () => {
+const fetchOrderList = async () => {
   try {
     loading.value = true
-
-    // 【用户信息验证逻辑修复】
-    // 获取用户信息 - 确保userStore有数据
     if (!userStore.userInfo) {
       ElMessage.error('用户信息异常，请重新登录')
       return
     }
-
     const appType = userStore.userInfo.appType
     const businessId = filterForm.businessId
     const isSuperAdmin = userStore.userInfo.isSuperAdmin == 1
 
-    // 【超管商户选择核心逻辑】
-    // 超管用户：使用 filterForm.businessId（通过商户选择对话框设置的商户ID）
-    // 普通用户：使用自己商户的 businessId（在 onMounted 中初始化）
-    // 注意：超级管理员可能没有 businessId 字段，所以需要特殊处理
+    /*超管商户选择逻辑
+    *超管用户：使用 filterForm.businessId（通过商户选择对话框设置的商户ID）
+    *普通用户：使用自己商户的 businessId（在 onMounted 中初始化）
+    */
     let currentBusinessId
     if (isSuperAdmin) {
       // 超管使用筛选表单中的商户ID
       currentBusinessId = businessId
     } else {
-      // 普通用户使用自己的商户ID
-      if (!userStore.userInfo.businessId) {
-        ElMessage.error('用户信息异常，请重新登录')
-        return
-      }
+        // 普通用户使用自己的商户ID
+        if (!userStore.userInfo.businessId) {
+          ElMessage.error('用户信息异常，请重新登录')
+          return
+        }
       currentBusinessId = userStore.userInfo.businessId
-    }
+      }
 
-    // 如果 businessId 为 0，说明超管用户尚未选择商户，不执行请求
     if (currentBusinessId === 0)
       return
-
     let params = {
       pageIndex: pagination.currentPage,
       pageSize: pagination.pageSize,
@@ -397,25 +380,13 @@ const filterForm = reactive({
     // 处理订单状态筛选 - 只有当值不是空字符串、null、undefined 或 'All' 时才传递
     if (filterForm.status !== '' && filterForm.status !== null && filterForm.status !== undefined && filterForm.status !== 'All')
       params.orderStatus = filterForm.status
-
-    // 【API接口选择逻辑】
-    // 超级管理员：调用 getOrderPageList（可查看所有商家的订单）
-    // 商家/普通用户：调用 getOrderSubPageList（只能查看自己商家的订单）
-    let res
-    if (isSuperAdmin) {
-      // 超管使用主列表接口
-      res = await orderApi.getOrderPageList(params)
-    } else {
-      // 商家使用子列表接口
-      res = await orderApi.getOrderSubPageList(params)
-    }
-
+    let res = await orderApi.getOrderSubPageList(params)
     orderList.value = res.result || []
     pagination.total = res.count || 0
 
   } catch (error) {
     ElMessage.error('获取订单列表失败')
-    console.error('获取订单列表失败:', error)
+      onsole.error('获取订单列表失败:', error)
   } finally {
     loading.value = false
   }
@@ -448,7 +419,7 @@ const exportExcel = async () => {
     // 显示加载提示
     ElMessage.info('正在获取订单详情，请稍候...')
 
-    // 【API接口选择逻辑】根据用户类型选择不同的详情接口
+    // 选择逻辑，根据用户类型选择不同的详情接口
     const isSuperAdmin = userStore.userInfo.isSuperAdmin == 1
     const getDetailMethod = isSuperAdmin ? orderApi.getOrderDetail : orderApi.getOrderSubDetail
 
@@ -463,10 +434,12 @@ const exportExcel = async () => {
     const exportData = detailResults.map((res, index) => {
       const detail = res.result || res.data || {}
       const original = selectedRows.value[index]
-      
+
       return {
-        '订单编号': detail.orderNo || original.orderNo,
+        '订单编号': detail.subOrderNo || original.subOrderNo,
+        '总订单编号': detail.orderNo || original.orderNo,
         '订单ID': detail.orderId || detail.id || '',
+        '商户号': detail.businessNo || original.businessNo,
         '创建时间': detail.createTime || original.createTime,
         '更新时间': detail.updateTime || original.updateTime,
         '订单状态': getOrderStatusText(detail.orderStatus || original.orderStatus),
@@ -522,13 +495,10 @@ const handleSearch = () => {
   }
 }
 
-// ==================== 重置筛选条件 ====================
 const handleReset = () => {
   // 遍历 filterForm 的所有键
   Object.keys(filterForm).forEach(key => {
-    // 【超管商户选择逻辑】
-    // 重置时保留商户相关信息（businessId、businessNo、businessName）
-    // 超管用户切换商户后，重置其他筛选条件时不会丢失当前选择的商户
+    // 超管商户选择逻辑
     if (key !== 'businessId' && key !== 'businessNo' && key !== 'businessName') {
       filterForm[key] = ''
     }
@@ -538,30 +508,19 @@ const handleReset = () => {
   ElMessage.success('已重置筛选条件')
 }
 
-// ==================== 打开商户选择对话框 ====================
+
 const handleClick = () => {
   // 调用 PickShopDialog 组件的 openDialog 方法
   // 该方法会打开商户选择对话框，展示所有可用商户供超管选择
   pickshopdialogRef.value.openDialog()
 }
 
-// ==================== 处理商户选择回调 ====================
+
 const handleDialogQuery = (res) => {
-  // 【商户选择核心逻辑】
-  // 当超管在商户选择对话框中选择商户后，该方法会被调用
-  // res 包含选中的商户信息：{ businessId, businessNo, businessName }
-  
-  // 更新筛选表单中的商户信息
   filterForm.businessId = res.businessId
   filterForm.businessNo = res.businessNo
   filterForm.businessName = res.businessName
-  
-  // 【商户信息持久化】
-  // 将当前选择的商户信息保存到 localStorage
-  // key: "curselectbusiness"（当前选择的商户）
-  // 作用：刷新页面或重新登录后，保持上次选择的商户，无需重复选择
   localStorage.setItem("curselectbusiness", JSON.stringify(filterForm))
-  
   // 自动刷新订单列表，显示所选商户的订单
   fetchOrderList()
 }
@@ -616,14 +575,11 @@ const eligibleOrdersForBatchShip = computed(() => {
 // 格式化备注显示，隐藏原订单备注
 const formatRemark = (remark) => {
   if (!remark) return '-'
-  
   // 使用正则表达式找到并移除"原订单备注："及其后面的内容
   // 保留取消原因和用户自定义备注，但移除"原订单备注："部分
   const parts = remark.split('---')
   const filteredParts = parts.filter(part => !part.includes('原订单备注：'))
-  
   if (filteredParts.length === 0) return '-'
-  
   return filteredParts.join('---')
 }
 
@@ -647,7 +603,6 @@ const handleSizeChange = (val) => {
   pagination.pageSize = val
   fetchOrderList()
 }
-
 const handleCurrentChange = (val) => {
   pagination.currentPage = val
   fetchOrderList()
@@ -664,7 +619,6 @@ const handleBatchShip = () => {
       ElMessage.warning('请先勾选需要批量发货的订单')
       return
     }
-
     if (eligibleOrders.length === 0) {
       ElMessage.warning('选中的订单中无可批量发货的订单（需要：待处理状态且无快递单号）')
       return
@@ -672,16 +626,13 @@ const handleBatchShip = () => {
 
     // 检查选中订单中是否有不符合条件的订单
     const ineligibleOrdersCount = selectedRows.value.length - eligibleOrders.length
-
     if (ineligibleOrdersCount > 0) {
       ElMessage.info(
         `已自动过滤 ${ineligibleOrdersCount} 个不符合条件的订单，只处理 ${eligibleOrders.length} 个符合条件的订单`
       )
     }
-
     // 打开批量发货对话框（计算属性自动提供符合条件的订单）
     batchShipDialogRef.value.openDialog()
-    
   } catch (error) {
     console.error('批量发货操作失败:', error)
     ElMessage.error('操作失败，请重试')
@@ -692,56 +643,41 @@ const handleBatchShip = () => {
 const handleBatchShipSuccess = (response) => {
   // 刷新订单列表
   fetchOrderList()
-  
   // 重置选中状态
   selectedRows.value = []
-  
   ElMessage.success('批量发货操作已完成')
 }
 
 // 刷新列表（类似于F5重新加载页面）
 const refreshList = async () => {
-
   // 重置分页到第一页
   pagination.currentPage = 1
-  
   // 重置筛选条件
   Object.keys(filterForm).forEach(key => {
     filterForm[key] = ''
   })
-  
   // 重新获取数据
   await fetchOrderList()
-  
   // 显示刷新提示
   ElMessage.success('页面已刷新')
 }
 
-// ==================== 组件生命周期钩子 ====================
+//超管选择商户初始化
 onMounted(async () => {
-  // 【超管商户初始化逻辑修复】
-  // 从 localStorage 读取上次选择的商户信息
   const result = localStorage.getItem("curselectbusiness")
   const isSuperAdmin = userStore.userInfo.isSuperAdmin == 1
-
-  // 情况1：超管用户且之前有选择过商户
   if (result != '' && result != null && isSuperAdmin) {
-    // 解析缓存的商户信息并恢复到筛选表单
+
     const dataobj = JSON.parse(result)
     filterForm.businessId = dataobj.businessId
     filterForm.businessNo = dataobj.businessNo
     filterForm.businessName = dataobj.businessName
   }
-  // 情况2：超管用户但之前未选择过商户，或普通用户
   else {
-    // 超管用户：businessId 设为 0，等待用户选择商户
-    // 普通用户：使用自己商户的 businessId，直接查询自己商户的订单
     filterForm.businessId = isSuperAdmin ? 0 : userStore.userInfo.businessId
     filterForm.businessNo = isSuperAdmin ? '' : userStore.userInfo.businessNo
     filterForm.businessName = isSuperAdmin ? '' : userStore.userInfo.businessName
   }
-
-  // 加载订单列表（超管用户如果 businessId 为 0，fetchOrderList 会直接返回，不执行请求）
   await fetchOrderList()
 })
 

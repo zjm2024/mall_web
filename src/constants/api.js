@@ -86,8 +86,8 @@ export const API_PATHS = {
     LIST: '/shopadminApi/Order/getOrdersPageList',// 获取订单列表 (超级管理员)
     DETAIL: (id) => `/shopadminApi/Order/getOrdersById?id=${id}`,// 获取订单详情 (超级管理员)
     UPDATE: '/shopadminApi/Order/updateOrders',// 更新订单
-    SUB_LIST: '/shopadminApi/Order/getOrdersSubsPageList',//获取订单子列表 (店家管理员、普通用户)
-    SUB_DETAIL: (id) => `/shopadminApi/Order/getOrdersSubsById?id=${id}`,//获取订单子详情 (店家管理员、普通用户)
+    SUB_LIST: '/shopadminApi/Order/getOrdersSubsPageList',//获取订单子列表 (超级管理员、店家管理员、普通用户)
+    SUB_DETAIL: (id) => `/shopadminApi/Order/getOrdersSubsById?id=${id}`,//获取订单子详情 (超级管理员、店家管理员、普通用户)
     /** 
     DELETE: '/shopadminApi/Order/deleteOrder', // 删除订单
     BATCH_SHIP: '/shopadminApi/Order/batchShipOrder', // 批量发货，暂时注释掉，测试期间先使用 UPDATE 代替
