@@ -124,7 +124,7 @@ const quickActions = ref([
   { id: 3, title: '用户管理', desc: '管理店铺用户', icon: 'User', color: '#fa8c16', path: '/shop/user' },
   { id: 4, title: '营销活动', desc: '创建营销活动', icon: 'Message', color: '#eb2f96', path: '/marketing' },
   { id: 5, title: '店铺设置', desc: '配置店铺信息', icon: 'Setting', color: '#722ed1', path: '/shop/base' },
-  { id: 6, title: '数据报表', desc: '查看经营数据', icon: 'Document', color: '#13c2c2', path: '/dashboard' }
+  { id: 6, title: '数据报表', desc: '查看经营数据', icon: 'Document', color: '#13c2c2', path: '/settlement/DataDashboard' }
 ])
 
 // 最近操作

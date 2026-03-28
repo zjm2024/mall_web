@@ -16,7 +16,10 @@
         </template>
         <el-descriptions :column="3" border>
           <el-descriptions-item label="订单编号" label-class-name="desc-label">
-            <span class="order-no">{{ orderData.orderNo || '-' }}</span>
+            <!-- 超级管理员显示总订单，其他用户仅显示子订单 -->
+            <span class="order-no">{{ orderData.orderNo || '-' }}（总订单）</span>
+            <br>
+            <span class="order-no">{{ orderData.subOrderNo || '-' }}</span>
           </el-descriptions-item>
           <el-descriptions-item label="订单状态">
             <el-tag :type="getOrderStatusType(orderData.orderStatus)" size="large">
@@ -32,7 +35,7 @@
             {{ orderData.businessId || '-' }}
           </el-descriptions-item>
           <el-descriptions-item label="买家ID">
-            {{ orderData.personalID || '-' }}
+            {{ orderData.personalId || '-' }}
           </el-descriptions-item>
           <el-descriptions-item label="活动类型">
             {{ getActivityTypeText(orderData.activityType) }}

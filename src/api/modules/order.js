@@ -70,13 +70,46 @@ const orderApi = {
   },
 
   /**
-   * 【商家/普通用户】获取订单子详情
-   * @param {number} orderId - 订单ID
+   * 【商家/普通用户】获取子订单详情
+   * @param {number} subOrderId - 子订单ID
    * @returns {Promise}
    */
-  getOrderSubDetail(orderId) {
-    return request.get(`/shopadminApi/Order/getOrdersSubsById?id=${orderId}`)
+  getOrderSubDetail(subOrderId) {
+    return request.get(`/shopadminApi/Order/getOrdersSubsById?id=${subOrderId}`)
   },
+
+  /**
+   * 【超级管理员】通过商户ID获取订单详情
+   * @param {number} businessId - 商户ID
+   * @returns {Promise}
+   */
+  getOrderDetailByBussiness(businessId) {
+    return request.get(`/shopadminApi/Order/getOrdersByBid?bid=${businessId}`)
+  },
+
+  /**
+   * 【商家/普通用户】通过商户ID获取子订单详情
+   * @param {number} businessId - 商户ID
+   * @returns {Promise}
+   */
+  getOrderSubDetailByBussiness(businessId) {
+    return request.get(`/shopadminApi/Order/getOrdersSubsByBid?bid=${businessId}`)
+  },
+  
+  /**
+   * 【超级管理员】通过商户ID仅获取特定商户订单列表（分页）
+   */
+  getOrderPageListByBussiness(params) {
+    return request.post('/shopadminApi/Order/getOrdersPageListByBid', { params: params })
+  },
+
+  /**
+   * 【商家/普通用户】通过商户ID仅获取特定商户订单子列表（分页）
+   */
+  getOrderSubPageListByBussiness(params) {
+    return request.post('/shopadminApi/Order/getOrdersSubsPageListByBid', { params: params })
+  },
+
 
   /**
    * 创建订单

@@ -1,5 +1,6 @@
 import { ref, reactive, computed } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useUserStore } from '@/stores/user'
 import {
   MANAGEMENT_CONFIGS,
   ACCOUNT_ACTIONS,
@@ -12,6 +13,9 @@ import {
  * @returns {Object} 店铺管理相关的方法和状态
  */
 export function useShop() {
+  // 获取用户信息 store
+  const userStore = useUserStore()
+
   /** 
   *  测试数据，示例店铺信息
   * 
@@ -19,15 +23,37 @@ export function useShop() {
   */
 
   // 店铺信息
-  const shopInfo = reactive({
-    name: '测试商户',
-    status: '启用',
-    statusType: 'success',
-    details: {
-      code: 'M123456789',
-      agent: { value: '测试代理商', link: '#' },
-      provider: { value: '测试服务商', link: '#' },
-      certStatus: { value: '认证成功', tag: true, tagType: 'success' }
+  /**
+   * 通过userStore.userInfo 获取字段信息
+   */
+  const shopInfo = computed(() => {
+    const userInfo = userStore.userInfo
+    // 普通商户用户显示
+    if (userStore.isSuperAdmin != 1) {
+      return {
+        name: userInfo?.userName || '未有用户名', // 用字段：userName
+        status: userInfo?.appType === 0 ? '启用' : '未启用', // 用字段：appType，1-未启用，0-启用
+        statusType: userInfo?.appType === 0 ? 'success' : 'info', // 参考上面，0-success，1-error
+        details: {
+          code: userInfo?.businessNo || '--', // 商户编号
+          agent: { value: '【测试数据】你的商户管理员', link: '#' }, // 这里是显示商户主号（商户管理员），若是商户管理员用户自己，则显示其主号，日后有接口再实现
+          provider: { value: userInfo?.businessName || '--', link: '#' }, // 商户名字
+          certStatus: { value: '认证成功', tag: true, tagType: 'success' } // 不动，日后有接口再实现
+        }
+      }
+    }else{
+      // 超级管理员显示这个
+      return{
+        name: userInfo?.userName || '未起名超级管理员', // 用字段：userName
+        status: userInfo?.appType === 0 ? '启用' : '未启用', // 用字段：appType，1-未启用，0-启用
+        statusType: userInfo?.appType === 0 ? 'success' : 'info', // 参考上面，0-success，1-error
+        details: {
+          code:  '⭐⭐⭐⭐⭐', // 五星高级权限
+          agent: { value: '乐聊名片', link: '#' }, // 代理：乐聊名片
+          provider: { value: '广州华顺青为信息科技有限责任公司', link: '#' }, // 服务商：公司名
+          certStatus: { value: '认证成功', tag: true, tagType: 'success' } // 不动
+        }
+      }
     }
   })
 
@@ -73,8 +99,13 @@ export function useShop() {
    * 格式化后的店铺详情列表
    */
   const formattedShopDetails = computed(() => {
+    const details = shopInfo.value?.details
+    if (!details) {
+      return []
+    }
+    
     return SHOP_DETAIL_FIELDS.map(field => {
-      const detail = shopInfo.details[field.key]
+      const detail = details[field.key]
       return {
         label: field.label,
         value: typeof detail === 'object' ? detail.value : detail,

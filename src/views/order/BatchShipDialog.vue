@@ -33,7 +33,7 @@
           <el-table-column prop="orderNo" label="订单编号" min-width="120" align="center">
             <template #default="{row}">
               <div class="order-cell">
-                <div class="order-no">{{ row.orderNo }}</div>
+                <div class="order-no">{{ row.subOrderNo }}</div>
                 <div class="customer-name">{{ row.receiverName }}</div>
               </div>
             </template>
@@ -303,7 +303,7 @@ const handleBeforeUpload = (file) => {
     }
   }
   
-  fileReader.readAsBinaryString(file)
+  fileReader.readAsArrayBuffer(file)
   return false // 阻止自动上传
 }
 
