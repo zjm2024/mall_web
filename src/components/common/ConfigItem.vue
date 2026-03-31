@@ -15,7 +15,7 @@
 <script setup>
 import { QuestionFilled } from '@element-plus/icons-vue'
 
-defineProps({
+const props = defineProps({
   config: {
     type: Object,
     required: true,
@@ -29,13 +29,13 @@ defineProps({
   }
 })
 
-defineEmits(['click'])
+const emit = defineEmits(['click'])
 
 /**
  * 处理配置项点击
  */
 const handleClick = () => {
-  emit('click')
+  emit('click', props.config)
 }
 </script>
 

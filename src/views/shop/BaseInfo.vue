@@ -47,11 +47,18 @@
             v-for="(config, index) in managementConfigs"
             :key="index"
             :config="config"
-            @click="handleConfigClick(config)"
+            @click="handleConfigClick"
           />
         </div>
       </el-card>
     </div>
+
+    <!-- 配置管理弹窗 -->
+    <ConfigModal
+      v-model="showConfigModal"
+      :config-key="currentConfigKey"
+      @refresh="handleConfigRefresh"
+    />
 
     <!-- 账户信息区域 -->
     <el-card class="apps-section" shadow="never">
@@ -108,6 +115,7 @@ import { useShop } from '@/composables/useShop'
 // 导入通用组件
 import ConfigItem from '@/components/common/ConfigItem.vue'
 import AccountCard from '@/components/common/AccountCard.vue'
+import ConfigModal from '@/components/common/ConfigModal.vue'
 
 // ==================== 使用 Composable ====================
 const {
@@ -115,6 +123,10 @@ const {
   shopInfo,
   accounts,
   isBalanceVisible,
+
+  // 配置弹窗状态
+  showConfigModal,
+  currentConfigKey,
 
   // 配置
   managementConfigs,
@@ -124,6 +136,8 @@ const {
   // 方法
   toggleBalanceVisibility,
   handleConfigClick,
+  handleConfigModalClose,
+  handleConfigRefresh,
   handleAccountAction,
   handleAddAccount
 } = useShop()

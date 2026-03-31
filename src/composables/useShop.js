@@ -13,6 +13,11 @@ import {
  * @returns {Object} 店铺管理相关的方法和状态
  */
 export function useShop() {
+  /**
+   * 弹窗状态管理
+   */
+  const showConfigModal = ref(false)
+  const currentConfigKey = ref('')
   // 获取用户信息 store
   const userStore = useUserStore()
 
@@ -131,9 +136,25 @@ export function useShop() {
    * @param {Object} config - 配置项对象
    */
   const handleConfigClick = (config) => {
-    ElMessage.info(`点击配置: ${config.label}`)
-    // TODO: 跳转到对应配置页面
-    // router.push({ name: config.route })
+    // 打开对应配置弹窗
+    currentConfigKey.value = config.label
+    showConfigModal.value = true
+  }
+
+  /**
+   * 关闭配置弹窗
+   */
+  const handleConfigModalClose = () => {
+    showConfigModal.value = false
+    currentConfigKey.value = ''
+  }
+
+  /**
+   * 配置刷新回调
+   */
+  const handleConfigRefresh = () => {
+    ElMessage.success('配置已更新')
+    // TODO: 刷新相关数据
   }
 
   /**
@@ -203,6 +224,10 @@ export function useShop() {
     accounts,
     isBalanceVisible,
 
+    // 配置弹窗状态
+    showConfigModal,
+    currentConfigKey,
+
     // 配置
     managementConfigs: MANAGEMENT_CONFIGS,
     accountActions: ACCOUNT_ACTIONS,
@@ -214,6 +239,8 @@ export function useShop() {
     // 方法
     toggleBalanceVisibility,
     handleConfigClick,
+    handleConfigModalClose,
+    handleConfigRefresh,
     handleAccountAction,
     handleAddAccount,
     refreshShopInfo,
